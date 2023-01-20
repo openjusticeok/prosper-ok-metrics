@@ -4,6 +4,8 @@
 
 library(ojodb)
 library(tidyverse)
+library(lubridate)
+library(here)
 
 # Approach 1 -- searching minutes  ===============
 # Note: Abandoned this approach due to messy minute data, but I should revisit it
@@ -51,6 +53,35 @@ cm_ <- ojo_crim_cases(case_types = "CM",
 # cf_ <- ojo_crim_cases(case_types = "CF",
 #                       file_years = 2019:current_year) |>
 #   collect()
+
+cm_ <- ojo_tbl("case") |>
+  filter(
+    case_type == "CM",
+    year(date_filed) >= 2019
+  ) |>
+  left_join(ojo_tbl("count"),
+            by = c("id" = "case_id")) |>
+  select(
+    id = id.x,
+    case_number,
+    district,
+    date_filed,
+    count_as_filed
+  ) |>
+  collect()
+
+cm_addendum <- read_csv(here("data/case.csv")) |>
+  left_join(read_csv(here("data/count_tbl.csv"))) |>
+  select(
+    id,
+    case_number,
+    district,
+    date_filed,
+    count_as_filed
+  )
+
+cm_ <- cm_ |>
+  bind_rows(cm_addendum)
 
 # Search string for all drug-related charges
 drugs <- "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |PRESCRIP|NARC|METH|C\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|PARAPHERNALIA|MARIJUANA|MARIHUANA|MJ"
@@ -166,7 +197,7 @@ cm_cases |>
 
 cm_cases |>
   filter(
-    file_month < ymd("2022-10-01"),
+    file_month < ymd("2022-09-01"),
     # all_drugs == TRUE
   ) |>
   group_by(file_month, all_drugs) |>
@@ -182,11 +213,10 @@ cm_cases |>
   facet_wrap(~all_drugs) +
   scale_y_continuous(labels = scales::comma)
 
-
 # Export data if everything looks good ===============
 
 export_data <- cm_cases |>
-  filter(file_month < ymd("2022-10-01")) |>
+  filter(file_month < ymd("2022-09-01")) |>
   group_by(quarter_fy) |>
   summarize(
     n_cm_cases = n(),
