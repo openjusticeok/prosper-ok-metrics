@@ -54,34 +54,24 @@ cm_ <- ojo_crim_cases(case_types = "CM",
 #                       file_years = 2019:current_year) |>
 #   collect()
 
-cm_ <- ojo_tbl("case") |>
-  filter(
-    case_type == "CM",
-    year(date_filed) >= 2019
-  ) |>
-  left_join(ojo_tbl("count"),
-            by = c("id" = "case_id")) |>
-  select(
-    id = id.x,
-    case_number,
-    district,
-    date_filed,
-    count_as_filed
-  ) |>
-  collect()
 
-cm_addendum <- read_csv(here("data/case.csv")) |>
-  left_join(read_csv(here("data/count_tbl.csv"))) |>
-  select(
-    id,
-    case_number,
-    district,
-    date_filed,
-    count_as_filed
-  )
+## Bypass ojo_crim_cases function; main branch of ojodb broken
 
-cm_ <- cm_ |>
-  bind_rows(cm_addendum)
+# cm_ <- ojo_tbl("case") |>
+#   filter(
+#     case_type == "CM",
+#     year(date_filed) >= 2019
+#   ) |>
+#   left_join(ojo_tbl("count"),
+#             by = c("id" = "case_id")) |>
+#   select(
+#     id = id.x,
+#     case_number,
+#     district,
+#     date_filed,
+#     count_as_filed
+#   ) |>
+#   collect()
 
 # Search string for all drug-related charges
 drugs <- "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |PRESCRIP|NARC|METH|C\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|PARAPHERNALIA|MARIJUANA|MARIHUANA|MJ"
@@ -224,4 +214,5 @@ export_data <- cm_cases |>
     n_cm_cases_at_least_one_drugs = sum(drug_charge_present, na.rm = T)
   )
 
+readr::write_csv(export_data, here("reports/cm_drug_cases.csv"))
 
