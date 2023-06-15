@@ -13,12 +13,12 @@ library(glue)
 # and multiply the counts by the avg. household size and avg. family size. 
 
 # Retrieve ACS data on avg. household size by county
-api_key <- 'dea99d9b375b4594c415dd0c5089eb407b70f447'
-census_api_key(api_key, install = TRUE)
+# api_key <- 'dea99d9b375b4594c415dd0c5089eb407b70f447'
+# census_api_key(api_key, install = TRUE)
 v21 <- load_variables(2021, "acs5/subject", cache = TRUE) |>
   filter(str_detect(concept, "HOUSEHOLD"))
-v21_state<- load_variables(2021, "acs5/subject", cache = TRUE) |>
-  filter(str_detect(concept, "HOUSEHOLD"))
+# v21_state<- load_variables(2021, "acs5/subject", cache = TRUE) |>
+#   filter(str_detect(concept, "HOUSEHOLD"))
 
 # variable for avg. household size is S1101_C01_002 
 # variable for avg. family size is S1101_C01_004
@@ -96,7 +96,6 @@ report_hh <- sum(total_state$num_referred)*(hh_estimate_state$estimate)
 
 report_family <- sum(total_state$num_referred)*(family_estimate_state$estimate)
 
-# changes across counties 
 
   
 
