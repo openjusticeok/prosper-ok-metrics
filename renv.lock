@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.2.2",
+    "Version": "4.3.1",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -15,6 +15,14 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "b2866e62bab9378c3cc9476a1954226b",
+      "Requirements": []
+    },
+    "KernSmooth": {
+      "Package": "KernSmooth",
+      "Version": "2.23-21",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6314fc110e09548ba889491db6ae67fb",
       "Requirements": []
     },
     "MASS": {
@@ -192,6 +200,28 @@
         "tibble"
       ]
     },
+    "class": {
+      "Package": "class",
+      "Version": "7.3-22",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f91f6b29f38b8c280f2b9477787d4bb2",
+      "Requirements": [
+        "MASS"
+      ]
+    },
+    "classInt": {
+      "Package": "classInt",
+      "Version": "0.4-9",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "bee651a42a89633eccb36dca9d9ab413",
+      "Requirements": [
+        "KernSmooth",
+        "class",
+        "e1071"
+      ]
+    },
     "cli": {
       "Package": "cli",
       "Version": "3.6.0",
@@ -317,6 +347,17 @@
         "tibble",
         "tidyselect",
         "vctrs"
+      ]
+    },
+    "e1071": {
+      "Package": "e1071",
+      "Version": "1.7-13",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "1046cb48d06cb40c2900d8878f03a0fe",
+      "Requirements": [
+        "class",
+        "proxy"
       ]
     },
     "ellipsis": {
@@ -594,6 +635,27 @@
       "Repository": "CRAN",
       "Hash": "0080607b4a1a7b28979aecef976d8bc2",
       "Requirements": []
+    },
+    "janitor": {
+      "Package": "janitor",
+      "Version": "2.2.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5baae149f1082f466df9d1442ba7aa65",
+      "Requirements": [
+        "dplyr",
+        "hms",
+        "lifecycle",
+        "lubridate",
+        "magrittr",
+        "purrr",
+        "rlang",
+        "snakecase",
+        "stringi",
+        "stringr",
+        "tidyr",
+        "tidyselect"
+      ]
     },
     "jquerylib": {
       "Package": "jquerylib",
@@ -873,6 +935,14 @@
         "prettyunits"
       ]
     },
+    "proxy": {
+      "Package": "proxy",
+      "Version": "0.4-27",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e0ef355c12942cf7a6b91a6cfaea8b3e",
+      "Requirements": []
+    },
     "ps": {
       "Package": "ps",
       "Version": "1.7.2",
@@ -1044,6 +1114,17 @@
         "xml2"
       ]
     },
+    "s2": {
+      "Package": "s2",
+      "Version": "1.1.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f1cbe03bb3346f8e817518ffa20f9f5a",
+      "Requirements": [
+        "Rcpp",
+        "wk"
+      ]
+    },
     "sass": {
       "Package": "sass",
       "Version": "0.4.4",
@@ -1083,6 +1164,32 @@
       "Hash": "3838071b66e0c566d55cc26bd6e27bf4",
       "Requirements": [
         "R6",
+        "stringr"
+      ]
+    },
+    "sf": {
+      "Package": "sf",
+      "Version": "1.0-13",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "8fb4839843abc03528ff9f86424d6acd",
+      "Requirements": [
+        "DBI",
+        "Rcpp",
+        "classInt",
+        "magrittr",
+        "s2",
+        "units"
+      ]
+    },
+    "snakecase": {
+      "Package": "snakecase",
+      "Version": "0.11.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "4079070fc210c7901c0832a3aeab894f",
+      "Requirements": [
+        "stringi",
         "stringr"
       ]
     },
@@ -1132,6 +1239,31 @@
         "pkgconfig",
         "rlang",
         "vctrs"
+      ]
+    },
+    "tidycensus": {
+      "Package": "tidycensus",
+      "Version": "1.4.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "dabd8f284f9b186872cce03640ef829a",
+      "Requirements": [
+        "crayon",
+        "dplyr",
+        "httr",
+        "jsonlite",
+        "purrr",
+        "rappdirs",
+        "readr",
+        "rlang",
+        "rvest",
+        "sf",
+        "stringr",
+        "tidyr",
+        "tidyselect",
+        "tigris",
+        "units",
+        "xml2"
       ]
     },
     "tidyr": {
@@ -1207,6 +1339,22 @@
         "xml2"
       ]
     },
+    "tigris": {
+      "Package": "tigris",
+      "Version": "2.0.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6dd14cb88733b84d2b9af9fb8f64dbc5",
+      "Requirements": [
+        "dplyr",
+        "httr",
+        "magrittr",
+        "rappdirs",
+        "sf",
+        "stringr",
+        "uuid"
+      ]
+    },
     "timechange": {
       "Package": "timechange",
       "Version": "0.2.0",
@@ -1235,6 +1383,16 @@
       "Hash": "b2e1cbce7c903eaf23ec05c58e59fb5e",
       "Requirements": [
         "cpp11"
+      ]
+    },
+    "units": {
+      "Package": "units",
+      "Version": "0.8-2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "422376fe53419adcde4710d43acbcdd0",
+      "Requirements": [
+        "Rcpp"
       ]
     },
     "utf8": {
@@ -1303,6 +1461,14 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "c0e49a9760983e81e55cdd9be92e7182",
+      "Requirements": []
+    },
+    "wk": {
+      "Package": "wk",
+      "Version": "0.7.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "68a7ab6ec1afb5f076172b983c069313",
       "Requirements": []
     },
     "xfun": {
