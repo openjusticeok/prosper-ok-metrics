@@ -21,10 +21,13 @@ case_m <- ojo_crim_cases(case_types = "CM",
                      file_years = 2022:2023) |> 
   collect()
 
+cm_ids <- case_m |>
+  pull(id)
+
 min <- ojo_tbl("minute") |> 
-  filter(case_type == "CM",
-         date_filed >= reporting_start_date,
-         date_filed < reporting_end_date) |> 
+  filter(case_id %in% cm_ids,
+         date >= reporting_start_date,
+         date < reporting_end_date) |> 
   select(id,
          case_id, 
          date,
@@ -33,6 +36,11 @@ min <- ojo_tbl("minute") |>
          count,
          amount) |> 
   collect()
+
+min |> 
+  filter(str_detect(description, dl_related),
+         !str_detect(description, exclude)
+  )
 
 # Shortcut?
 cm <- ojo_crim_cases(case_types = "CM", 
