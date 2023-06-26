@@ -10,8 +10,8 @@ library(here)
 
 #relevant strings
 drugs <- "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |PRESCRIP|NARC|METH|C\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|PARAPHERNALIA|MARIJUANA|MARIHUANA|MJ"
-dl_related <- "DPS|DEPARTMENT OF PUBLIC SAFETY|D\\.P\\.S|SUSPENSION"
-exclude <- "WITHDRAW|ERROR|RETURN|UNABLE|REVOKE|LIFT|RECALL|NOT PROCESSED|PENDING|SUSPENSION RELEASE|DEFENDANT APPEARS)"
+dl_related <- "(SUSPEND|SUSPENSION|DPS|DEPARTMENT OF PUBLIC SAFETY|D\\.P\\.S)"
+exclude <- "(WITHDRAW|ERROR|RETURN|UNABLE|REVOKE|LIFT|RECALL|NOT PROCESSED|PENDING|SUSPENSION RELEASE|DEFENDANT APPEARS)"
 
 # Pulling every case with at least one misdemeanor charge then filter the 
 # "universe of minutes" to include only case_ids that are
@@ -42,9 +42,15 @@ cm <- ojo_crim_cases(case_types = "CM",
   ojo_add_minutes() |> 
   collect() 
   
-drug_cm <- cm |> 
-  filter(str_detect(count_as_filed, drugs))
+drug_dl_cm <- cm |> 
+  filter(str_detect(count_as_filed, drugs), 
+         str_detect(description, dl_related),
+         !str_detect(description, exclude)
+         )
 
+
+test <- drug_cm |> filter(
+  str_detect(description, "SUSPEND"))
 ################
 # useful regex
 drug_charge = if_else(grepl(drugs, count_as_filed), TRUE, FALSE)
