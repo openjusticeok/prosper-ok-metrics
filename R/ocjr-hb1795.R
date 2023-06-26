@@ -51,7 +51,10 @@ drug_dl_cm <- cm |>
 
 test <- drug_cm |> filter(
   str_detect(description, "SUSPEND"))
-################
+
+# code from existing repos below 
+################ 
+
 # useful regex
 drug_charge = if_else(grepl(drugs, count_as_filed), TRUE, FALSE)
 
