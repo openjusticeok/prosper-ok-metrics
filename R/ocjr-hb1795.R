@@ -8,6 +8,14 @@ library(here)
 # ojo_tbl("minute") |> 
 # all our filters for dl susp |> filter(case_id %in% !!cases_of_interest$id)
 
+#relevant strings
+drugs <- "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |PRESCRIP|NARC|METH|C\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|PARAPHERNALIA|MARIJUANA|MARIHUANA|MJ"
+dl_related <- "DPS|DEPARTMENT OF PUBLIC SAFETY|D\\.P\\.S|SUSPENSION"
+exclude <- "WITHDRAW|ERROR|RETURN|UNABLE|REVOKE|LIFT|RECALL|NOT PROCESSED|PENDING|SUSPENSION RELEASE|DEFENDANT APPEARS)"
+
+# Pulling every case with at least one misdemeanor charge then filter the 
+# "universe of minutes" to include only case_ids that are
+# in the relevant cases of interest.
 reporting_start_date <- ymd("2022-01-01")
 reporting_end_date <- ymd("2023-04-01")
 
@@ -28,28 +36,18 @@ min <- ojo_tbl("minute") |>
          amount) |> 
   collect()
 
-# shortcut?
+# Shortcut?
 cm <- ojo_crim_cases(case_types = "CM", 
                      file_years = 2022:2023) |> 
   ojo_add_minutes() |> 
   collect() 
   
-drugs <- "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |PRESCRIP|NARC|METH|C\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|PARAPHERNALIA|MARIJUANA|MARIHUANA|MJ"
-
 drug_cm <- cm |> 
-  filter(str_detect(count_as_filed, drugs)
-         )
+  filter(str_detect(count_as_filed, drugs))
 
 ################
 # useful regex
 drug_charge = if_else(grepl(drugs, count_as_filed), TRUE, FALSE)
-min_rev <- min |>
-   filter(
-     code %in% c("ABST", "NOSPSe", "NOWS", "NOSRT", "TEXT", "CNOTE", "NOSUS", "NO", "RULE8", "STAY", "WRCI"),
-     str_detect(description, "(DPS|DEPARTMENT OF PUBLIC SAFETY|D\\.P\\.S)"),
-     !str_detect(description, "(WITHDRAW|ERROR|RETURN|UNABLE|REVOKE|LIFT|RECALL|NOT PROCESSED|PENDING|SUSPENSION RELEASE|DEFENDANT APPEARS)"
-                 )
-   )
 
 filter(min_code %in% c("ABST", "NOSPSe", "NOWS", "NOSRT", "TEXT",
                        "CNOTE", "NOSUS", "NO", "RULE8", "STAY", "WRCI"),
