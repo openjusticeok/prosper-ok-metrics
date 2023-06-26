@@ -30,7 +30,14 @@ hh_estimate <- get_acs(geography = "county",
                        variable = "S1101_C01_002",
                        state = "OK",
                        year = 2021,
-                       cache = TRUE)
+                       cache = TRUE) |>
+  mutate(
+    NAME = str_extract(NAME, "^(.*)(?=\\sCounty,\\sOklahoma$)") |>
+      str_to_title()
+  ) |>
+  rename(
+    county = NAME
+  )
 
 hh_estimate_state <- get_acs(geography = "state",
                        survey = "acs5",
@@ -44,7 +51,14 @@ family_estimate <- get_acs(geography = "county",
                        variable = "S1101_C01_004",
                        state = "OK",
                        year = 2021,
-                       cache = TRUE)
+                       cache = TRUE) |>
+  mutate(
+    NAME = str_extract(NAME, "^(.*)(?=\\sCounty,\\sOklahoma$)") |>
+      str_to_title()
+  ) |>
+  rename(
+    county = NAME
+  )
 
 family_estimate_state <- get_acs(geography = "state",
                            survey = "acs5",
@@ -119,3 +133,37 @@ report_hh <- (sum(total_state$num_referred) * (hh_estimate_state$estimate)) |>
 
 report_family <- (sum(total_state$num_referred) * (family_estimate_state$estimate)) |>
   round()
+
+county_referrals_quarter |>
+  ungroup() |>
+  left_join(
+    hh_estimate,
+    by = "county"
+  ) |>
+  mutate(
+    impact_estimate = num_referred * estimate
+  ) |>
+  filter(
+    fiscal_year %in% c(2022, 2023)
+  ) |>
+  summarise(
+    total_household_impact_estimate = sum(impact_estimate, na.rm = TRUE) |>
+      round()
+  )
+
+county_referrals_quarter |>
+  ungroup() |>
+  left_join(
+    family_estimate,
+    by = "county"
+  ) |>
+  mutate(
+    impact_estimate = num_referred * estimate
+  ) |>
+  filter(
+    fiscal_year %in% c(2022, 2023)
+  ) |>
+  summarise(
+    total_family_impact_estimate = sum(impact_estimate, na.rm = TRUE) |>
+      round()
+  )
