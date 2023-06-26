@@ -13,9 +13,7 @@ drugs <- "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|X
 dl_related <- "(SUSPEND|SUSPENSION|DPS|DEPARTMENT OF PUBLIC SAFETY|D\\.P\\.S)"
 exclude <- "(WITHDRAW|ERROR|RETURN|UNABLE|REVOKE|LIFT|RECALL|NOT PROCESSED|PENDING|SUSPENSION RELEASE|DEFENDANT APPEARS)"
 
-# Pulling every case with at least one misdemeanor charge then filter the 
-# "universe of minutes" to include only case_ids that are
-# in the relevant cases of interest.
+# Pulling every case with at least one misdemeanor charge
 reporting_start_date <- ymd("2022-01-01")
 reporting_end_date <- ymd("2023-04-01")
 
@@ -41,7 +39,9 @@ cm <- ojo_crim_cases(case_types = "CM",
                      file_years = 2022:2023) |> 
   ojo_add_minutes() |> 
   collect() 
-  
+
+# Then filter the "universe of minutes" to include only case_ids that are
+# in the relevant cases of interest.
 drug_dl_cm <- cm |> 
   filter(str_detect(count_as_filed, drugs), 
          str_detect(description, dl_related),
