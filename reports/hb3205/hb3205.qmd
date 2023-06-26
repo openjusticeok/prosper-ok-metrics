@@ -1,0 +1,29 @@
+---
+title: HB 3205 Impact Estimate
+subtitle: Oklahoma Fiscal Years 2022-2023 Q1
+format:
+  ojo-report-template-html: default
+author: Polina Rozhkova and Brancen Gregory
+date: last-modified
+logo: "www/ojo-logo-white.png"
+number-sections: true
+smooth-scroll: true
+title-block-banner: "black"
+title-block-banner-color: "white"
+knitr:
+  opts_chunk:
+    fig.align: center
+description: |
+  Estimating the number of Oklahomans impacted by HB 3205, a youth fines and fees reform. Analysis done in contribution to
+  ProsperOK's 2023 biannual reporting.
+abstract-title: "Executive Summary"
+abstract: |
+  Open Justice Oklahoma estimates that between X and Y Oklahomans benefitted from reduced fines and fees associated
+  with HB 3205 over the period 2022 to 2023.
+---
+
+## Introduction
+
+## Data
+
+## Results
