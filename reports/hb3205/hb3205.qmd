@@ -23,7 +23,7 @@ description: |
 abstract-title: "Executive Summary"
 abstract: |
   Open Justice Oklahoma estimates that between 12,968 and	16,037 Oklahomans benefitted from reduced fines and fees associated
-  with HB 3205 over the period 2022 through Q1 2023.
+  with HB 3205 for Q2 and Q3 of FY 2023.
 ---
 
 ```{r}
@@ -43,7 +43,7 @@ library(downloadthis)
 
 ## Background
 
-A bill reducing fines and fees for families of children involved in the criminal legal system (HB 3205) went into effect July 1, 2022 (Q1 FY 2023). HB 3205 struck a clause of 10A O.S. 2021, Section 2-2-301 which stated that “costs of representation shall be imposed on the parent or other legal custodian”. It limited the twenty-five dollar probation fee to only those counties that have a juvenile bureau; a provision that the fee only be applied to those with ability to pay was already in place. Prior to HB 3205 counties without a juvenile bureau were directing the revenue from this probation fee to the Office of Juvenile Affairs.
+A bill reducing fines and fees for families of children involved in the criminal legal system (HB 3205) went into effect July 1, 2022 (Q1 FY 2023). HB 3205 struck a clause of 10A O.S. 2021, Section 2-2-301 which stated that the parent or other legal custodian were responsible for costs associated with legal representation. It limited the twenty-five dollar probation fee to only those counties that have a juvenile bureau; a provision that the fee only be applied to those with ability to pay was already in place. Prior to HB 3205 counties without a juvenile bureau were directing the revenue from this probation fee to the Office of Juvenile Affairs (OJA).
 
 HB 3205 also struck 10A O.S. 2021, Section 2-2-509 which required a juvenile drug court user fee of up to twenty dollars per month, in addition to “court costs, treatment costs, drug-testing costs, and supervision fees”. While the cost of treatment was paid to the treatment provider, drug-testing and supervision fees were directed to the Juvenile Drug Court Revolving Fund, and all other costs and fees were directed to the court clerk.
 
@@ -221,13 +221,15 @@ gt(county_referrals_quarter) |>
 
 ::: {.content-visible when-format="pdf"}
 
-See attached csv for full data.
+See attached CSV file for full data.
 
 :::
 
 ## Results
 
 Quarterly referral data and estimated impacts are presented in the table below:
+
+::: {.content-visible unless-format="pdf"}
 
 ```{r}
 #| column: page
@@ -274,3 +276,54 @@ county_referrals_quarter |>
     decimals = 0
   )
 ```
+
+:::
+
+::: {.content-visible when-format="pdf"}
+
+```{r}
+county_referrals_quarter |>
+  filter(
+    quarter >= "2022-10-01"
+  ) |>
+  group_by(
+    fiscal_year,
+    fiscal_quarter,
+    quarter
+  ) |>
+  summarise(
+    total_referred = sum(num_referred, na.rm = TRUE),
+    household_impact_estimate = sum(household_impact_estimate, na.rm = TRUE),
+    family_impact_estimate = sum(family_impact_estimate, na.rm = TRUE)
+  ) |>
+  ungroup() |>
+  gt() |>
+  grand_summary_rows(
+    columns = c(
+      total_referred,
+      household_impact_estimate,
+      family_impact_estimate
+    ),
+    fns = list(
+      label = "Total",
+      id = "total",
+      fn = "sum"
+    ),
+    fmt = ~ fmt_number(., decimals = 0)
+  ) |>
+  cols_label(
+    quarter = "Quarter Start",
+    fiscal_year = "Fiscal Year",
+    fiscal_quarter = "Fiscal Quarter",
+    total_referred = "Referrals",
+    household_impact_estimate = "Household Impact",
+    family_impact_estimate = "Family Impact"
+  ) |>
+  fmt_number(
+    columns = c("total_referred", "household_impact_estimate", "family_impact_estimate"),
+    decimals = 0
+  )
+```
+
+:::
+
