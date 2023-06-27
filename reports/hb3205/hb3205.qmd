@@ -1,8 +1,9 @@
 ---
 title: HB 3205 Impact Estimate
-subtitle: Oklahoma Fiscal Years 2022-2023 Q1
+subtitle: FY 2023
 format:
   ojo-report-template-html: default
+  pdf: default
 author: Polina Rozhkova and Brancen Gregory
 date: last-modified
 logo: "www/ojo-logo-white.png"
@@ -13,17 +14,247 @@ title-block-banner-color: "white"
 knitr:
   opts_chunk:
     fig.align: center
+    echo: FALSE
+    message: FALSE
+    warning: FALSE
 description: |
-  Estimating the number of Oklahomans impacted by HB 3205, a youth fines and fees reform. Analysis done in contribution to
+  Estimating the number of Oklahomans directly impacted by HB 3205, a reform of juvenile court fees. Analysis done in contribution to
   ProsperOK's 2023 biannual reporting.
 abstract-title: "Executive Summary"
 abstract: |
   Open Justice Oklahoma estimates that between X and Y Oklahomans benefitted from reduced fines and fees associated
-  with HB 3205 over the period 2022 to 2023.
+  with HB 3205 over the period 2022 through Q1 2023.
 ---
 
-## Introduction
+```{r}
+library(readr)
+library(stringr)
+library(readxl)
+library(tidycensus)
+library(tidyverse)
+library(here)
+library(janitor)
+library(glue)
+library(ojoverse)
+library(lubridate)
+library(gt)
+library(downloadthis)
+```
+
+## Background
+
+HB 3205 struck a clause of 10A O.S. 2021, Section 2-2-301 which stated that "costs of
+representation shall be imposed on the parent or other legal custodian". It limited the scope of a twenty-five dollar probation fee to only those counties that have a juvenile bureau; a provision that the fee only be applied to those with ability to pay was already in place. Prior to HB 3205 counties without a juvenile bureau were directing the revenue from this probation fee to the Office of Juvenile Affairs.
+
+HB 3205 also struck 10A O.S. 2021, Section 2-2-509 which required a juvenile drug court user fee of up to twenty dollars per month, in addition to "court costs, treatment costs, drug-testing costs, and supervision fees". While the cost of treatment was paid to the treatment provider, drug-testing and supervision fees were directed to the Juvenile Drug Court Revolving Fund, and all other costs and fees were directed to the court clerk.
+
+This substantive juvenile fee reform went into effect July 1, 2022 (Q1 FY 2023); however, this analysis conservatively uses OJA referral data beginning October 1, 2022 (Q2 FY 2023) to estimate impact during a period of full implementation. The data is current through March 2022 (Q3 FY 2023).
 
 ## Data
 
+```{r}
+
+hh_estimate <- get_acs(
+  geography = "county",
+  survey = "acs5",
+  variable = "S1101_C01_002",
+  state = "OK",
+  year = 2021,
+  cache = TRUE
+) |>
+  mutate(
+    NAME = str_extract(NAME, "^(.*)(?=\\sCounty,\\sOklahoma$)") |>
+      str_to_title()
+  ) |>
+  rename(
+    county = NAME
+  ) |>
+  mutate(
+    county = case_when(
+      county == "Le Flore" ~ "LeFlore",
+      county == "Mcclain" ~ "McClain",
+      county == "Mccurtain" ~ "McCurtain",
+      county == "Mcintosh" ~ "McIntosh",
+      TRUE ~ county
+    )
+  )
+
+family_estimate <- get_acs(
+  geography = "county",
+  survey = "acs5",
+  variable = "S1101_C01_004",
+  state = "OK",
+  year = 2021,
+  cache = TRUE
+) |>
+  mutate(
+    NAME = str_extract(NAME, "^(.*)(?=\\sCounty,\\sOklahoma$)") |>
+      str_to_title()
+  ) |>
+  rename(
+    county = NAME
+  ) |>
+  mutate(
+    county = case_when(
+      county == "Le Flore" ~ "LeFlore",
+      county == "Mcclain" ~ "McClain",
+      county == "Mccurtain" ~ "McCurtain",
+      county == "Mcintosh" ~ "McIntosh",
+      TRUE ~ county
+    )
+  )
+
+# OJA data with monthly referrals 2018-2022
+referrals <- read_excel(here("data", "YoungOffenders.xlsx"), sheet = "Referrals") |>
+  janitor::clean_names() |>
+  rename(
+    age = new_age,
+    class = arrest_class
+  ) |>
+  mutate(
+    month = lubridate::as_date(
+      month,
+      format = "%Y/%m"
+    ),
+    quarter = floor_date(month, "quarter"),
+    fiscal_year = ojo_fiscal_year(month)
+  ) |>
+  mutate(
+    fiscal_quarter = case_when(
+      quarter(quarter) == 1 ~ 3,
+      quarter(quarter) == 2 ~ 4,
+      quarter(quarter) == 3 ~ 1,
+      quarter(quarter) == 4 ~ 2,
+      TRUE ~ NA_real_
+    )
+  )
+```
+
+```{r}
+county_referrals_quarter <- referrals |>
+  group_by(
+    county,
+    month,
+    quarter,
+    fiscal_year,
+    fiscal_quarter
+  ) |>
+  count() |>
+  rename(
+    num_referred = n
+  ) |>
+  ungroup() |>
+  left_join(
+    hh_estimate |>
+      select(
+        county,
+        household_size = estimate
+      ),
+    by = "county"
+  ) |>
+  left_join(
+    family_estimate |>
+      select(
+        county,
+        family_size = estimate
+      ),
+    by = "county"
+  ) |>
+  mutate(
+    household_impact_estimate = num_referred * household_size,
+    family_impact_estimate = num_referred * family_size
+  )
+```
+
+::: {.content-visible unless-format="pdf"}
+
+```{r}
+#| column: page
+
+gt(county_referrals_quarter) |>
+  cols_label(
+    county = "County",
+    month = "Month",
+    quarter = "Quarter Start",
+    fiscal_year = "Fiscal Year",
+    fiscal_quarter = "Quarter",
+    num_referred = "Referrals",
+    household_size = "Household Size",
+    household_impact_estimate = "Impacted Oklahomans (Low)",
+    family_size = "Family Size",
+    family_impact_estimate = "Impacted Oklahomans (High)"
+  ) |>
+  fmt_number(
+    columns = ends_with("_estimate"),
+    decimals = 0
+  ) |>
+  tab_source_note(
+    county_referrals_quarter |>
+      download_this(
+        output_name = "oja_referrals_county_quarterly",
+        output_extension = ".csv"
+      )
+  ) |>
+  tab_options(
+    ihtml.active = TRUE,
+    ihtml.use_filters = TRUE,
+    ihtml.use_highlight = TRUE,
+    ihtml.use_text_wrapping = TRUE,
+    quarto.use_bootstrap = TRUE
+  )
+
+```
+
+:::
+
+::: {.content-visible when-format="pdf"}
+See attached csv for full data.
+:::
+
 ## Results
+
+```{r}
+#| column: page
+
+county_referrals_quarter |>
+  filter(
+    quarter >= "2022-10-01"
+  ) |>
+  group_by(
+    fiscal_year,
+    fiscal_quarter,
+    quarter
+  ) |>
+  summarise(
+    total_referred = sum(num_referred, na.rm = TRUE),
+    household_impact_estimate = sum(household_impact_estimate, na.rm = TRUE),
+    family_impact_estimate = sum(family_impact_estimate, na.rm = TRUE)
+  ) |>
+  ungroup() |>
+  gt() |>
+  grand_summary_rows(
+    columns = c(
+      total_referred,
+      household_impact_estimate,
+      family_impact_estimate
+    ),
+    fns = list(
+      label = "Total",
+      id = "total",
+      fn = "sum"
+    ),
+    fmt = ~ fmt_number(., decimals = 0)
+  ) |>
+  cols_label(
+    quarter = "Quarter Start",
+    fiscal_year = "Fiscal Year",
+    fiscal_quarter = "Fiscal Quarter",
+    total_referred = "Referrals",
+    household_impact_estimate = "Household Impact",
+    family_impact_estimate = "Family Impact"
+  ) |>
+  fmt_number(
+    columns = c("total_referred", "household_impact_estimate", "family_impact_estimate"),
+    decimals = 0
+  )
+```
