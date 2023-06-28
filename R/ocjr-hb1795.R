@@ -2,6 +2,9 @@ library(ojodb)
 library(tidyverse)
 library(lubridate)
 library(here)
+library(glue)  
+library(ojoverse)
+library(lubridate)
 
 # notes from call
 # cases_of_interest <- ojo_tbl("case") |> filters to limit to misd drug charges
@@ -26,7 +29,7 @@ cm_ids <- case_m |>
   pull(id)
 
 min <- ojo_tbl("minute") |> 
-  filter(case_id %in% cm_ids,
+  filter(case_id %in% cm_ids,     
          date >= reporting_start_date,
          date < reporting_end_date) |> 
   select(id,
@@ -47,16 +50,25 @@ min |>
 cm <- ojo_crim_cases(case_types = "CM", 
                      file_years = 2022:2023) |> 
   ojo_add_minutes() |> 
-  collect() 
+  collect()
+
+# readr::write_csv(cm, here("data/misdemeanor_local.csv"))
+# local_cm_data <- read_csv(here("data", "misdemeanor_local.csv")) |>
+#   janitor::clean_names()
 
 # Then filter the "universe of minutes" to include only case_ids that are
 # in the relevant cases of interest.
-drug_dl_cm <- cm |> 
+# 17052
+drug_dl_cm <- local_cm_data |> 
   filter(str_detect(count_as_filed, drugs), 
+         !str_detect(count_as_filed, count_exclude),
+         !str_detect(count_as_filed, "SUSPEND|SUSPENDED|LICENSE"),
          str_detect(description, dl_related),
          !str_detect(description, exclude)
          )
 
+
+# exclude firearms, 
 
 test <- drug_cm |> filter(
   str_detect(description, "SUSPEND"))
