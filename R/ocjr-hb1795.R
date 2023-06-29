@@ -14,7 +14,7 @@ library(lubridate)
 #relevant strings
 drugs <- "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |PRESCRIP|NARC|METH|C\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|PARAPHERNALIA|MARIJUANA|MARIHUANA|MJ"
 count_exclude <- "DISTRIBUTE|INTENT"
-dl_related <- "(SUSPEND|SUSPENSION|DPS|DEPARTMENT OF PUBLIC SAFETY|D\\.P\\.S)"
+dps_related <- "(DPS|DEPARTMENT OF PUBLIC SAFETY|D\\.P\\.S)"
 exclude <- "(WITHDRAW|ERROR|RETURN|UNABLE|REVOKE|LIFT|RECALL|NOT PROCESSED|PENDING|SUSPENSION RELEASE|DEFENDANT APPEARS)"
 
 # Pulling every case with at least one misdemeanor charge
@@ -39,7 +39,16 @@ min <- ojo_tbl("minute") |>
          description,
          count,
          amount) |> 
+  filter(
+    str_detect(description, "SUSPENSION|SUSPENDED|SUSPEND"))|> 
   collect()
+
+join_misd_min <- min |> 
+  left_join(
+    case_m, 
+    by = c("case_id" = "id"), 
+    relationship = "many-to-many"
+  )
 
 min |> 
   filter(str_detect(description, drugs),
@@ -65,10 +74,16 @@ cm <- ojo_crim_cases(case_types = "CM",
 drug_dl_cm <- local_cm_data |> 
   filter(str_detect(count_as_filed, drugs), 
          !str_detect(count_as_filed, count_exclude),
-         !str_detect(count_as_filed, "SUSPEND|SUSPENDED|LICENSE"),
-         #str_detect(description, dl_related),
+         #!str_detect(count_as_filed, "SUSPEND|SUSPENDED|LICENSE"),
+         str_detect(description, dps_related),
          #!str_detect(description, exclude)
          )
+
+# of these cases how many resulted in a conviction, dismissal, or are ongoing?
+drug_dl_cm |> 
+  group_by(disposition) |> 
+  count() |> 
+  print(n = 60)
 
 
 test <- drug_cm |> filter(
