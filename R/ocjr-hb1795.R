@@ -42,8 +42,8 @@ min <- ojo_tbl("minute") |>
   collect()
 
 min |> 
-  filter(str_detect(description, dl_related),
-         !str_detect(description, exclude)
+  filter(str_detect(description, drugs),
+         !str_detect(description, count_exclude)
   )
 
 # Shortcut?
@@ -58,17 +58,18 @@ cm <- ojo_crim_cases(case_types = "CM",
 
 # Then filter the "universe of minutes" to include only case_ids that are
 # in the relevant cases of interest.
-# 17052
+
+# -> Exclude cases where individual is driving with a suspended license 
+# -> Don't include separate condition for cases mentioning drivers license 
+# suspension in the minute description
 drug_dl_cm <- local_cm_data |> 
   filter(str_detect(count_as_filed, drugs), 
          !str_detect(count_as_filed, count_exclude),
          !str_detect(count_as_filed, "SUSPEND|SUSPENDED|LICENSE"),
-         str_detect(description, dl_related),
-         !str_detect(description, exclude)
+         #str_detect(description, dl_related),
+         #!str_detect(description, exclude)
          )
 
-
-# exclude firearms, 
 
 test <- drug_cm |> filter(
   str_detect(description, "SUSPEND"))
@@ -85,22 +86,5 @@ filter(min_code %in% c("ABST", "NOSPSe", "NOWS", "NOSRT", "TEXT",
        !str_detect(min_desc, "(WITHDRAW|ERROR|RETURN|REVOKE|UNABLE|LIFT|NOT PROCESSED|PENDING|SUSPENSION RELEASE|DEFENDANT APPEARS)"))
 
 
-# Grouping / summarizing the charges by case
-cm_cases <- cm_charges |>
-  group_by(case_number, district) |>
-  summarize(
-    file_date = unique(date_filed),
-    file_year = unique(file_year),
-    quarter_fy = unique(quarter_fy),
-    quarter_fy_start_date = unique(quarter_fy_start_date),
-    pre_november = if_else(sum(pre_november, na.rm = T) > 0, TRUE, FALSE),
-    n_charges = n(),
-    drug_charge_present = if_else(sum(drug_charge, na.rm = T) > 0, TRUE, FALSE),
-    all_drugs = if_else(sum(drug_charge, na.rm = T) == n_charges, TRUE, FALSE),
-    charges_list = paste(count_as_filed, collapse = "; ")
-  ) |>
-  ungroup() |>
-  mutate(
-    file_month = floor_date(file_date, "months")
-  )
+
 
