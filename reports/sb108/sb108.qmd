@@ -52,34 +52,41 @@ This analysis uses historical data on convictions for possession of a controlled
 ```{r, load_data}
 #| cache: true
 
-data <- ojo_tbl("case") |>
-  select(
-    id,
-    district,
-    case_type,
-    date_filed,
-    date_closed,
-    created_at,
-    updated_at
-  ) |>
-  filter(
-    case_type %in% c("CM", "CF"),
-    date_filed >= "2001-01-01",
-    date_filed < "2023-01-01"
-  ) |>
-  left_join(
-    ojo_tbl("count"),
-    by = c("id" = "case_id")
-  ) |>
-  ojo_collect()
+# ojodb <- ojo_connect()
+#
+# data <- ojo_tbl("case", .con = ojodb) |>
+#   select(
+#     id,
+#     district,
+#     case_type,
+#     date_filed,
+#     date_closed,
+#     created_at,
+#     updated_at
+#   ) |>
+#   filter(
+#     case_type %in% c("CM", "CF"),
+#     date_filed >= "2001-01-01",
+#     date_filed < "2023-01-01"
+#   ) |>
+#   left_join(
+#     ojo_tbl("count", .con = ojodb),
+#     by = c("id" = "case_id"),
+#     suffix = c("", "_count")
+#   ) |>
+#   ojo_collect()
+#
+# write_csv(date, here("data/cm_cf_2001_2022.csv))
 
-disposition_predictions <- read_csv(here("data/toc-results/disposition_predictions.csv"))
+data <- read_csv(here("data/cm_cf_2001_2022.csv"))
+disposition_predictions <- read_csv(here("data/toc-results/disposition_predictions.csv")) |>
+  distinct()
 uccs <- read_csv(here("data/toc-results/uccs-schema.csv"))
 ```
 
 
 ```{r, clean_data}
-prepare <- function (x) {
+prepare <- function(x) {
   x |>
     str_to_upper() |>
     str_remove_all("^[A-Z0-9]{0,10},") |>
@@ -92,11 +99,20 @@ prepare <- function (x) {
 result_clean <- data |>
   # Cleaning data to match w/ cleaned lookup table
   mutate(
-    count_as_disposed = prepare(count_as_disposed)
+    count_as_filed = prepare(count_as_filed),
+    # If count_as_disposed is missing, fill it with count_as_filed
+    # This will retain
+    count_as_disposed = if_else(
+      is.na(count_as_disposed),
+      count_as_filed,
+      prepare(count_as_disposed)
+    )
   ) |>
   left_join(
     disposition_predictions,
-    by = c("count_as_disposed" = "disposition")
+    by = c("count_as_disposed" = "disposition"),
+    suffix = c("", "_toc"),
+    relationship = "many-to-many"
   ) |>
   left_join(uccs, by = "uccs_code")
 ```
@@ -120,42 +136,43 @@ d <- result_clean |>
     id,
     case_type,
     date_filed,
-    count_as_filed,
+    count_as_disposed,
+    disposition_date,
     disposition,
     charge_desc,
     offense_category_desc,
     offense_type_desc,
     probability,
-    disposition,
-    uccs_code
+    uccs_code,
+    party
   ) |>
   mutate(
-    poss = str_detect(count_as_filed, "(?i)poss"),
-    dist = str_detect(count_as_filed, "(?i)\\sdist"),
-    intent = str_detect(count_as_filed, "(?i)intent|\\bint\\b"),
-    paraphernalia = str_detect(count_as_filed, "(?i)paraph.*\\b"),
-    weapon = str_detect(count_as_filed, "(?i)weapon"),
-    trafficking = str_detect(count_as_filed, "(?i)traffick"),
-    endeavor = str_detect(count_as_filed, "(?i)endeavor|\\bend\\b"),
-    wildlife = str_detect(count_as_filed, "(?i)wildlife"),
-    manufacture = str_detect(count_as_filed, "(?i)\\bmanufac"),
-    commercial = str_detect(count_as_filed, "(?i)COMM FAC"),
-    school_park_church = str_detect(count_as_filed, "(?i)school|education|park|church|day care|\\spk\\s"),
-    conspiracy = str_detect(count_as_filed, "(?i)\\bconsp"),
-    maintaining = str_detect(count_as_filed, "(?i)\\bmaint.*(place|dwelling)"),
-    tax = str_detect(count_as_filed, "(?i)\\btax\\b"),
-    minor = str_detect(count_as_filed, "(?i)minor|child|under.*21"),
-    inmate = str_detect(count_as_filed, "(?i)inmate|jail|contrab|penal|\\bfac"),
-    theft = str_detect(count_as_filed, "(?i)larceny|theft|\\bstol(e|en)\\b"),
-    vehicle = str_detect(count_as_filed, "(?i)(?<!\\snon|not\\s)(?:\\sMV\\b|motor vehicle)"),
-    proceeds = str_detect(count_as_filed, "(?i)ac.*\\bp(r|o){0,2}|proceed"),
-    drug = str_detect(count_as_filed, "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |\\bPRESCRIP|\\bNARC|\\bMETH|\\bC\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bMA.*NA\\b|\\bMJ\\b|\\bMARI\\b"),
+    poss = str_detect(count_as_disposed, "(?i)poss"),
+    dist = str_detect(count_as_disposed, "(?i)\\bdist"),
+    intent = str_detect(count_as_disposed, "(?i)intent|\\bint\\b"),
+    paraphernalia = str_detect(count_as_disposed, "(?i)paraph.*\\b"),
+    weapon = str_detect(count_as_disposed, "(?i)weapon"),
+    trafficking = str_detect(count_as_disposed, "(?i)traffick"),
+    endeavor = str_detect(count_as_disposed, "(?i)endeavor|\\bend\\b"),
+    wildlife = str_detect(count_as_disposed, "(?i)wildlife"),
+    manufacture = str_detect(count_as_disposed, "(?i)\\bmanufac"),
+    commercial = str_detect(count_as_disposed, "(?i)COMM FAC"),
+    school_park_church = str_detect(count_as_disposed, "(?i)school|education|park|church|day care|\\spk\\s"),
+    conspiracy = str_detect(count_as_disposed, "(?i)\\bconsp"),
+    maintaining = str_detect(count_as_disposed, "(?i)\\bmaint.*(place|dwelling)"),
+    tax = str_detect(count_as_disposed, "(?i)\\btax\\b"),
+    minor = str_detect(count_as_disposed, "(?i)minor|child|under.*21"),
+    inmate = str_detect(count_as_disposed, "(?i)inmate|jail|contrab|penal|\\bfac"),
+    theft = str_detect(count_as_disposed, "(?i)larceny|theft|\\bstol(e|en)\\b"),
+    vehicle = str_detect(count_as_disposed, "(?i)(?<!\\snon|not\\s)(?:\\sMV\\b|motor vehicle)"),
+    proceeds = str_detect(count_as_disposed, "(?i)ac.*\\bp(r|o){0,2}|proceed"),
+    drug = str_detect(count_as_disposed, "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |\\bPRESCRIP|\\bNARC|\\bMETH|\\bC\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bMA.*NA\\b|\\bMJ\\b|\\bMARI\\b"),
     uccs_drug = probability >= 0.8 & uccs_code >= 3090 & uccs_code <= 3162,
     uccs_drug_plus = probability >= 0.8 & uccs_code >= 3090 & uccs_code <= 3230
   ) |>
-  arrange(count_as_filed) |>
+  arrange(count_as_disposed) |>
   filter(
-    (uccs_drug_plus & !proceeds & !maintaining & !conspiracy & !school_park_church) |
+    (uccs_drug_plus & !intent & !proceeds & !maintaining & !conspiracy & !school_park_church) |
       (poss & drug & !dist & !intent & !paraphernalia & !weapon & !trafficking &
          !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
          !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds)
@@ -165,15 +182,14 @@ d <- result_clean |>
 ```{r, parties-data}
 parties <- d |>
   left_join(
-    ojo_tbl("party") |>
+    ojo_tbl("party", .con = ojodb) |>
       filter(
         role == "Defendant",
         case_id %in% !!d$id
       ) |>
       distinct() |>
       ojo_collect(),
-    by = c("id" = "case_id"),
-    relationship = "many-to-many"
+    by = c("party" = "id")
   )
 ```
 
@@ -190,10 +206,34 @@ Our figures are likely to underestimate the total number of convictions by a rel
 
 ## Results
 
+```{r}
+parties |>
+  mutate(
+    marijuana = str_detect(
+      count_as_disposed,
+      regex("\\bMA.*NA\\b|\\bMJ\\b|\\bMARI\\b", ignore_case = T)
+    ),
+    other = str_detect(
+      count_as_disposed,
+      "(?i)OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|COCA|PSEUDO|\\bPRESCRIP|\\bNARC|\\bMETH|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bOTHER\\b"
+    )
+  ) |>
+  distinct(
+    count_as_disposed,
+    charge_desc,
+    marijuana,
+    other
+  ) |>
+  filter(
+    marijuana,
+    other
+  )
+```
+
 ```{r, conviction-count-plot}
 parties |>
   drop_na(disposition) |>
-  filter(!str_detect(disposition, "(?i)dismiss|defer")) |>
+  filter(str_detect(disposition, "(?i)dismiss|defer|convic")) |>
   group_by(oscn_id) |>
   count() |>
   mutate(
@@ -203,26 +243,24 @@ parties |>
       n
     )
   ) |>
+  ungroup() |>
   filter(n >= 2) |>
   ggplot(aes(x = n)) +
     scale_x_discrete() +
-    stat_count()
+    stat_count() +
+    geom_text(aes(label = after_stat(count)), stat = "count", vjust = -0.2)
 ```
 
 ```{r}
 poi <- parties |>
-  drop_na(disposition) |>
-  filter(
-    !str_detect(disposition, "(?i)dismiss|defer")
-  ) |>
-  arrange(oscn_id, date_filed) |>
+  arrange(oscn_id, disposition_date) |>
   group_by(oscn_id) |>
   nest() |>
   mutate(
     rolling_10_year_n = map_int(
       data,
       ~ {
-        .x$date_filed |>
+        .x$disposition_date |>
           as_tibble() |>
           mutate(
             lag_3_years = lag(value, 3)
@@ -241,3 +279,12 @@ poi <- parties |>
     rolling_10_year_n > 0
   )
 ```
+
+```{r}
+poi |>
+  unnest(cols = data) |>
+  ungroup() |>
+  distinct(count_as_disposed, charge_desc)
+```
+
+

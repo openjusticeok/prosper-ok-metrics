@@ -12,7 +12,7 @@ criminal_counts_disposed <- ojo_tbl("count") |>
   ojo_collect() |>
   pull()
 
-prepare <- function (x) {
+prepare <- function(x) {
   x |>
     str_to_upper() |>
     str_remove_all("^[A-Z0-9]{0,10},") |>
