@@ -1,31 +1,3 @@
----
-title: DRAFT - SB 108 Prospective Impact Analysis
-subtitle: Open Justice Oklahoma
-format:
-  ojo-report-template-html: default
-  pdf:
-    pdf-engine: xelatex
-author: Brancen Gregory
-date: last-modified
-logo: "www/ojo-logo-white.png"
-number-sections: true
-smooth-scroll: true
-title-block-banner: "black"
-title-block-banner-color: "white"
-knitr:
-  opts_chunk:
-    fig.align: center
-    echo: FALSE
-    message: FALSE
-    warning: FALSE
-description: |
-  An estimation of the number of individuals who would be impacted by SB 108 if enacted
-abstract-title: "Executive Summary"
-abstract: |
-  Insert abstract
----
-
-```{r, setup}
 library(ojodb)
 library(here)
 library(readr)
@@ -36,25 +8,12 @@ library(lubridate)
 library(tidyr)
 
 theme_set(ojo_theme())
-```
 
-
-## Introduction
-
-Oklahoma's 2023 legislative session saw the introduction of SB 108. This bill, rolling back provisions of State Question 780, would make each additional conviction of possession of a controlled substance (excluding marijuana) a felony crime. While the punishment for a misdemeanor possession conviction is up to \$1,000 dollars and/or up to one year confinement, a felony conviction for the same crime can result in a fine of up to \$5,000 dollars and/or up to 5 years imprisonment.
-
-This analysis uses historical data on convictions for possession of a controlled substance to better understand how prevalent the situation of having four or more convictions within 10 years is, and thereby, estimate the number of people who would be impacted by this legislation should it be enacted into law in a future legislative session.
-
-
-## Data
-
-```{r, load_data}
 data <- read_csv(here("data/cm_cf_2001_2022.csv"))
+lookup_table <- read_csv(here("data/toc-results/charge-lookup-table.csv"))
 lookup_table_clean <- read_csv(here("data/toc-results/charge-lookup-table-cleaned.csv"))
 uccs <- read_csv(here("data/toc-results/uccs-schema.csv"))
-```
 
-```{r, clean_data}
 result_clean <- data |>
   # Cleaning data to match w/ cleaned lookup table
   mutate(
@@ -62,31 +21,16 @@ result_clean <- data |>
     count_as_filed = gsub("^[A-Z0-9]*,", "", toupper(count_as_filed)),
     # Removing "in violation of..."
     count_as_filed = gsub("IN VIOLATION.*", "", count_as_filed),
-    # Removing (...) 
+    # Removing (...)
     count_as_filed = gsub(r"{\s*\([^\)]+\)}","", count_as_filed),
-    # Removing punctuation 
+    # Removing punctuation
     count_as_filed = gsub("[[:punct:][:blank:]]+", " ", count_as_filed),
     # all uppercase, removing ws
     count_as_filed = toupper(trimws(count_as_filed)),
   ) |>
   left_join(lookup_table_clean, by = "count_as_filed") |>
   left_join(uccs, by = "uccs_code")
-```
 
-```{r, probability-distribution}
-result_clean |>
-  distinct(
-    count_as_filed,
-    charge_desc,
-    uccs_code,
-    probability
-  ) |>
-  ggplot(aes(x = probability)) +
-    geom_histogram() +
-    geom_vline(xintercept = 0.8)
-```
-
-```{r, filtered-data}
 d <- result_clean |>
   select(
     id,
@@ -132,53 +76,29 @@ d <- result_clean |>
          !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
          !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds)
   )
-```
 
-```{r, parties-data}
-case_ids <- d$id
-
-parties <- d |>
-  left_join(
-    ojo_tbl("party") |>
-      filter(
-        role == "Defendant",
-        case_id %in% case_ids
-      ) |>
-      distinct() |>
-      ojo_collect(),
-    by = c("id" = "case_id"),
-    relationship = "many-to-many"
-  )
-```
-
-### Source
-
-Open Justice Oklahoma maintains a database of administrative court records which includes information on all criminal misdemeanors and felonies filed in Oklahoma beginning in 2001. Case information is systematically collected from publicly available data hosted on the [Oklahoma State Court Network (OSCN)](https://www.oscn.net/v4/) website.
-
-### Methodology
-
-This analysis looks statewide across all complete years of misdemeanors and felonies for charges of possession of a controlled substance. We then present the distribution of the number of convictions per person.
-
-Our figures are likely to underestimate the total number of convictions by a relatively small but significant amount due to the expungement of records over time. The magnitude of this bias will be greater for earlier years, but can be roughly quantified by exploiting the court case id schema mandated by the Oklahoma Supreme Court.
-
-
-## Results
-
-```{r, conviction-count-plot}
-parties |>
-  drop_na(disposition) |>
-  filter(!str_detect(disposition, "(?i)dismiss|defer")) |>
-  group_by(oscn_id) |>
-  count() |>
-  mutate(
-    n = if_else(
-      n >= 4,
-      4,
-      n
-    )
+yearly_filings <- d |>
+  count(
+    year = floor_date(date_filed, "year")
   ) |>
-  #filter(n >= 2) |>
-  ggplot(aes(x = n)) +
-    geom_histogram()
-```
+  filter(
+    year >= "2012-01-01",
+    year < "2023-01-01"
+  )
+
+# write_csv(yearly_filings, here("data/simple_possession_filings_2012_2022.csv"))
+
+yearly_filings |>
+  ggplot(aes(x = year, y = n)) +
+    geom_line() +
+    expand_limits(
+      y = 0
+    ) +
+    labs(
+      title = "Simple Possession Filings by Year",
+      subtitle = "Statewide, 2012 - 2022",
+      x = NULL,
+      y = NULL
+    )
+
 
