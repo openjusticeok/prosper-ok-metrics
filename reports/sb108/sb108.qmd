@@ -34,6 +34,7 @@ library(ggplot2)
 library(gt)
 library(lubridate)
 library(tidyr)
+library(purrr)
 
 theme_set(ojo_theme())
 ```
@@ -49,41 +50,68 @@ This analysis uses historical data on convictions for possession of a controlled
 ## Data
 
 ```{r, load_data}
-data <- read_csv(here("data/cm_cf_2001_2022.csv"))
-lookup_table_clean <- read_csv(here("data/toc-results/charge-lookup-table-cleaned.csv"))
+#| cache: true
+
+data <- ojo_tbl("case") |>
+  select(
+    id,
+    district,
+    case_type,
+    date_filed,
+    date_closed,
+    created_at,
+    updated_at
+  ) |>
+  filter(
+    case_type %in% c("CM", "CF"),
+    date_filed >= "2001-01-01",
+    date_filed < "2023-01-01"
+  ) |>
+  left_join(
+    ojo_tbl("count"),
+    by = c("id" = "case_id")
+  ) |>
+  ojo_collect()
+
+disposition_predictions <- read_csv(here("data/toc-results/disposition_predictions.csv"))
 uccs <- read_csv(here("data/toc-results/uccs-schema.csv"))
 ```
 
+
 ```{r, clean_data}
+prepare <- function (x) {
+  x |>
+    str_to_upper() |>
+    str_remove_all("^[A-Z0-9]{0,10},") |>
+    str_remove_all("(?i)IN VIOLATION.*") |>
+    str_remove_all(r"{\s*\([^\)]+\)}") |>
+    str_replace_all("[[:punct:][:blank:]]+", " ") |>
+    str_squish()
+}
+
 result_clean <- data |>
   # Cleaning data to match w/ cleaned lookup table
   mutate(
-    # Removing code at the beginning, e.g. "[ABDOM,] Domestic Assault and Battery"
-    count_as_filed = gsub("^[A-Z0-9]*,", "", toupper(count_as_filed)),
-    # Removing "in violation of..."
-    count_as_filed = gsub("IN VIOLATION.*", "", count_as_filed),
-    # Removing (...) 
-    count_as_filed = gsub(r"{\s*\([^\)]+\)}","", count_as_filed),
-    # Removing punctuation 
-    count_as_filed = gsub("[[:punct:][:blank:]]+", " ", count_as_filed),
-    # all uppercase, removing ws
-    count_as_filed = toupper(trimws(count_as_filed)),
+    count_as_disposed = prepare(count_as_disposed)
   ) |>
-  left_join(lookup_table_clean, by = "count_as_filed") |>
+  left_join(
+    disposition_predictions,
+    by = c("count_as_disposed" = "disposition")
+  ) |>
   left_join(uccs, by = "uccs_code")
 ```
 
 ```{r, probability-distribution}
 result_clean |>
   distinct(
-    count_as_filed,
+    count_as_disposed,
     charge_desc,
     uccs_code,
     probability
   ) |>
   ggplot(aes(x = probability)) +
     geom_histogram() +
-    geom_vline(xintercept = 0.8)
+    geom_vline(aes(xintercept = 0.8), color = ojo_pal[5], linetype = "da")
 ```
 
 ```{r, filtered-data}
@@ -135,14 +163,12 @@ d <- result_clean |>
 ```
 
 ```{r, parties-data}
-case_ids <- d$id
-
 parties <- d |>
   left_join(
     ojo_tbl("party") |>
       filter(
         role == "Defendant",
-        case_id %in% case_ids
+        case_id %in% !!d$id
       ) |>
       distinct() |>
       ojo_collect(),
@@ -177,8 +203,41 @@ parties |>
       n
     )
   ) |>
-  #filter(n >= 2) |>
+  filter(n >= 2) |>
   ggplot(aes(x = n)) +
-    geom_histogram()
+    scale_x_discrete() +
+    stat_count()
 ```
 
+```{r}
+poi <- parties |>
+  drop_na(disposition) |>
+  filter(
+    !str_detect(disposition, "(?i)dismiss|defer")
+  ) |>
+  arrange(oscn_id, date_filed) |>
+  group_by(oscn_id) |>
+  nest() |>
+  mutate(
+    rolling_10_year_n = map_int(
+      data,
+      ~ {
+        .x$date_filed |>
+          as_tibble() |>
+          mutate(
+            lag_3_years = lag(value, 3)
+          ) |>
+          filter(
+            interval(
+              lag_3_years,
+              value
+            ) / years(1) <= 10
+          ) |>
+          nrow()
+      }
+    )
+  ) |>
+  filter(
+    rolling_10_year_n > 0
+  )
+```
