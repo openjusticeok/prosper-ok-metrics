@@ -22,34 +22,52 @@ exclude <- "(WITHDRAW|ERROR|RETURN|UNABLE|REVOKE|LIFT|RECALL|NOT PROCESSED|PENDI
 reporting_start_date <- ymd("2022-01-01")
 reporting_end_date <- ymd("2023-04-01")
 
-# Pulling every case with at least one misdemeanor drug charge
-# 17269
-case_m <- ojo_crim_cases(case_types = "CM",
+# Pulling every case with at least one misdemeanor drug charge 
+# (excluding distribution/intent to dispense/etc.)
+# ~17000
+case_misdemeanor_drug <- ojo_crim_cases(case_types = "CM",
                      file_years = 2022:2023) |> 
   filter(date_filed >= reporting_start_date, 
          date_filed < reporting_end_date, 
          str_detect(count_as_filed, drugs),
-         #str_detect(count_as_filed, vehicle_related),
          !str_detect(count_as_filed, drug_exclude)
          ) |> 
-  collect() #|> 
-  filter(str_detect(count_as_filed, dps_codes))
+  collect()
   
+# Pulling misdemeanor drug related cases by DPS violation code
+# ~11100
+# around 9000 of these are unique ids
+case_dps_violation <- ojo_crim_cases(case_types = "CM",
+                         file_years = 2022:2023)|> 
+  filter(date_filed >= reporting_start_date, 
+         date_filed < reporting_end_date,
+         str_detect(count_as_filed, dps_codes)) |> 
+  collect()
 
 # look for cases that have vehicle mentioned in count_as_filed ?
-list_counts <- case_m |> 
+list_counts <- case_misdemeanor_drug |> 
   group_by(count_as_filed) |> 
   count()
 
-#12119
+list_dps <- case_dps_violation |> 
+  group_by(count_as_filed) |> 
+  count()
+
+
 # Style question: is it better to use pull() in place of $?
 #cm_ids <- unique(case_m$id) 
-cm_ids <- case_m |> 
+# 11693
+cm_ids <- case_misdemeanor_drug |> 
+  pull(id) |> 
+  unique() 
+
+# 8967
+dps_ids <- case_dps_violation |> 
   pull(id) |> 
   unique()
 
 #116067
-min <- ojo_tbl("minute") |> 
+minute_drug_misd <- ojo_tbl("minute") |> 
   filter(case_id %in% cm_ids,     
          date >= reporting_start_date,
          date < reporting_end_date) |> 
@@ -67,14 +85,27 @@ min <- ojo_tbl("minute") |>
          ) |> 
   collect()
 
+minute_dps_violation <- ojo_tbl("minute") |> 
+  filter(case_id %in% dps_ids,     
+         date >= reporting_start_date,
+         date < reporting_end_date) |> 
+  select(id,
+         case_id, 
+         date,
+         code,
+         description,
+         count,
+         amount) |> 
+  collect()
+
 #min_ids <- unique(min$case_id)
-min_ids <- min |> 
+min_misd_ids <- min |> 
   pull(case_id) |> 
   unique()
 
 join_misd_min <- min |> 
   left_join(
-    case_m, 
+    case_misdemeanor_drug, 
     by = c("case_id" = "id")
     # , 
     # relationship = "many-to-many"
@@ -87,9 +118,9 @@ min |>
 
 # Shortcut?
 # Question: why do rows repeat?
-cm <- ojo_crim_cases(case_types = "CM", 
+case_minute_dps_short <- ojo_crim_cases(case_types = "CM", 
                      file_years = 2022:2023) |> 
-  ojo_add_minutes(case_id %in% cm_ids) |> 
+  ojo_add_minutes(case_id %in% dps_ids) |> 
   collect() #|> 
   #distinct(case_id)
 
