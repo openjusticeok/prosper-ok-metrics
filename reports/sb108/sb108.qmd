@@ -52,7 +52,6 @@ This analysis uses historical data on convictions for possession of a controlled
 ```{r, load_data}
 #| cache: true
 
-# ojodb <- ojo_connect()
 #
 # data <- ojo_tbl("case", .con = ojodb) |>
 #   select(
@@ -180,6 +179,8 @@ d <- result_clean |>
 ```
 
 ```{r, parties-data}
+ojodb <- ojo_connect()
+
 parties <- d |>
   left_join(
     ojo_tbl("party", .con = ojodb) |>
@@ -287,4 +288,7 @@ poi |>
   distinct(count_as_disposed, charge_desc)
 ```
 
-
+```{r}
+poi |>
+  nrow()
+```
