@@ -6,26 +6,26 @@ library(glue)
 library(ojoverse)
 library(lubridate)
 
-# notes from call
-# cases_of_interest <- ojo_tbl("case") |> filters to limit to misd drug charges
-# ojo_tbl("minute") |>
-# all our filters for dl susp |> filter(case_id %in% !!cases_of_interest$id)
-
-# DPS violation codes: https://oklahoma.gov/content/dam/ok/en/dps/VCB%20February%202022%20w%20corrections.pdf
 drugs <- "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |PRESCRIP|NARC|METH|C\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|PARAPHERNALIA|MARIJUANA|MARIHUANA|MJ"
-dps_codes <- "(?i) DRIVING|DI0|DI1|DI1M|DI2|DI2D|DI2DM|DI3|DI5|DI6|DI7|DI8|DL8|DR6|DR3|DR3MV|DU4"
-drug_exclude <- "DISTRIBUTE|INTENT|MANUFACTURE|DISPENSE"
+drug_exclude <- "FIREARM|DISTRIBUTE|INTENT|MANUFACTURE|DISPENSE|REVOCATION|SUSPENSION|TUO"
 vehicle_related <- "VEHICLE"
-# 47 O.S. 2011|
+
+# DPS violation codes saved in docs along with bill 
+dps_codes <- "(?i) DI1|DI1M|DI2D|DI2M|DI2DM|DRI|DR3|DU2II|DU2IV|DU4|DU4II|DU8I|DU8II|DU9|DU9I|DU9II|DU9IV"
+dps_exclude <- "(?i)alcohol"
+
 dps_related <- "(DPS|DEPARTMENT OF PUBLIC SAFETY|D\\.P\\.S)"
-exclude <- "(WITHDRAW|ERROR|RETURN|UNABLE|REVOKE|LIFT|RECALL|NOT PROCESSED|PENDING|SUSPENSION RELEASE|DEFENDANT APPEARS)"
+
+
+min_desc_dl <- "(SUSPENSION|SUSPEND)"
+min_desc_exclude <- "(WITHDRAW|ERROR|RETURN|UNABLE|REVOKE|LIFT|RECALL|NOT PROCESSED|PENDING|SUSPENSION RELEASE|DEFENDANT APPEARS)"
+
+# Set to reporting period 
+# Replace with fiscal quarter using ojo_fiscal_year
 reporting_start_date <- ymd("2022-01-01")
 reporting_end_date <- ymd("2023-04-01")
 
-# Pulling every case with at least one misdemeanor drug charge
-# (excluding distribution/intent to dispense/etc.)
-# ~17000
-
+# All misdemeanors 
 all_cases <- ojo_crim_cases(case_types = "CM",
                             file_years = 2022:2023) |>
   filter(
@@ -34,6 +34,9 @@ all_cases <- ojo_crim_cases(case_types = "CM",
   ) |>
   ojo_collect()
 
+# Pulling every case with at least one misdemeanor drug charge
+# (excluding distribution/intent to dispense/etc.)
+# ~17000
 case_misdemeanor_drug <- ojo_crim_cases(case_types = "CM",
                      file_years = 2022:2023) |>
   filter(date_filed >= reporting_start_date,
@@ -43,7 +46,8 @@ case_misdemeanor_drug <- ojo_crim_cases(case_types = "CM",
          ) |>
   ojo_collect()
 
-# Check what unique filing charges are being excluded by your filter
+# Check what unique filing charges are being excluded when 
+# filtering misdemeanor for drug charges
 all_cases |>
   anti_join(
     case_misdemeanor_drug,
@@ -52,16 +56,19 @@ all_cases |>
   count(
     count_as_filed,
     sort = T
-  )
+  ) |> 
+  view()
 
-# Pulling misdemeanor drug related cases by DPS violation code
-# ~11100
-# around 9000 of these are unique ids
+# A conservative estimate of the number of impacted individuals can be made by 
+# filtering misdemeanors by DPS violation code and related codes. 
+# For the most part, this excludes drug offenses occurring outside of motor vehicle
+# ~14600
 case_dps_violation <- ojo_crim_cases(case_types = "CM",
                          file_years = 2022:2023) |>
   filter(date_filed >= reporting_start_date,
          date_filed < reporting_end_date,
-         str_detect(count_as_filed, dps_codes)) |>
+         str_detect(count_as_filed, dps_codes), 
+         !str_detect(count_as_filed, dps_exclude)) |>
   ojo_collect()
 
 all_cases |>
@@ -72,10 +79,15 @@ all_cases |>
   count(
     count_as_filed,
     sort = T
-  )
+  ) |> 
+  view()
 
-# look for cases that have vehicle mentioned in count_as_filed ?
-list_counts <- case_misdemeanor_drug |>
+# Look for cases that have vehicle mentioned in count_as_filed:
+list_all_counts <- all_cases |>
+  group_by(count_as_filed) |>
+  count()
+
+list_drug_counts <- case_misdemeanor_drug |>
   group_by(count_as_filed) |>
   count()
 
@@ -83,25 +95,18 @@ list_dps <- case_dps_violation |>
   group_by(count_as_filed) |>
   count()
 
-# Style question: is it better to use pull() in place of $?
-# In this case you are using the values later with `%in%`
-# case_misdemeanor_drug$id |> unique()
-
-#cm_ids <- unique(case_m$id)
-# 11693
+# unique ids
 cm_ids <- case_misdemeanor_drug |>
   pull(id) |>
   unique()
 
-# 8967
 dps_ids <- case_dps_violation |>
   pull(id) |>
   unique()
 
 # 116067
-minute_drug_misd <- ojo_tbl("minute") |>
-  filter(case_id %in% cm_ids,
-         date >= reporting_start_date,
+minute_old_method <- ojo_tbl("minute") |>
+  filter(date >= reporting_start_date,
          date < reporting_end_date) |>
   select(id,
          case_id,
@@ -111,11 +116,15 @@ minute_drug_misd <- ojo_tbl("minute") |>
          count,
          amount) |>
   filter(code %in% c("ABST", "NOSPSe", "NOWS", "NOSRT", "TEXT", "CNOTE",
-                     "NOSUS", "NO", "RULE8", "STAY", "WRCI"),
-         #str_detect(description, "SUSPENSION"),
-         !str_detect(description, "(WITHDRAW|ERROR|RETURN|UNABLE|LIFT|NOT PROCESSED)")
-         ) |>
-  collect()
+                     "NOSUS", "NO", "RULE8", "STAY", "WRCI"), 
+         str_detect(description, min_desc_dl),
+         !str_detect(description, min_desc_exclude))
+
+minute_ids <- minute_old_method |> 
+  distinct(case_id) |> 
+  ojo_collect()
+
+  
 
 minute_dps_violation <- ojo_tbl("minute") |>
   filter(case_id %in% dps_ids,
@@ -136,30 +145,23 @@ min_misd_ids <- min |>
   unique()
 
 join_misd_min <- min |>
-  left_join(
+  anti_join(
     case_misdemeanor_drug,
-    by = c("case_id" = "id")
-    # ,
-    # relationship = "many-to-many"
-  )
+    by = c("case_id" = "id"))
 
 min |>
   filter(str_detect(description, drugs),
          !str_detect(description, count_exclude)
   )
 
-# Shortcut?
+# Shortcut to use ojo_add_minutes ?
 # Question: why do rows repeat?
 case_minute_dps_short <- ojo_crim_cases(case_types = "CM",
                      file_years = 2022:2023) |>
   ojo_add_minutes(case_id %in% dps_ids) |>
-  collect() #|>
+  ojo_collect() #|>
   #distinct(case_id)
 
-
-# readr::write_csv(cm, here("data/misdemeanor_local.csv"))
-# local_cm_data <- read_csv(here("data", "misdemeanor_local.csv")) |>
-#   janitor::clean_names()
 
 # Then filter the "universe of minutes" to include only case_ids that are
 # in the relevant cases of interest.
@@ -178,15 +180,9 @@ drug_dl_cm <- local_cm_data |>
 # of these cases how many resulted in a conviction, dismissal, or are ongoing?
 drug_dl_cm |>
   group_by(disposition) |>
-  count() |>
-  print(n = 60)
+  count()
 
 
-test <- drug_cm |> filter(
-  str_detect(description, "SUSPEND"))
-
-# code from existing repos below
-################
 
 # regex from Brancen's "Tulsa County Driver's License Suspensions" report
 drug_charge = if_else(grepl(drugs, count_as_filed), TRUE, FALSE)
@@ -196,38 +192,3 @@ filter(min_code %in% c("ABST", "NOSPSe", "NOWS", "NOSRT", "TEXT",
        str_detect(min_desc, "SUSPENSION"),
        !str_detect(min_desc, "(WITHDRAW|ERROR|RETURN|REVOKE|UNABLE|LIFT|NOT PROCESSED|PENDING|SUSPENSION RELEASE|DEFENDANT APPEARS)"))
 
-# from Andrew's dl-revocation code
-# Grouping / summarizing the charges by case
-cm_cases <- cm_charges |>
-  group_by(case_number, district) |>
-  summarize(
-    file_date = unique(date_filed),
-    file_year = unique(file_year),
-    quarter_fy = unique(quarter_fy),
-    quarter_fy_start_date = unique(quarter_fy_start_date),
-    pre_november = if_else(sum(pre_november, na.rm = T) > 0, TRUE, FALSE),
-    n_charges = n(),
-    drug_charge_present = if_else(sum(drug_charge, na.rm = T) > 0, TRUE, FALSE),
-    all_drugs = if_else(sum(drug_charge, na.rm = T) == n_charges, TRUE, FALSE),
-    charges_list = paste(count_as_filed, collapse = "; ")
-  ) |>
-  ungroup() |>
-  mutate(
-    file_month = floor_date(file_date, "months")
-  )
-
-
-# method1_ids <- ojo_tbl("minute") |>
-#   filter(...) |>
-#   distinct(case_id)
-#
-# case_misdemeanor_drug |>
-#   filter(!id %in% method1_ids$case_id)
-#
-# method1_ids |>
-#   anti_join(
-#     case_misdemeanor_drug,
-#     by = c("case_id" = "id")
-#   )
-#
-# c(method1_ids$case_id, )
