@@ -1,5 +1,6 @@
 library(ojoverse)
 library(readxl)
+library(tidyverse)
 
 
 criminal_counts_filed <- ojo_tbl("count") |>
