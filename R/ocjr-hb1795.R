@@ -82,6 +82,19 @@ all_cases |>
   ) |> 
   view()
 
+# manual check
+list_all_counts <- all_cases |>
+  group_by(count_as_filed) |>
+  count()
+
+list_drug_counts <- case_misdemeanor_drug |>
+  group_by(count_as_filed) |>
+  count()
+
+list_dps <- case_dps_violation |>
+  group_by(count_as_filed) |>
+  count()
+
 # unique ids
 cm_ids <- case_misdemeanor_drug |>
   pull(id) |>
@@ -226,19 +239,6 @@ case_misdemeanor_drug |>
 #          #!str_detect(description, exclude)
 #          )
 
-
-# Look for cases that have vehicle mentioned in count_as_filed:
-# list_all_counts <- all_cases |>
-#   group_by(count_as_filed) |>
-#   count()
-# 
-# list_drug_counts <- case_misdemeanor_drug |>
-#   group_by(count_as_filed) |>
-#   count()
-# 
-list_dps <- case_dps_violation |>
-  group_by(count_as_filed) |>
-  count()
 
 # regex from Brancen's "Tulsa County Driver's License Suspensions" report
 # drug_charge = if_else(grepl(drugs, count_as_filed), TRUE, FALSE)
