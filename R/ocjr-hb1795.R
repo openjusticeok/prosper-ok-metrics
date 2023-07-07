@@ -7,14 +7,14 @@ library(ojoverse)
 library(lubridate)
 
 drugs <- "(?i)CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |PRESCRIP|NARC|METH|C\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|PARAPHERNALIA|MARIJUANA|MARIHUANA|MJ"
-drug_exclude <- "DOMESTIC|ASSAULT|FIREARM|DISTRIBUTE|INTENT|MANUFACTURE|DISPENSE|TUO"
+drug_exclude <- "(?i)DOMESTIC|ASSAULT|FIREARM|DISTRIBUTE|INTENT|MANUFACTURE|DISPENSE|TUO|alcohol|acohol|alchol"
 # REVOCATION|SUSPENSION|
 vehicle_related <- "VEHICLE"
 
 # DPS violation codes saved in "docs" along with bill 
 # QUESTION: embarassing but how to include hyphens and parentheses in any order?
 dps_codes <- "(?i) DI1|DI1M|DI2D|DI2M|DI2DM|DRI|DR3|DU2II|DU2IV|DU4|DU4II|DU8I|DU8II|DU9|DU9I|DU9II|DU9IV|dui drugs misdemeanor"
-dps_exclude <- "(?i)alcohol"
+dps_exclude <- "(?i)alcohol|acohol|alchol|under 21|suspended|revoked|valid|twenty-one"
 dps_related <- "(DPS|DEPARTMENT OF PUBLIC SAFETY|D\\.P\\.S)"
 
 min_desc_dl <- "(SUSPENSION|SUSPEND)"
@@ -36,7 +36,7 @@ all_cases <- ojo_crim_cases(case_types = "CM",
 
 # Pulling every case with at least one misdemeanor drug charge
 # (excluding distribution/intent to dispense/etc.)
-# ~17600
+# ~17000
 case_misdemeanor_drug <- ojo_crim_cases(case_types = "CM",
                      file_years = 2022:2023) |>
   filter(date_filed >= reporting_start_date,
@@ -62,7 +62,7 @@ all_cases |>
 # A conservative estimate of the number of impacted individuals can be made by 
 # filtering misdemeanors by DPS violation code and related codes. 
 # For the most part, this excludes drug offenses occurring outside of motor vehicle
-# ~14600
+# ~11,000
 case_dps_violation <- ojo_crim_cases(case_types = "CM",
                          file_years = 2022:2023) |>
   filter(date_filed >= reporting_start_date,
@@ -143,26 +143,40 @@ case_dps_violation |>
 join_dps_min <- minute_ids |>
   anti_join(
     case_dps_violation,
-    by = c("case_id" = "id"))  
+    by = c("case_id" = "id")) |> 
+#  view()
 
 minute_old_method |>
   inner_join(
     case_dps_violation,
     by = c("case_id" = "id")) |> 
-  view()
+#  view()
 
 #min_ids <- unique(min$case_id)
 min_misd_ids <- min |>
   pull(case_id) |>
   unique()
 
+# Other relevant minutes?
+minute_method_two <- ojo_tbl("minute") |>
+  filter(date >= reporting_start_date,
+         date < reporting_end_date) |>
+  select(id,
+         case_id,
+         date,
+         code,
+         description,
+         count,
+         amount) |>
+  filter(code %in% c("ABST", "NOSPSe", "NOWS", "NOSRT", "TEXT", "CNOTE",
+                     "NOSUS", "NO", "RULE8", "STAY", "WRCI"), 
+         str_detect(description, dps_codes),
+         !str_detect(description, dps_exclude)) |>
+  ojo_collect()
 
 
-min |>
-  filter(str_detect(description, drugs),
-         !str_detect(description, count_exclude)
-  )
 
+# QUESTION
 # Should we be counting cases that were dismissed?
 # How many resulted in a conviction, dismissal, or are ongoing?
 case_misdemeanor_drug |>
@@ -182,7 +196,7 @@ case_misdemeanor_drug |>
 #|>
   #distinct(case_id)
 
-
+############################################
 # OLD CODE -- delete later
 
 # minute_dps_violation <- ojo_tbl("minute") |>
@@ -222,9 +236,9 @@ case_misdemeanor_drug |>
 #   group_by(count_as_filed) |>
 #   count()
 # 
-# list_dps <- case_dps_violation |>
-#   group_by(count_as_filed) |>
-#   count()
+list_dps <- case_dps_violation |>
+  group_by(count_as_filed) |>
+  count()
 
 # regex from Brancen's "Tulsa County Driver's License Suspensions" report
 # drug_charge = if_else(grepl(drugs, count_as_filed), TRUE, FALSE)
