@@ -37,14 +37,12 @@ all_cases <- ojo_crim_cases(case_types = "CM",
 # Pulling every case with at least one misdemeanor drug charge
 # (excluding distribution/intent to dispense/etc.)
 # ~17000
-case_misdemeanor_drug <- ojo_crim_cases(case_types = "CM",
-                     file_years = 2022:2023) |>
-  filter(date_filed >= reporting_start_date,
-         date_filed < reporting_end_date,
-         str_detect(count_as_filed, drugs),
-         !str_detect(count_as_filed, drug_exclude)
-         ) |>
-  ojo_collect()
+case_misdemeanor_drug <- all_cases |>  
+  filter(
+    str_detect(count_as_filed, drugs)
+    ) |>
+  filter(
+    !str_detect(count_as_filed, drug_exclude))
 
 # Check what unique filing charges are being excluded when 
 # filtering misdemeanor for drug charges.
@@ -63,13 +61,9 @@ all_cases |>
 # filtering misdemeanors by DPS violation code and related codes. 
 # For the most part, this excludes drug offenses occurring outside of motor vehicle
 # ~11,000
-case_dps_violation <- ojo_crim_cases(case_types = "CM",
-                         file_years = 2022:2023) |>
-  filter(date_filed >= reporting_start_date,
-         date_filed < reporting_end_date,
-         str_detect(count_as_filed, dps_codes), 
-         !str_detect(count_as_filed, dps_exclude)) |>
-  ojo_collect()
+case_dps_violation <- all_cases |>
+  filter(str_detect(count_as_filed, dps_codes), 
+         !str_detect(count_as_filed, dps_exclude))
 
 all_cases |>
   anti_join(
@@ -84,16 +78,13 @@ all_cases |>
 
 # manual check
 list_all_counts <- all_cases |>
-  group_by(count_as_filed) |>
-  count()
+  count(count_as_filed) 
 
 list_drug_counts <- case_misdemeanor_drug |>
-  group_by(count_as_filed) |>
-  count()
+  count(count_as_filed)
 
 list_dps <- case_dps_violation |>
-  group_by(count_as_filed) |>
-  count()
+  count(count_as_filed)
 
 # unique ids
 cm_ids <- case_misdemeanor_drug |>
@@ -156,7 +147,8 @@ case_dps_violation |>
 join_dps_min <- minute_ids |>
   anti_join(
     case_dps_violation,
-    by = c("case_id" = "id")) |> 
+    by = c("case_id" = "id")) 
+#|> 
 #  view()
 
 minute_old_method |>
@@ -165,10 +157,6 @@ minute_old_method |>
     by = c("case_id" = "id")) |> 
 #  view()
 
-#min_ids <- unique(min$case_id)
-min_misd_ids <- min |>
-  pull(case_id) |>
-  unique()
 
 # Other relevant minutes?
 minute_method_two <- ojo_tbl("minute") |>
@@ -188,23 +176,20 @@ minute_method_two <- ojo_tbl("minute") |>
   ojo_collect()
 
 
-
 # QUESTION
 # Should we be counting cases that were dismissed?
 # How many resulted in a conviction, dismissal, or are ongoing?
 case_misdemeanor_drug |>
-  group_by(disposition) |>
-  count()
-
+  count(disposition)
 
 ## COME BACK TO THIS
 # Shortcut to use ojo_add_minutes ?
 # Question: why do rows repeat?
 
-# case_minute_dps_short <- ojo_crim_cases(case_types = "CM",
-#                      file_years = 2022:2023) |>
-#   ojo_add_minutes(case_id %in% dps_ids) |>
-#   ojo_collect() 
+case_minute_dps_short <- ojo_crim_cases(case_types = "CM",
+                      file_years = 2022:2023) |>
+   ojo_add_minutes(case_id %in% dps_ids) |>
+   ojo_collect() 
 
 #|>
   #distinct(case_id)
