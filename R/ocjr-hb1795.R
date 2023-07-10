@@ -44,6 +44,7 @@ ojo_tbl("party") |>
     copy = TRUE
   ) |>
   filter(role == "Defendant") |>
+  distinct(oscn_id) |>
   count()
 
 # Pulling every case with at least one misdemeanor drug charge
@@ -65,6 +66,7 @@ ojo_tbl("party") |>
     copy = TRUE
   ) |>
   filter(role == "Defendant") |>
+  distinct(oscn_id) |>
   count()
 
 # Check what unique filing charges are being excluded when
@@ -77,8 +79,7 @@ all_cases |>
   count(
     count_as_filed,
     sort = T
-  ) |>
-  view()
+  )
 
 # A conservative estimate of the number of impacted individuals can be made by
 # filtering misdemeanors by DPS violation code and related codes.
@@ -87,7 +88,7 @@ case_dps_violation <- all_cases |>
   filter(str_detect(count_as_filed, dps_codes),
          !str_detect(count_as_filed, dps_exclude))
 
-## Above you are counting number of charges. 
+## Above you are counting number of charges.
 # This calculates number of defendants:
 ojo_tbl("party") |>
   right_join(
@@ -97,6 +98,7 @@ ojo_tbl("party") |>
     copy = TRUE
   ) |>
   filter(role == "Defendant") |>
+  distinct(oscn_id) |>
   count()
 
 
@@ -108,8 +110,7 @@ all_cases |>
   count(
     count_as_filed,
     sort = T
-  ) |>
-  view()
+  )
 
 # manual check
 list_all_counts <- all_cases |>
@@ -130,75 +131,92 @@ dps_ids <- case_dps_violation |>
   pull(id) |>
   unique()
 
-# Pulling relevant minute tables
-minute_old_method <- ojo_tbl("minute") |>
-  filter(date >= cumulative_period_start,
-         date < reporting_period_end) |>
-  select(id,
-         case_id,
-         date,
-         code,
-         description,
-         count,
-         amount) |>
-  filter(code %in% c("ABST", "NOSPSe", "NOWS", "NOSRT", "TEXT", "CNOTE",
-                     "NOSUS", "NO", "RULE8", "STAY", "WRCI"),
-         str_detect(description, min_desc_dl),
-         !str_detect(description, min_desc_exclude)) |>
-  ojo_collect()
+# Upper Bound including people from DPS OR misdemeanor method:
+ojo_tbl("party") |>
+  right_join(
+    rbind(
+      case_dps_violation |>
+        select(id),
+      case_misdemeanor_drug |>
+        select(id)
+    ) |>
+      distinct(),
+    by = c("case_id" = "id"),
+    copy = TRUE
+  ) |>
+  filter(role == "Defendant") |>
+  distinct(oscn_id) |>
+  count()
 
-minute_ids <- minute_old_method |>
-  distinct(case_id)
-
-# None of the case id's for minutes related to drivers license suspension among
-# appear among misdemeanors filtered for drugs charges.
-# 'case_misdemeanor_drug' filters for strings in "drugs" and excludes strings in "drug exclude"
-# drugs <- "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |PRESCRIP|NARC|METH|C\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|PARAPHERNALIA|MARIJUANA|MARIHUANA|MJ"
-# drug_exclude <- "FIREARM|DISTRIBUTE|INTENT|MANUFACTURE|DISPENSE|TUO"
-case_misdemeanor_drug |>
-   filter(!id %in% minute_ids)
-
-# A little over 200 case_ids in "case_misdemeanor_drug" are in minutes pulled
-# using the "old" dl suspension method. 
-# ~9000 of the case_ids in "case_misdemeanor_drug" are not in minutes pulled using the "old" method
-join_misd_min <- minute_ids |>
-  anti_join(
-    case_misdemeanor_drug,
-    by = c("case_id" = "id"))
-
-minute_old_method |>
-  inner_join(
-    case_misdemeanor_drug,
-    by = c("case_id" = "id"))
-
-# Following the same process for cases filtered using dps_violation codes
-# None of the cases in minute_ids using "old" method
-case_dps_violation |>
-  filter(!id %in% minute_ids)
-
-join_dps_min <- minute_ids |>
-  anti_join(
-    case_dps_violation,
-    by = c("case_id" = "id"))
-
-minute_old_method |>
-  inner_join(
-    case_dps_violation,
-    by = c("case_id" = "id"))
-
-# Other relevant minutes?
-minute_method_two <- ojo_tbl("minute") |>
-  filter(date >= cumulative_period_start,
-         date < reporting_period_end) |>
-  select(id,
-         case_id,
-         date,
-         code,
-         description,
-         count,
-         amount) |>
-  filter(code %in% c("ABST", "NOSPSe", "NOWS", "NOSRT", "TEXT", "CNOTE",
-                     "NOSUS", "NO", "RULE8", "STAY", "WRCI"),
-         str_detect(description, dps_codes),
-         !str_detect(description, dps_exclude)) |>
-  ojo_collect()
+# # Pulling relevant minute tables
+# minute_old_method <- ojo_tbl("minute") |>
+#   filter(date >= cumulative_period_start,
+#          date < reporting_period_end) |>
+#   select(id,
+#          case_id,
+#          date,
+#          code,
+#          description,
+#          count,
+#          amount) |>
+#   filter(code %in% c("ABST", "NOSPSe", "NOWS", "NOSRT", "TEXT", "CNOTE",
+#                      "NOSUS", "NO", "RULE8", "STAY", "WRCI"),
+#          str_detect(description, min_desc_dl),
+#          !str_detect(description, min_desc_exclude)) |>
+#   ojo_collect()
+#
+# minute_ids <- minute_old_method |>
+#   distinct(case_id)
+#
+# # None of the case id's for minutes related to drivers license suspension among
+# # appear among misdemeanors filtered for drugs charges.
+# # 'case_misdemeanor_drug' filters for strings in "drugs" and excludes strings in "drug exclude"
+# # drugs <- "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |PRESCRIP|NARC|METH|C\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|PARAPHERNALIA|MARIJUANA|MARIHUANA|MJ"
+# # drug_exclude <- "FIREARM|DISTRIBUTE|INTENT|MANUFACTURE|DISPENSE|TUO"
+# case_misdemeanor_drug |>
+#    filter(!id %in% minute_ids)
+#
+# # A little over 200 case_ids in "case_misdemeanor_drug" are in minutes pulled
+# # using the "old" dl suspension method.
+# # ~9000 of the case_ids in "case_misdemeanor_drug" are not in minutes pulled using the "old" method
+# join_misd_min <- minute_ids |>
+#   anti_join(
+#     case_misdemeanor_drug,
+#     by = c("case_id" = "id"))
+#
+# minute_old_method |>
+#   inner_join(
+#     case_misdemeanor_drug,
+#     by = c("case_id" = "id"))
+#
+# # Following the same process for cases filtered using dps_violation codes
+# # None of the cases in minute_ids using "old" method
+# case_dps_violation |>
+#   filter(!id %in% minute_ids)
+#
+# join_dps_min <- minute_ids |>
+#   anti_join(
+#     case_dps_violation,
+#     by = c("case_id" = "id"))
+#
+# minute_old_method |>
+#   inner_join(
+#     case_dps_violation,
+#     by = c("case_id" = "id"))
+#
+# # Other relevant minutes?
+# minute_method_two <- ojo_tbl("minute") |>
+#   filter(date >= cumulative_period_start,
+#          date < reporting_period_end) |>
+#   select(id,
+#          case_id,
+#          date,
+#          code,
+#          description,
+#          count,
+#          amount) |>
+#   filter(code %in% c("ABST", "NOSPSe", "NOWS", "NOSRT", "TEXT", "CNOTE",
+#                      "NOSUS", "NO", "RULE8", "STAY", "WRCI"),
+#          str_detect(description, dps_codes),
+#          !str_detect(description, dps_exclude)) |>
+#   ojo_collect()
