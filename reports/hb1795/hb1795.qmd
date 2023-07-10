@@ -13,37 +13,53 @@ title-block-banner-color: "white"
 knitr:
   opts_chunk:
     fig.align: center
-description: Estimating the number of Oklahomans impacted by the amended provision concerning driver license revocations for individuals with misdemeanor drug charges. 
-Analysis conducted at the request of Oklahomans for Criminal Justice Reform (OCJR) and ProsperOK.
+    echo: FALSE
+    message: FALSE
+    warning: FALSE
+description: Estimating the number of Oklahomans impacted by the amended provision concerning driver license revocations for individuals with misdemeanor drug charges. Analysis conducted at the request of Oklahomans for Criminal Justice Reform (OCJR) and ProsperOK.
 abstract-title: "Abstract"
-abstract: Between 8107 and 13485 Oklahomans with misdemeanor drug charges were impacted by provisions in HB 1795 between January 1, 2022 and June 30, 2023. 
+abstract: Between 8107 and 13485 Oklahomans with misdemeanor drug charges were impacted by provisions in HB 1795 between January 1, 2022 and June 30, 2023.
 
 ---
+```{r}
+library(readr)
+library(stringr)
+library(readxl)
+library(tidycensus)
+library(tidyverse)
+library(here)
+library(janitor)
+library(glue)
+library(ojoverse)
+library(lubridate)
+library(gt)
+library(downloadthis)
+```
 
 ## Background
 
-Oklahoma’s HB 1795 went into effect November 1, 2021 (Q2 FY 2022), reducing the number of offenses for which a license must be revoked (specific circumstances may still result in a revocation) while increasing the accessibility and affordability of provisional licenses. The bill imposes limitations on “failure to pay” license suspensions, with a key provision requiring the reduction to minimum payment plan for outstanding fines and fees (including but not limited to, provisional license fees, warrant fees, court costs or fees, and driver license reinstatements fees) from \$25 per month to \$5 per month. 
+Oklahoma’s House Bill 1795 went into effect November 1, 2021 (Q2 FY 2022). This new law reduces the number of offenses that can lead to a license revocation, although certain circumstances may still result in revocation. Additionally, HB 1795 aims to make provisional licenses more accessible and affordable. The bill introduces restrictions on license suspensions due to failure to pay, and it included an important provision that reduces the minimum payment plan for outstanding fines and fees. Previously set at \$25 per month, the HB 1795 lowers the monthly payment to \$5. The aforementioned fees encompass various charges such as provisional license fees, warrant fees, court costs or fees, and driver license reinstatement fees. 
 
 ## Data and Methodology
 
-This analysis uses Oklahoma court records sourced by OSCN and ODCR beginning January 1, 2022 (Q3 FY 2022) to estimate the impact of HB 1795 during a period of full implementation.
+This analysis uses Oklahoma court records sourced by OSCN and ODCR beginning January 1, 2022 (Q3 FY 2022) to estimate the impact of HB 1795 during a period of full implementation. We explore two provisions of the bill in order to estimate lower and upper bounds for the number of individuals with misdemeanor drug charges that were impacted by the bill’s passing. For the lower bound, we focus on the provision concerned with modifying the types of offenses requiring immediate revocation of driving privileges (Section 6-205). Specifically we account for individuals who are charged with possession of a controlled dangerous substance as defined by 
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pharetra turpis feugiat sem euismod interdum. Sed ultrices eget turpis ut malesuada. Donec vel nibh a arcu placerat sodales. Donec sagittis metus vitae placerat finibus. Curabitur a augue finibus nisl scelerisque molestie ac nec arcu. Vivamus lorem ligula, efficitur at scelerisque ac, bibendum a enim. Quisque non leo nibh. Sed non ante vel lacus ultricies fringilla. Maecenas ut massa tempor, ultrices lectus mollis, lobortis nisi. Donec dapibus magna nec suscipit vulputate. Sed placerat purus felis, eget egestas arcu ultricies eget. Curabitur leo ante, ultrices non elit vitae, sodales facilisis lacus. Nulla quis velit sollicitudin dolor laoreet porta. Mauris mauris orci, lacinia ac commodo non, vehicula nec metus. Integer imperdiet laoreet diam eu blandit.
+A conservative estimate of the number of impacted individuals is made by filtering drug-related misdemeanors by DPS violation code and similar codes.
 
+For an estimate of the upper bound, we account for individuals who may be subject to fines and fees as a result 
 
-```{r}
-
-plot(rnorm(n = 1000, mean = 0, sd = 3))
-
-```
 
 ## Results
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pharetra turpis feugiat sem euismod interdum. Sed ultrices eget turpis ut malesuada. Donec vel nibh a arcu placerat sodales. Donec sagittis metus vitae placerat finibus. Curabitur a augue finibus nisl scelerisque molestie ac nec arcu. Vivamus lorem ligula, efficitur at scelerisque ac, bibendum a enim. Quisque non leo nibh. Sed non ante vel lacus ultricies fringilla.
-
 ```{r}
-for(i in 1:10){
-  print(i)
-}
-
+# ojo_tbl("party") |>
+#   right_join(
+#     rbind(case_dps_violation |> select(id), case_misdemeanor_drug |> select(id)) |> distinct(),
+#     by = c("case_id" = "id"),
+#     copy = TRUE
+#   ) |>
+#   filter(role == "Defendant") |>
+#   distinct(oscn_id) |>
+#   count() |> 
+#   gt()
 ```
