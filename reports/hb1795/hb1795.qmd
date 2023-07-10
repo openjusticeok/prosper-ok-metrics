@@ -1,0 +1,64 @@
+---
+title: HB 1795
+subtitle: A generic OJO template for HTML reports
+format:
+  ojo-report-template-html: default
+author: Polina Rozhkova
+date: last-modified
+logo: "www/ojo-logo-white.png"
+number-sections: true
+smooth-scroll: true
+title-block-banner: "black"
+title-block-banner-color: "white"
+knitr:
+  opts_chunk:
+    fig.align: center
+description: |
+  An analysis of HB 1795
+abstract-title: "Executive Summary"
+abstract: |
+  This is where we'd write an abstract / executive summary. You can change the title
+  for this section by changing the `abstract-title` parameter, and you can 
+  delete the parameter if you don't need it.
+---
+
+## Bananas
+
+## Introduction
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pharetra turpis feugiat sem euismod interdum. Sed ultrices eget turpis ut malesuada. Donec vel nibh a arcu placerat sodales. Donec sagittis metus vitae placerat finibus. Curabitur a augue finibus nisl scelerisque molestie ac nec arcu. Vivamus lorem ligula, efficitur at scelerisque ac, bibendum a enim. Quisque non leo nibh. Sed non ante vel lacus ultricies fringilla. Maecenas ut massa tempor, ultrices lectus mollis, lobortis nisi. Donec dapibus magna nec suscipit vulputate. Sed placerat purus felis, eget egestas arcu ultricies eget. Curabitur leo ante, ultrices non elit vitae, sodales facilisis lacus. Nulla quis velit sollicitudin dolor laoreet porta. Mauris mauris orci, lacinia ac commodo non, vehicula nec metus. Integer imperdiet laoreet diam eu blandit.
+
+## Data
+
+### Data source
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pharetra turpis feugiat sem euismod interdum. Sed ultrices eget turpis ut malesuada. Donec vel nibh a arcu placerat sodales. Donec sagittis metus vitae placerat finibus. Curabitur a augue finibus nisl scelerisque molestie ac nec arcu. Vivamus lorem ligula, efficitur at scelerisque ac, bibendum a enim. Quisque non leo nibh. Sed non ante vel lacus ultricies fringilla. Maecenas ut massa tempor, ultrices lectus mollis, lobortis nisi. Donec dapibus magna nec suscipit vulputate. Sed placerat purus felis, eget egestas arcu ultricies eget. Curabitur leo ante, ultrices non elit vitae, sodales facilisis lacus. Nulla quis velit sollicitudin dolor laoreet porta. Mauris mauris orci, lacinia ac commodo non, vehicula nec metus. Integer imperdiet laoreet diam eu blandit.
+
+### Data overview
+
+```{r}
+
+plot(rnorm(n = 1000, mean = 0, sd = 3))
+
+```
+
+## Methods
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pharetra turpis feugiat sem euismod interdum. Sed ultrices eget turpis ut malesuada. Donec vel nibh a arcu placerat sodales. Donec sagittis metus vitae placerat finibus. Curabitur a augue finibus nisl scelerisque molestie ac nec arcu. Vivamus lorem ligula, efficitur at scelerisque ac, bibendum a enim. Quisque non leo nibh. Sed non ante vel lacus ultricies fringilla. Maecenas ut massa tempor, ultrices lectus mollis, lobortis nisi. Donec dapibus magna nec suscipit vulputate. Sed placerat purus felis, eget egestas arcu ultricies eget. Curabitur leo ante, ultrices non elit vitae, sodales facilisis lacus. Nulla quis velit sollicitudin dolor laoreet porta. Mauris mauris orci, lacinia ac commodo non, vehicula nec metus. Integer imperdiet laoreet diam eu blandit.
+
+-   List item A
+-   List item B
+-   List item C
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pharetra turpis feugiat sem euismod interdum. Sed ultrices eget turpis ut malesuada. Donec vel nibh a arcu placerat sodales. Donec sagittis metus vitae placerat finibus.
+
+## Results
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pharetra turpis feugiat sem euismod interdum. Sed ultrices eget turpis ut malesuada. Donec vel nibh a arcu placerat sodales. Donec sagittis metus vitae placerat finibus. Curabitur a augue finibus nisl scelerisque molestie ac nec arcu. Vivamus lorem ligula, efficitur at scelerisque ac, bibendum a enim. Quisque non leo nibh. Sed non ante vel lacus ultricies fringilla.
+
+```{r}
+for(i in 1:10){
+  print(i)
+}
+
+```
