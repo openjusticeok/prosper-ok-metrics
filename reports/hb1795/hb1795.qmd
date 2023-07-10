@@ -26,31 +26,18 @@ abstract: |
 
 ## Introduction
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pharetra turpis feugiat sem euismod interdum. Sed ultrices eget turpis ut malesuada. Donec vel nibh a arcu placerat sodales. Donec sagittis metus vitae placerat finibus. Curabitur a augue finibus nisl scelerisque molestie ac nec arcu. Vivamus lorem ligula, efficitur at scelerisque ac, bibendum a enim. Quisque non leo nibh. Sed non ante vel lacus ultricies fringilla. Maecenas ut massa tempor, ultrices lectus mollis, lobortis nisi. Donec dapibus magna nec suscipit vulputate. Sed placerat purus felis, eget egestas arcu ultricies eget. Curabitur leo ante, ultrices non elit vitae, sodales facilisis lacus. Nulla quis velit sollicitudin dolor laoreet porta. Mauris mauris orci, lacinia ac commodo non, vehicula nec metus. Integer imperdiet laoreet diam eu blandit.
+Oklahoma’s HB 1795 went into effect November 1, 2021 (Q2 FY 2022), reducing the number of offenses for which a license must be revoked (specific circumstances may still result in a revocation) while increasing the accessibility and affordability of provisional licenses. Additionally, the bill lowers the minimum payment plan for outstanding fines and fees (including but not limited to, provisional license fees, warrant fees, court costs or fees, and driver license reinstatements fees) from $25 per month to $5 per month the bill imposes limitations on “failure to pay” license suspension.
 
-## Data
-
-### Data source
+## Data and Methodology
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pharetra turpis feugiat sem euismod interdum. Sed ultrices eget turpis ut malesuada. Donec vel nibh a arcu placerat sodales. Donec sagittis metus vitae placerat finibus. Curabitur a augue finibus nisl scelerisque molestie ac nec arcu. Vivamus lorem ligula, efficitur at scelerisque ac, bibendum a enim. Quisque non leo nibh. Sed non ante vel lacus ultricies fringilla. Maecenas ut massa tempor, ultrices lectus mollis, lobortis nisi. Donec dapibus magna nec suscipit vulputate. Sed placerat purus felis, eget egestas arcu ultricies eget. Curabitur leo ante, ultrices non elit vitae, sodales facilisis lacus. Nulla quis velit sollicitudin dolor laoreet porta. Mauris mauris orci, lacinia ac commodo non, vehicula nec metus. Integer imperdiet laoreet diam eu blandit.
 
-### Data overview
 
 ```{r}
 
 plot(rnorm(n = 1000, mean = 0, sd = 3))
 
 ```
-
-## Methods
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pharetra turpis feugiat sem euismod interdum. Sed ultrices eget turpis ut malesuada. Donec vel nibh a arcu placerat sodales. Donec sagittis metus vitae placerat finibus. Curabitur a augue finibus nisl scelerisque molestie ac nec arcu. Vivamus lorem ligula, efficitur at scelerisque ac, bibendum a enim. Quisque non leo nibh. Sed non ante vel lacus ultricies fringilla. Maecenas ut massa tempor, ultrices lectus mollis, lobortis nisi. Donec dapibus magna nec suscipit vulputate. Sed placerat purus felis, eget egestas arcu ultricies eget. Curabitur leo ante, ultrices non elit vitae, sodales facilisis lacus. Nulla quis velit sollicitudin dolor laoreet porta. Mauris mauris orci, lacinia ac commodo non, vehicula nec metus. Integer imperdiet laoreet diam eu blandit.
-
--   List item A
--   List item B
--   List item C
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pharetra turpis feugiat sem euismod interdum. Sed ultrices eget turpis ut malesuada. Donec vel nibh a arcu placerat sodales. Donec sagittis metus vitae placerat finibus.
 
 ## Results
 
