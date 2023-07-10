@@ -1,6 +1,6 @@
 ---
-title: HB 1795
-subtitle: A generic OJO template for HTML reports
+title: HB 1795 Impact Estimate
+subtitle: Open Justice Oklahoma
 format:
   ojo-report-template-html: default
 author: Polina Rozhkova
@@ -13,18 +13,16 @@ title-block-banner-color: "white"
 knitr:
   opts_chunk:
     fig.align: center
-description: |
-  An analysis of HB 1795
-abstract-title: "Executive Summary"
-abstract: |
-  This is where we'd write an abstract / executive summary. You can change the title
-  for this section by changing the `abstract-title` parameter, and you can 
-  delete the parameter if you don't need it.
+description: Estimating the number of Oklahomans impacted by the amended provision concerning driver license revocations for individuals with misdemeanor drug charges. 
+Analysis conducted at the request of Oklahomans for Criminal Justice Reform (OCJR) and ProsperOK.
+abstract-title: "Abstract"
+abstract: Between 8107 and 13485 Oklahomans with misdemeanor drug charges were impacted by provisions in HB 1795 between January 1, 2022 and June 30, 2023. 
+
 ---
 
-## Introduction
+## Background
 
-Oklahoma’s HB 1795 went into effect November 1, 2021 (Q2 FY 2022), reducing the number of offenses for which a license must be revoked (specific circumstances may still result in a revocation) while increasing the accessibility and affordability of provisional licenses. Additionally, the bill lowers the minimum payment plan for outstanding fines and fees (including but not limited to, provisional license fees, warrant fees, court costs or fees, and driver license reinstatements fees) from $25 per month to $5 per month the bill imposes limitations on “failure to pay” license suspension.
+Oklahoma’s HB 1795 went into effect November 1, 2021 (Q2 FY 2022), reducing the number of offenses for which a license must be revoked (specific circumstances may still result in a revocation) while increasing the accessibility and affordability of provisional licenses. The bill imposes limitations on “failure to pay” license suspensions, with a key provision requiring the reduction to minimum payment plan for outstanding fines and fees (including but not limited to, provisional license fees, warrant fees, court costs or fees, and driver license reinstatements fees) from \$25 per month to \$5 per month. 
 
 ## Data and Methodology
 
