@@ -13,7 +13,7 @@ vehicle_related <- "VEHICLE"
 
 # DPS violation codes saved in "docs" along with bill
 # QUESTION: embarassing but how to include hyphens and parentheses in any order?
-dps_codes <- "(?i) DI1|DI1M|DI2D|DI2M|DI2DM|DRI|DR3|DU2II|DU2IV|DU4|DU4II|DU8I|DU8II|DU9|DU9I|DU9II|DU9IV|dui drugs misdemeanor"
+dps_codes <- "(?i)DI1|DI1M|DI2D|DI2M|DI2DM|DRI|DR3|DU2II|DU2IV|DU4|DU4II|DU8I|DU8II|DU9|DU9I|DU9II|DU9IV|dui drugs misdemeanor"
 dps_exclude <- "(?i)alcohol|acohol|alchol|under 21|suspended|revoked|valid|twenty-one"
 dps_related <- "(DPS|DEPARTMENT OF PUBLIC SAFETY|D\\.P\\.S)"
 
@@ -34,6 +34,17 @@ all_cases <- ojo_crim_cases(case_types = "CM",
   ) |>
   ojo_collect()
 
+# Defendants for all cases
+ojo_tbl("party") |>
+  right_join(
+    all_cases |>
+      distinct(id),
+    by = c("case_id" = "id"),
+    copy = TRUE
+  ) |>
+  filter(role == "Defendant") |>
+  count()
+
 # Pulling every case with at least one misdemeanor drug charge
 # (excluding distribution/intent to dispense/etc.)
 # ~17000
@@ -44,6 +55,17 @@ case_misdemeanor_drug <- all_cases |>
   filter(
     !str_detect(count_as_filed, drug_exclude)
   )
+
+# Defendants in cases above:
+ojo_tbl("party") |>
+  right_join(
+    case_misdemeanor_drug |>
+      distinct(id),
+    by = c("case_id" = "id"),
+    copy = TRUE
+  ) |>
+  filter(role == "Defendant") |>
+  count()
 
 # Check what unique filing charges are being excluded when
 # filtering misdemeanor for drug charges.
@@ -65,6 +87,18 @@ all_cases |>
 case_dps_violation <- all_cases |>
   filter(str_detect(count_as_filed, dps_codes),
          !str_detect(count_as_filed, dps_exclude))
+
+## Above you are counting number of charges. This calculates number of defendants:
+ojo_tbl("party") |>
+  right_join(
+    case_dps_violation |>
+      distinct(id),
+    by = c("case_id" = "id"),
+    copy = TRUE
+  ) |>
+  filter(role == "Defendant") |>
+  count()
+
 
 all_cases |>
   anti_join(
@@ -187,10 +221,10 @@ case_misdemeanor_drug |>
 # Shortcut to use ojo_add_minutes ?
 # Question: why do rows repeat?
 
-case_minute_dps_short <- ojo_crim_cases(case_types = "CM",
-                      file_years = 2022:2023) |>
-   ojo_add_minutes(case_id %in% dps_ids) |>
-   ojo_collect()
+# case_minute_dps_short <- ojo_crim_cases(case_types = "CM",
+#                       file_years = 2022:2023) |>
+#    ojo_add_minutes(case_id %in% dps_ids) |>
+#    ojo_collect()
 
 #|>
   #distinct(case_id)

@@ -14,14 +14,15 @@ knitr:
   opts_chunk:
     fig.align: center
 description: |
-  This is where you can write a brief description of the publication if needed.
-  If you don't need it for your current project, you can just delete this parameter.
+  An analysis of HB 1795
 abstract-title: "Executive Summary"
 abstract: |
   This is where we'd write an abstract / executive summary. You can change the title
   for this section by changing the `abstract-title` parameter, and you can 
   delete the parameter if you don't need it.
 ---
+
+## Bananas
 
 ## Introduction
 
