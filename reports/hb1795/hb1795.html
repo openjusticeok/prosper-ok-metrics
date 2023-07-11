@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.353">
+<meta name="generator" content="quarto-1.3.433">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -3072,12 +3072,424 @@ background: black;
 </section>
 <section id="data-and-methodology" class="level2" data-number="2">
 <h2 data-number="2" class="anchored" data-anchor-id="data-and-methodology"><span class="header-section-number">2</span> Data and Methodology</h2>
-<p>This analysis uses Oklahoma court records sourced by OSCN and ODCR beginning January 1, 2022 (Q3 FY 2022) to estimate the impact of HB 1795 during a period of full implementation. We explore two provisions of the bill in order to estimate lower and upper bounds for the number of individuals with misdemeanor drug charges that were impacted by the bill’s passing. For the lower bound, we focus on the provision concerned with modifying the types of offenses requiring immediate revocation of driving privileges (Section 6-205). Specifically we account for individuals who are charged with possession of a controlled dangerous substance as defined by</p>
-<p>A conservative estimate of the number of impacted individuals is made by filtering drug-related misdemeanors by DPS violation code and similar codes.</p>
-<p>For an estimate of the upper bound, we account for individuals who may be subject to fines and fees as a result</p>
+<p>This analysis uses Oklahoma court records sourced by OSCN and ODCR beginning January 1, 2022 (Q3 FY 2022) to estimate the impact of HB 1795 during a period of full implementation. We explore two provisions of the bill in order to estimate lower and upper bounds for the number of individuals with misdemeanor drug charges that were impacted by the bill’s passing.</p>
+<p>To estimate the lower bound, we focus on the provision concerned with modifying the types of offenses requiring immediate revocation of driving privileges (Section 6-205). Using the Department of Safety violation codes we pull court records for individuals who are charged with possession of a controlled dangerous substance as defined by Oklahoma’s Uniform Controlled Dangerous Substances Act while operating a motor vehicle. Court records also include drug violation codes that are similar but do not specify use of a motor vehicle. These violation codes provide a minimum estimate of individuals whose drug charges would have resulted in immediate driver license suspension or revocation prior to the enactment of HB 1795.</p>
+<p>Prior to the bill’s passing, individuals could have their license suspended or revoked for the failure to pay court fines or fees. Some of these fines and fees are imposed on individuals who are charged with misdemeanor drug offenses. Following this logic, we account for any individuals who may be subject to fines and fees due to a misdemeanor drug possession charge. We combine the previously calculated lower bound and adjust for duplicate entries (individuals that may appear in both methods) for an upper bound estimate.</p>
 </section>
 <section id="results" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="results"><span class="header-section-number">3</span> Results</h2>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+
+<div id="anwyzzmdse" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#anwyzzmdse table {
+font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+}
+#anwyzzmdse thead, #anwyzzmdse tbody, #anwyzzmdse tfoot, #anwyzzmdse tr, #anwyzzmdse td, #anwyzzmdse th {
+border-style: none;
+}
+#anwyzzmdse p {
+margin: 0;
+padding: 0;
+}
+#anwyzzmdse .gt_table {
+display: table;
+border-collapse: collapse;
+line-height: normal;
+margin-left: auto;
+margin-right: auto;
+color: #333333;
+font-size: 16px;
+font-weight: normal;
+font-style: normal;
+background-color: #FFFFFF;
+width: auto;
+border-top-style: solid;
+border-top-width: 2px;
+border-top-color: #A8A8A8;
+border-right-style: none;
+border-right-width: 2px;
+border-right-color: #D3D3D3;
+border-bottom-style: solid;
+border-bottom-width: 2px;
+border-bottom-color: #A8A8A8;
+border-left-style: none;
+border-left-width: 2px;
+border-left-color: #D3D3D3;
+}
+#anwyzzmdse .gt_caption {
+padding-top: 4px;
+padding-bottom: 4px;
+}
+#anwyzzmdse .gt_title {
+color: #333333;
+font-size: 125%;
+font-weight: initial;
+padding-top: 4px;
+padding-bottom: 4px;
+padding-left: 5px;
+padding-right: 5px;
+border-bottom-color: #FFFFFF;
+border-bottom-width: 0;
+}
+#anwyzzmdse .gt_subtitle {
+color: #333333;
+font-size: 85%;
+font-weight: initial;
+padding-top: 3px;
+padding-bottom: 5px;
+padding-left: 5px;
+padding-right: 5px;
+border-top-color: #FFFFFF;
+border-top-width: 0;
+}
+#anwyzzmdse .gt_heading {
+background-color: #FFFFFF;
+text-align: center;
+border-bottom-color: #FFFFFF;
+border-left-style: none;
+border-left-width: 1px;
+border-left-color: #D3D3D3;
+border-right-style: none;
+border-right-width: 1px;
+border-right-color: #D3D3D3;
+}
+#anwyzzmdse .gt_bottom_border {
+border-bottom-style: solid;
+border-bottom-width: 2px;
+border-bottom-color: #D3D3D3;
+}
+#anwyzzmdse .gt_col_headings {
+border-top-style: solid;
+border-top-width: 2px;
+border-top-color: #D3D3D3;
+border-bottom-style: solid;
+border-bottom-width: 2px;
+border-bottom-color: #D3D3D3;
+border-left-style: none;
+border-left-width: 1px;
+border-left-color: #D3D3D3;
+border-right-style: none;
+border-right-width: 1px;
+border-right-color: #D3D3D3;
+}
+#anwyzzmdse .gt_col_heading {
+color: #333333;
+background-color: #FFFFFF;
+font-size: 100%;
+font-weight: normal;
+text-transform: inherit;
+border-left-style: none;
+border-left-width: 1px;
+border-left-color: #D3D3D3;
+border-right-style: none;
+border-right-width: 1px;
+border-right-color: #D3D3D3;
+vertical-align: bottom;
+padding-top: 5px;
+padding-bottom: 6px;
+padding-left: 5px;
+padding-right: 5px;
+overflow-x: hidden;
+}
+#anwyzzmdse .gt_column_spanner_outer {
+color: #333333;
+background-color: #FFFFFF;
+font-size: 100%;
+font-weight: normal;
+text-transform: inherit;
+padding-top: 0;
+padding-bottom: 0;
+padding-left: 4px;
+padding-right: 4px;
+}
+#anwyzzmdse .gt_column_spanner_outer:first-child {
+padding-left: 0;
+}
+#anwyzzmdse .gt_column_spanner_outer:last-child {
+padding-right: 0;
+}
+#anwyzzmdse .gt_column_spanner {
+border-bottom-style: solid;
+border-bottom-width: 2px;
+border-bottom-color: #D3D3D3;
+vertical-align: bottom;
+padding-top: 5px;
+padding-bottom: 5px;
+overflow-x: hidden;
+display: inline-block;
+width: 100%;
+}
+#anwyzzmdse .gt_spanner_row {
+border-bottom-style: hidden;
+}
+#anwyzzmdse .gt_group_heading {
+padding-top: 8px;
+padding-bottom: 8px;
+padding-left: 5px;
+padding-right: 5px;
+color: #333333;
+background-color: #FFFFFF;
+font-size: 100%;
+font-weight: initial;
+text-transform: inherit;
+border-top-style: solid;
+border-top-width: 2px;
+border-top-color: #D3D3D3;
+border-bottom-style: solid;
+border-bottom-width: 2px;
+border-bottom-color: #D3D3D3;
+border-left-style: none;
+border-left-width: 1px;
+border-left-color: #D3D3D3;
+border-right-style: none;
+border-right-width: 1px;
+border-right-color: #D3D3D3;
+vertical-align: middle;
+text-align: left;
+}
+#anwyzzmdse .gt_empty_group_heading {
+padding: 0.5px;
+color: #333333;
+background-color: #FFFFFF;
+font-size: 100%;
+font-weight: initial;
+border-top-style: solid;
+border-top-width: 2px;
+border-top-color: #D3D3D3;
+border-bottom-style: solid;
+border-bottom-width: 2px;
+border-bottom-color: #D3D3D3;
+vertical-align: middle;
+}
+#anwyzzmdse .gt_from_md > :first-child {
+margin-top: 0;
+}
+#anwyzzmdse .gt_from_md > :last-child {
+margin-bottom: 0;
+}
+#anwyzzmdse .gt_row {
+padding-top: 8px;
+padding-bottom: 8px;
+padding-left: 5px;
+padding-right: 5px;
+margin: 10px;
+border-top-style: solid;
+border-top-width: 1px;
+border-top-color: #D3D3D3;
+border-left-style: none;
+border-left-width: 1px;
+border-left-color: #D3D3D3;
+border-right-style: none;
+border-right-width: 1px;
+border-right-color: #D3D3D3;
+vertical-align: middle;
+overflow-x: hidden;
+}
+#anwyzzmdse .gt_stub {
+color: #333333;
+background-color: #FFFFFF;
+font-size: 100%;
+font-weight: initial;
+text-transform: inherit;
+border-right-style: solid;
+border-right-width: 2px;
+border-right-color: #D3D3D3;
+padding-left: 5px;
+padding-right: 5px;
+}
+#anwyzzmdse .gt_stub_row_group {
+color: #333333;
+background-color: #FFFFFF;
+font-size: 100%;
+font-weight: initial;
+text-transform: inherit;
+border-right-style: solid;
+border-right-width: 2px;
+border-right-color: #D3D3D3;
+padding-left: 5px;
+padding-right: 5px;
+vertical-align: top;
+}
+#anwyzzmdse .gt_row_group_first td {
+border-top-width: 2px;
+}
+#anwyzzmdse .gt_row_group_first th {
+border-top-width: 2px;
+}
+#anwyzzmdse .gt_summary_row {
+color: #333333;
+background-color: #FFFFFF;
+text-transform: inherit;
+padding-top: 8px;
+padding-bottom: 8px;
+padding-left: 5px;
+padding-right: 5px;
+}
+#anwyzzmdse .gt_first_summary_row {
+border-top-style: solid;
+border-top-color: #D3D3D3;
+}
+#anwyzzmdse .gt_first_summary_row.thick {
+border-top-width: 2px;
+}
+#anwyzzmdse .gt_last_summary_row {
+padding-top: 8px;
+padding-bottom: 8px;
+padding-left: 5px;
+padding-right: 5px;
+border-bottom-style: solid;
+border-bottom-width: 2px;
+border-bottom-color: #D3D3D3;
+}
+#anwyzzmdse .gt_grand_summary_row {
+color: #333333;
+background-color: #FFFFFF;
+text-transform: inherit;
+padding-top: 8px;
+padding-bottom: 8px;
+padding-left: 5px;
+padding-right: 5px;
+}
+#anwyzzmdse .gt_first_grand_summary_row {
+padding-top: 8px;
+padding-bottom: 8px;
+padding-left: 5px;
+padding-right: 5px;
+border-top-style: double;
+border-top-width: 6px;
+border-top-color: #D3D3D3;
+}
+#anwyzzmdse .gt_last_grand_summary_row_top {
+padding-top: 8px;
+padding-bottom: 8px;
+padding-left: 5px;
+padding-right: 5px;
+border-bottom-style: double;
+border-bottom-width: 6px;
+border-bottom-color: #D3D3D3;
+}
+#anwyzzmdse .gt_striped {
+background-color: rgba(128, 128, 128, 0.05);
+}
+#anwyzzmdse .gt_table_body {
+border-top-style: solid;
+border-top-width: 2px;
+border-top-color: #D3D3D3;
+border-bottom-style: solid;
+border-bottom-width: 2px;
+border-bottom-color: #D3D3D3;
+}
+#anwyzzmdse .gt_footnotes {
+color: #333333;
+background-color: #FFFFFF;
+border-bottom-style: none;
+border-bottom-width: 2px;
+border-bottom-color: #D3D3D3;
+border-left-style: none;
+border-left-width: 2px;
+border-left-color: #D3D3D3;
+border-right-style: none;
+border-right-width: 2px;
+border-right-color: #D3D3D3;
+}
+#anwyzzmdse .gt_footnote {
+margin: 0px;
+font-size: 90%;
+padding-top: 4px;
+padding-bottom: 4px;
+padding-left: 5px;
+padding-right: 5px;
+}
+#anwyzzmdse .gt_sourcenotes {
+color: #333333;
+background-color: #FFFFFF;
+border-bottom-style: none;
+border-bottom-width: 2px;
+border-bottom-color: #D3D3D3;
+border-left-style: none;
+border-left-width: 2px;
+border-left-color: #D3D3D3;
+border-right-style: none;
+border-right-width: 2px;
+border-right-color: #D3D3D3;
+}
+#anwyzzmdse .gt_sourcenote {
+font-size: 90%;
+padding-top: 4px;
+padding-bottom: 4px;
+padding-left: 5px;
+padding-right: 5px;
+}
+#anwyzzmdse .gt_left {
+text-align: left;
+}
+#anwyzzmdse .gt_center {
+text-align: center;
+}
+#anwyzzmdse .gt_right {
+text-align: right;
+font-variant-numeric: tabular-nums;
+}
+#anwyzzmdse .gt_font_normal {
+font-weight: normal;
+}
+#anwyzzmdse .gt_font_bold {
+font-weight: bold;
+}
+#anwyzzmdse .gt_font_italic {
+font-style: italic;
+}
+#anwyzzmdse .gt_super {
+font-size: 65%;
+}
+#anwyzzmdse .gt_footnote_marks {
+font-size: 75%;
+vertical-align: 0.4em;
+position: initial;
+}
+#anwyzzmdse .gt_asterisk {
+font-size: 100%;
+vertical-align: 0;
+}
+#anwyzzmdse .gt_indent_1 {
+text-indent: 5px;
+}
+#anwyzzmdse .gt_indent_2 {
+text-indent: 10px;
+}
+#anwyzzmdse .gt_indent_3 {
+text-indent: 15px;
+}
+#anwyzzmdse .gt_indent_4 {
+text-indent: 20px;
+}
+#anwyzzmdse .gt_indent_5 {
+text-indent: 25px;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="n...1">n...1</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="n...2">n...2</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="n...3">n...3</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="n...1" class="gt_row gt_right">5839</td>
+<td headers="n...2" class="gt_row gt_right">5092</td>
+<td headers="n...3" class="gt_row gt_right">6340</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+</div>
+</div>
 </section>
 
 </main>

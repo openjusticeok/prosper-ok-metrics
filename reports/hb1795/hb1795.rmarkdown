@@ -36,6 +36,9 @@ library(gt)
 library(downloadthis)
 ```
 
+
+
+
 ## Background
 
 Oklahoma’s House Bill 1795 went into effect November 1, 2021 (Q2 FY 2022). This new law reduces the number of offenses that can lead to a license revocation, although certain circumstances may still result in revocation. Additionally, HB 1795 aims to make provisional licenses more accessible and affordable. The bill introduces restrictions on license suspensions due to failure to pay, and it included an important provision that reduces the minimum payment plan for outstanding fines and fees. Previously set at \$25 per month, HB 1795 lowers the minimum monthly payment to \$5. The aforementioned fees encompass various charges such as provisional license fees, warrant fees, court costs or fees, and driver license reinstatement fees.
@@ -47,6 +50,9 @@ This analysis uses Oklahoma court records sourced by OSCN and ODCR beginning Jan
 To estimate the lower bound, we focus on the provision concerned with modifying the types of offenses requiring immediate revocation of driving privileges (Section 6-205). Using the Department of Safety violation codes we pull court records for individuals who are charged with possession of a controlled dangerous substance as defined by Oklahoma’s Uniform Controlled Dangerous Substances Act while operating a motor vehicle. Court records also include drug violation codes that are similar but do not specify use of a motor vehicle. These violation codes provide a minimum estimate of individuals whose drug charges would have resulted in immediate driver license suspension or revocation prior to the enactment of HB 1795.
 
 Prior to the bill’s passing, individuals could have their license suspended or revoked for the failure to pay court fines or fees. Some of these fines and fees are imposed on individuals who are charged with misdemeanor drug offenses. Following this logic, we account for any individuals who may be subject to fines and fees due to a misdemeanor drug possession charge. We combine the previously calculated lower bound and adjust for duplicate entries (individuals that may appear in both methods) for an upper bound estimate. 
+
+
+
 
 ```{r}
 drugs <- "(?i)CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |PRESCRIP|NARC|METH|C\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|MARIJUANA|MARIHUANA|MJ"
@@ -180,7 +186,13 @@ both_methods_persons <- ojo_tbl("party", .con = ojodb) |>
   collect()
 ```
 
+
+
+
 ## Results
+
+
+
 
 ```{r}
 bind_cols(
@@ -190,3 +202,4 @@ bind_cols(
 ) |>
   gt()
 ```
+
