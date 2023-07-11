@@ -3,9 +3,15 @@ project:
 
 website:
     title: "ProsperOK Quarterly Reporting"
+    navbar:
+      background: primary
+      search: false
+      left:
+        - text: "Reports"
+          menu:
+            - hb3205/hb3205.qmd
+            - hb1795/hb1795.qmd
 
 format:
     html:
         theme: cosmo
-        css: styles.css
-        toc: true
