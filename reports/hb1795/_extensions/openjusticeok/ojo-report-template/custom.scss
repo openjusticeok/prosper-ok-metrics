@@ -1,0 +1,25 @@
+/*-- scss:defaults --*/
+$link-color: #F6BE00 !default;
+$title-color: #F6BE00 !default;
+$subtitle-color: #ffffff !default;
+
+/*-- scss:rules --*/
+.quarto-title.column-body {
+  display: flex;
+}
+
+#title-block-header > div.quarto-title-banner.page-columns.page-full > div > div.quarto-title.column-body > img {
+  margin-right: 20px;
+}
+
+.description {
+  padding-top: 10px;
+}
+
+#title-block-header > div.quarto-title-banner.page-columns.page-full > div > div.quarto-title.column-body > div > h1 {
+  color: $title-color;
+}
+
+#title-block-header > div.quarto-title-banner.page-columns.page-full > div > div.quarto-title.column-body > div > p {
+  color: $subtitle-color;
+}
