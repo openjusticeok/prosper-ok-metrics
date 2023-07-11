@@ -7,13 +7,11 @@ library(ojoverse)
 library(lubridate)
 
 drugs <- "(?i)CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |PRESCRIP|NARC|METH|C\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|MARIJUANA|MARIHUANA|MJ"
-# PARAPHERNALIA|
 drug_exclude <- "(?i)DOMESTIC|ASSAULT|FIREARM|DISTRIBUTE|INTENT|MANUFACTURE|DISPENSE|TUO|alcohol|acohol|alchol"
-# REVOCATION|SUSPENSION|
 vehicle_related <- "VEHICLE"
 
 # DPS violation codes saved in "docs" along with bill
-dps_codes <- "(?i)DI1|DI1M|DI2D|DI2M|DI2DM|DRI|DR3|DU2II|DU2IV|DU4|DU4II|DU8I|DU8II|DU9|DU9I|DU9II|DU9IV|dui drugs misdemeanor"
+dps_codes <- "(?i)DI1|DI1M|DI2D|DI2M|DI2DM|DRI|DU2II|DU2IV|DU4|DU4II|DU8I|DU8II|DU9|DU9I|DU9II|DU9IV|dui drugs misdemeanor"
 dps_exclude <- "(?i)alcohol|acohol|alchol|under 21|suspended|revoked|valid|twenty-one"
 dps_related <- "(DPS|DEPARTMENT OF PUBLIC SAFETY|D\\.P\\.S)"
 
@@ -98,9 +96,21 @@ ojo_tbl("party") |>
     copy = TRUE
   ) |>
   filter(role == "Defendant") |>
-  distinct(oscn_id) |>
+  distinct(oscn_id) |> 
   count()
 
+## Calculating upper bound 
+# Combining the ids from case_dps and case_misdemeanor, then running distinct. 
+# Then using distinct on oscn_id at the end so def no duplicates
+ojo_tbl("party") |>
+  right_join(
+    rbind(case_dps_violation |> select(id), case_misdemeanor_drug |> select(id)) |> distinct(),
+    by = c("case_id" = "id"),
+    copy = TRUE
+  ) |>
+  filter(role == "Defendant") |>
+  distinct(oscn_id) |>
+  count()
 
 all_cases |>
   anti_join(
