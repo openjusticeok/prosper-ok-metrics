@@ -57,31 +57,31 @@ This analysis uses historical data on convictions for possession of a controlled
 ```{r, load_data}
 #| cache: true
 
-ojodb <- ojo_connect()
-
-data <- ojo_tbl("case", .con = ojodb) |>
-  select(
-    id,
-    district,
-    case_type,
-    date_filed,
-    date_closed,
-    created_at,
-    updated_at
-  ) |>
-  filter(
-    case_type %in% c("CM", "CF"),
-    date_filed >= "2001-01-01",
-    date_filed < "2023-01-01"
-  ) |>
-  left_join(
-    ojo_tbl("count", .con = ojodb),
-    by = c("id" = "case_id"),
-    suffix = c("", "_count")
-  ) |>
-  ojo_collect()
-
-write_csv(data, here("data/cm_cf_2001_2022.csv"))
+# ojodb <- ojo_connect()
+# 
+# data <- ojo_tbl("case", .con = ojodb) |>
+#   select(
+#     id,
+#     district,
+#     case_type,
+#     date_filed,
+#     date_closed,
+#     created_at,
+#     updated_at
+#   ) |>
+#   filter(
+#     case_type %in% c("CM", "CF"),
+#     date_filed >= "2001-01-01",
+#     date_filed < "2023-01-01"
+#   ) |>
+#   left_join(
+#     ojo_tbl("count", .con = ojodb),
+#     by = c("id" = "case_id"),
+#     suffix = c("", "_count")
+#   ) |>
+#   ojo_collect()
+# 
+# write_csv(data, here("data/cm_cf_2001_2022.csv"))
 
 # `data` is all CF / CM cases filed 2001-2022
 data <- read_csv(here("data/cm_cf_2001_2022.csv"))
