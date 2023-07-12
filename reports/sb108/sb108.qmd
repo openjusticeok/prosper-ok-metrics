@@ -1,0 +1,28 @@
+---
+title: SB 108 Impact Estimate
+subtitle: Open Justice Oklahoma
+format:
+  ojo-report-template-html:
+    output-file: index.html
+  pdf:
+    pdf-engine: xelatex
+author: Brancen Gregory
+date: last-modified
+logo: "www/ojo-logo-white.png"
+number-sections: true
+smooth-scroll: true
+title-block-banner: "black"
+title-block-banner-color: "white"
+knitr:
+  opts_chunk:
+    fig.align: center
+    echo: FALSE
+    message: FALSE
+    warning: FALSE
+description: |
+  Estimating the number of Oklahomans directly impacted by HB 3205, a reform of juvenile court fees. Analysis conducted at the request of [Oklahomans for Criminal Justice Reform (OCJR)](https://okjusticereform.org/) and [ProsperOK](https://www.prosperok.org/).
+abstract-title: "Executive Summary"
+abstract: |
+  Open Justice Oklahoma estimates that between 12,968 and	16,037 Oklahomans benefitted from reduced fines and fees associated
+  with HB 3205 for Q2 and Q3 of FY 2023.
+---
