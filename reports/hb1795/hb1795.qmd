@@ -18,7 +18,7 @@ knitr:
     warning: FALSE
 description: Estimating the number of Oklahomans impacted by the amended provision concerning driver license revocations for individuals with misdemeanor drug charges. Analysis conducted at the request of Oklahomans for Criminal Justice Reform (OCJR) and ProsperOK.
 abstract-title: "Abstract"
-abstract: Between 8,107 and 13,485 Oklahomans with misdemeanor drug charges were impacted by provisions in HB 1795 between January 1, 2022 and June 30, 2023.
+abstract: Between 7,652 and 13,472 Oklahomans with misdemeanor drug charges were impacted by provisions in HB 1795 between January 1, 2022 and June 30, 2023.
 ---
 
 ```{r}
@@ -185,8 +185,19 @@ both_methods_persons <- ojo_tbl("party", .con = ojodb) |>
 ```{r}
 bind_cols(
   dps_violation_persons,
-  drug_misdemeanor_persons,
+  #drug_misdemeanor_persons,
   both_methods_persons
 ) |>
-  gt()
+  gt() |> 
+  cols_label(contains("1") ~ "Lower Bound", 
+             contains("2") ~ "Upper Bound")|>
+  tab_header(
+    title = "Estimated Impact for Oklahomans with Misdemeanor Drug Charges",
+    subtitle = glue::glue("{cumulative_period_start} to {reporting_period_end}")) |> 
+  tab_style(
+    style = cell_text(color = "black", weight = "bold", align = "center"),
+    locations = cells_title("title")
+  ) |> 
+  tab_stubhead("Estimated Impact for Oklahomans with Misdemeanor Drug Charges")
+  
 ```
