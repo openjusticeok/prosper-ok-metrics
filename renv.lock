@@ -1488,7 +1488,11 @@
     },
     "renv": {
       "Package": "renv",
+<<<<<<< HEAD
       "Version": "1.0.0",
+=======
+      "Version": "0.17.3",
+>>>>>>> sb108
       "OS_type": null,
       "NeedsCompilation": "no",
       "Repository": "CRAN",

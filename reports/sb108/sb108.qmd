@@ -1,9 +1,8 @@
 ---
-title: SB 108 Impact Estimate
+title: DRAFT - SB 108 Prospective Impact Analysis
 subtitle: Open Justice Oklahoma
 format:
-  ojo-report-template-html:
-    output-file: index.html
+  ojo-report-template-html: default
   pdf:
     pdf-engine: xelatex
 author: Brancen Gregory
@@ -26,3 +25,455 @@ abstract: |
   Open Justice Oklahoma estimates that between 12,968 and	16,037 Oklahomans benefitted from reduced fines and fees associated
   with HB 3205 for Q2 and Q3 of FY 2023.
 ---
+
+```{r, setup}
+library(ojodb)
+library(here)
+library(readr)
+library(stringr)
+library(ggplot2)
+library(gt)
+library(lubridate)
+library(tidyr)
+library(purrr)
+
+theme_set(ojo_theme())
+
+oscn_county_list <- c("TULSA", "OKLAHOMA", "CLEVELAND", "ROGERS", "PAYNE",
+                      "COMANCHE", "GARFIELD", "CANADIAN", "LOGAN", "ADAIR",
+                      "PUSHMATAHA", "ROGER MILLS", "ELLIS")
+
+```
+
+
+## Introduction
+
+Oklahoma's 2023 legislative session saw the introduction of SB 108. This bill, rolling back provisions of State Question 780, would make possession of a controlled substance (excluding marijuana) a felony crime after the fourth such conviction in ten years. While the punishment for a misdemeanor possession conviction is up to \$1,000 dollars and/or up to one year confinement, a felony conviction for the same crime can result in a fine of up to \$5,000 dollars and/or up to 5 years imprisonment.
+
+This analysis uses historical data on convictions for possession of a controlled substance to better understand how prevalent the situation of having four or more convictions within 10 years is, and thereby, estimate the number of people who would be impacted by this legislation should it be enacted into law in a future legislative session.
+
+## Data
+
+```{r, load_data}
+#| cache: true
+
+# data <- ojo_tbl("case", .con = ojodb) |>
+#   select(
+#     id,
+#     district,
+#     case_type,
+#     date_filed,
+#     date_closed,
+#     created_at,
+#     updated_at
+#   ) |>
+#   filter(
+#     case_type %in% c("CM", "CF"),
+#     date_filed >= "2001-01-01",
+#     date_filed < "2023-01-01"
+#   ) |>
+#   left_join(
+#     ojo_tbl("count", .con = ojodb),
+#     by = c("id" = "case_id"),
+#     suffix = c("", "_count")
+#   ) |>
+#   ojo_collect()
+
+# write_csv(data, here("data/cm_cf_2001_2022.csv"))
+
+# `data` is all CF / CM cases filed 2001-2022
+data <- read_csv(here("data/cm_cf_2001_2022.csv"))
+# `disposition_predictions` is the uccs lookup table from all ~82,000 unique charge descriptions in the db
+disposition_predictions <- read_csv(here("data/toc-results/disposition_predictions.csv")) |>
+  distinct()
+uccs <- read_csv(here("data/toc-results/uccs-schema.csv"))
+
+data_oscn <- data |>
+  filter(district %in% oscn_county_list)
+
+```
+
+### Source
+
+Open Justice Oklahoma maintains a database of administrative court records which includes information on all criminal misdemeanors and felonies filed in Oklahoma beginning in 2001. Case information is systematically collected from publicly available data hosted on the [Oklahoma State Court Network (OSCN)](https://www.oscn.net/v4/) website.
+
+* **Initial data pull: All CF / CM cases filed Jan 1 2001 - Dec 31, 2022, statewide**
+
+```{r, eval=FALSE, echo=TRUE}
+data <- ojo_tbl("case", .con = ojodb) |>
+  filter(
+    case_type %in% c("CM", "CF"),
+    date_filed >= "2001-01-01",
+    date_filed < "2023-01-01"
+  ) |>
+  left_join(
+    ojo_tbl("count", .con = ojodb),
+    by = c("id" = "case_id"),
+    suffix = c("", "_count")
+  ) |>
+  ojo_collect()
+```
+
+Our initial data pull has **`r nrow(data) |> format(big.mark = ",")` rows**. Since only the 13 official OSCN counties report the charges in each case, we are limited to just those for this analysis of drug possession charges. **`r nrow(data_oscn) |> format(big.mark = ",")` of the rows** were from these counties, and **`r data_oscn |> filter(!is.na(count_as_filed)) |> nrow() |> format(big.mark = ",")` had non-missing values** for `count_as_filed`.
+
+* **Full list of OSCN counties:** `r paste(janitor::make_clean_names(oscn_county_list, "title"), collapse = ", ")`
+
+```{r}
+n_oscn_cases <- data |>
+  filter(district %in% oscn_county_list) |>
+  count(id) |>
+  nrow()
+
+n_total_cases <- data |>
+  count(id) |>
+  nrow()
+```
+
+In the data, there were `r format(n_oscn_cases, big.mark = ",")` unique **cases** filed in OSCN counties, compared to `r format(n_total_cases, big.mark = ",")` cases filed statewide. In other words, `r 100 * round(n_oscn_cases / n_total_cases, 4)`% of the cases were filed in the 13 OSCN counties. Accordingly, we can approximate what the statewide results might look like by assuming our end result accounts for roughly `r 100 * round(n_oscn_cases / n_total_cases, 2)`% of the total population affected by SB108.
+
+* **Data availability, per county:**
+```{r}
+data_oscn |>
+  group_by(district) |>
+  summarize(
+    n = n(),
+    n_format = format(n, big.mark = ","),
+    n_with_nonmissing_charge = sum(!is.na(count_as_filed)) |> format(big.mark = ","),
+    n_with_na_charge = sum(is.na(count_as_filed)),
+    percent_missing_charge = paste0((100 * n_with_na_charge / n) |> round(2) |> format(big.mark = ","), "%"),
+  ) |>
+  arrange(desc(n)) |>
+  select(-n, -n_with_na_charge) |>
+  rename(n_rows = "n_format") |>
+  janitor::clean_names(case = "title") |>
+  knitr::kable()
+```
+
+* **Data availability, per filing year**
+```{r}
+data_oscn |>
+  group_by(year = paste0(year(floor_date(date_filed, "3 years")), "-", year(floor_date(date_filed, "3 years")) + 2)) |>
+  summarize(
+    n = n(),
+    n_format = format(n, big.mark = ","),
+    n_with_nonmissing_charge = sum(!is.na(count_as_filed)) |> format(big.mark = ","),
+    n_with_na_charge = sum(is.na(count_as_filed)),
+    percent_missing_charge = paste0((100 * n_with_na_charge / n) |> round(2) |> format(big.mark = ","), "%"),
+  ) |>
+  select(-n, -n_with_na_charge) |>
+  rename(n_rows = "n_format") |>
+  janitor::clean_names(case = "title") |>
+  knitr::kable()
+```
+
+
+```{r, clean_data}
+prepare <- function(x) {
+  x |>
+    str_to_upper() |>
+    str_remove_all("^[A-Z0-9]{0,10},") |>
+    str_remove_all("(?i)IN VIOLATION.*") |>
+    str_remove_all(r"{\s*\([^\)]+\)}") |>
+    str_replace_all("[[:punct:][:blank:]]+", " ") |>
+    str_squish()
+}
+
+result_clean <- data |>
+  # Cleaning data to match w/ cleaned lookup table
+  mutate(
+    count_as_filed = prepare(count_as_filed),
+    # If count_as_disposed is missing, fill it with count_as_filed
+    # This will retain
+    count_as_disposed = if_else(
+      is.na(count_as_disposed),
+      count_as_filed,
+      prepare(count_as_disposed)
+    )
+  ) |>
+  # Filtering to only include OSCN counties
+  filter(district %in% oscn_county_list) |>
+  left_join(
+    disposition_predictions,
+    by = c("count_as_disposed" = "disposition"),
+    suffix = c("", "_toc"),
+    relationship = "many-to-many"
+  ) |>
+  left_join(uccs, by = "uccs_code")
+
+```
+
+### Methodology
+
+This analysis looks across all 13 counties which report data on charges filed, and across all complete years of misdemeanor and felony data for charges of possession of a controlled substance. We then use a text classification tool to assist with finding all the simple drug possession charges in the data, which allows us to finally report the number of convictions on such charges per defendant.
+
+Our figures are likely to underestimate the total number of convictions by a relatively small, but still methodologically significant amount due to the expungement of records over time. The magnitude of this bias will be greater for earlier years, but can be roughly quantified by exploiting the court case id schema mandated by the Oklahoma Supreme Court.
+
+### Cleaning / classifying count data
+
+The UCCS tool provides estimates of the probability that each classification was correct. We use regex pattern matching to further examine all classifications with a confidence of less than 80%.
+
+```{r, probability-distribution}
+result_clean |>
+  distinct(
+    count_as_disposed,
+    charge_desc,
+    uccs_code,
+    probability
+  ) |>
+  ggplot(aes(x = probability)) +
+    geom_histogram() +
+    geom_vline(aes(xintercept = 0.8), color = ojo_pal[5], linetype = "da") +
+    annotate(geom = "label", x = 0.8, y = 30000,
+             label = "0.80\ncutoff", color = ojo_pal[5]) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Distribution of\nUCCS match probabilities",
+       y = "observations")
+```
+
+```{r, filtered-data}
+data_clean <- result_clean |>
+  select(
+    id,
+    case_type,
+    date_filed,
+    count_as_disposed,
+    disposition_date,
+    disposition,
+    charge_desc,
+    offense_category_desc,
+    offense_type_desc,
+    probability,
+    uccs_code,
+    party
+  ) |>
+  mutate(
+    poss = str_detect(count_as_disposed, "(?i)poss|(?i)poass of cds|(?i)poissession"), # added typos I found in `n`
+    dist = str_detect(count_as_disposed, "(?i)\\bdist"),
+    intent = str_detect(count_as_disposed, "(?i)intent|\\bint\\b"),
+    paraphernalia = str_detect(count_as_disposed, "(?i)paraph.*\\b|(?i)\\bpara\\b|(?i)p.*nalia"), # added typos 
+    weapon = str_detect(count_as_disposed, "(?i)weapon"),
+    trafficking = str_detect(count_as_disposed, "(?i)traffick"),
+    endeavor = str_detect(count_as_disposed, "(?i)endeavor|\\bend\\b"),
+    wildlife = str_detect(count_as_disposed, "(?i)wildlife"),
+    manufacture = str_detect(count_as_disposed, "(?i)\\bmanufac"),
+    commercial = str_detect(count_as_disposed, "(?i)COMM FAC"),
+    school_park_church = str_detect(count_as_disposed, "(?i)school|education|park|church|day care|\\spk\\s"),
+    conspiracy = str_detect(count_as_disposed, "(?i)\\bconsp"),
+    maintaining = str_detect(count_as_disposed, "(?i)\\bmaint.*(place|dwelling)"),
+    tax = str_detect(count_as_disposed, "(?i)\\btax\\b"),
+    minor = str_detect(count_as_disposed, "(?i)minor|child|under.*21"),
+    inmate = str_detect(count_as_disposed, "(?i)inmate|jail|contrab|penal|\\bfac"),
+    theft = str_detect(count_as_disposed, "(?i)larceny|theft|\\bstol(e|en)\\b"),
+    vehicle = str_detect(count_as_disposed, "(?i)(?<!\\snon|not\\s)(?:\\sMV\\b|motor vehicle)"),
+    proceeds = str_detect(count_as_disposed, "(?i)ac.*\\bp(r|o){0,2}|proceed"),
+    drug = str_detect(count_as_disposed, "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |\\bPRESCRIP|\\bNARC|\\bMETH|\\bC\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bMA.*NA\\b|\\bMJ\\b|\\bMARI\\b"),
+    uccs_drug = probability >= 0.8 & uccs_code >= 3090 & uccs_code <= 3162,
+    uccs_drug_plus = probability >= 0.8 & uccs_code >= 3090 & uccs_code <= 3230
+  ) |>
+  arrange(count_as_disposed)
+
+# `d` is all charges that fit our criteria  
+d <- data_clean |> 
+  filter(
+    (uccs_drug_plus & !intent & !proceeds & !maintaining & !conspiracy & !school_park_church) |
+      (poss & drug & !dist & !intent & !paraphernalia & !weapon & !trafficking &
+         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
+         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds)
+  )
+
+most_common_included <- d |>
+  select(count_as_disposed, probability, charge_desc, uccs_code,
+         poss, dist, intent, paraphernalia, weapon, trafficking, endeavor,
+         wildlife, manufacture, commercial, school_park_church, conspiracy,
+         maintaining, tax, minor, inmate, theft, vehicle, proceeds, drug) |>
+  group_by(count_as_disposed) |>
+  mutate(n = n()) |>
+  unique() |>
+  arrange(desc(n))
+
+# `n` is all charges that did not fit our criteria;
+# should not have any simple possession charges
+n <- data_clean |>
+  filter(!count_as_disposed %in% d$count_as_disposed,
+         !is.na(count_as_disposed),
+         count_as_disposed != "") |>
+  select(count_as_disposed, probability, charge_desc, uccs_code,
+         poss, dist, intent, paraphernalia, weapon, trafficking, endeavor,
+         wildlife, manufacture, commercial, school_park_church, conspiracy,
+         maintaining, tax, minor, inmate, theft, vehicle, proceeds, drug)
+
+most_common_excluded <- n |>
+  group_by(count_as_disposed) |>
+  mutate(n = n()) |>
+  unique() |>
+  arrange(desc(n))
+
+```
+
+The 20 most common verbatim count descriptions -- looking only at charges that were **included** -- are shown below:
+
+```{r}
+most_common_included |>
+  ungroup() |>
+  select(count_as_disposed, n) |>
+  slice_max(order_by = n,
+            n = 20) |>
+  knitr::kable(format.args = list(big.mark = ","))
+
+```
+
+The 20 most common verbatim count descriptions -- looking only at charges that were **excluded** -- are shown below:
+
+```{r}
+most_common_excluded |>
+  ungroup() |>
+  select(count_as_disposed, n) |>
+  slice_max(order_by = n,
+            n = 20) |>
+  knitr::kable(format.args = list(big.mark = ","))
+
+```
+
+Finally, we add the defendant info onto each case so we can see how many have 4+ simple possession charges.
+
+```{r, parties-data}
+ojodb <- ojo_connect()
+
+parties <- d |>
+  left_join(
+    ojo_tbl("party", .con = ojodb) |>
+      filter(
+        role == "Defendant",
+        case_id %in% !!d$id
+      ) |>
+      distinct() |>
+      ojo_collect(),
+    by = c("party" = "id")
+  )
+```
+
+Of the **`r nrow(parties) |> format(big.mark = ",")` total rows / charges** in the data, **`r parties |> filter(!is.na(oscn_id)) |> nrow() |> format(big.mark = ",")`** have an associated person record (**`r (100 * parties |> filter(!is.na(oscn_id)) |> nrow() / nrow(parties)) |> round(2)`%**).
+
+## Results
+
+### How many **simple possession** charges per defendant?
+
+To begin, we'll remove charges that have yet to be disposed (`disposition` is `NA` or something aside from "DISMISSED", "DEFERRED", or "CONVICTED"), then count how many each individual defendant has in the data.
+
+```{r, conviction-count-plot}
+parties_clean <- parties |>
+  drop_na(disposition, oscn_id) |> # added `oscn_id` to this, because ~2-3% are missing
+  filter(str_detect(disposition, "(?i)dismiss|defer|convic")) |>
+  # Moved this up here so it can included in the summarize()
+  mutate(
+    marijuana = str_detect(
+      count_as_disposed,
+      regex("\\bMA.*NA\\b|\\bMJ\\b|\\bMARI|marijuan|\\bMARJ|\\bMARIJ\\b|\\bTHC\\b|\\bHASHISH\\b", ignore_case = T)
+    ),
+    # other = str_detect(
+    #   count_as_disposed,
+    #   "(?i)OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|COCA|PSEUDO|\\bPRESCRIP|\\bNARC|\\bMETH|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bOTHER\\b"
+    # )
+  )
+
+parties_sum <- parties_clean |>
+  group_by(oscn_id) |>
+  summarize(
+    n = n(),
+    n_capped = if_else(n >= 4, "4+", as.character(n)),
+    list_charges = paste0(count_as_disposed, collapse = "; ")
+  ) |>
+  ungroup()
+
+parties_sum |>
+  filter(n >= 2) |>
+  ggplot(aes(
+    x = n_capped
+  )) +
+  scale_y_continuous(labels = scales::comma) +
+  stat_count() +
+  geom_text(aes(label = format(after_stat(count), big.mark = ",")), stat = "count", vjust = -0.2) +
+  labs(title = "Simple possession charges per defendant",
+       subtitle = "All CF / CM simple possession charges\nfiled 2001-2022",
+       x = "N simple possession charges in data",
+       y = "Total defendants",
+       caption = "This data is based on the total number\nof charges in our dataset, not cases")
+
+```
+
+### How many **non-marijuana** simple possession charges per defendant?
+
+Next, we'll repeat this same analysis with marijuana-specific charges removed, as they would be excluded from SB108:
+
+```{r}
+
+parties_sum_no_marijuana <- parties_clean |>
+  filter(!marijuana) |>
+  group_by(oscn_id) |>
+  summarize(
+    n = n(),
+    n_capped = if_else(n >= 4, "4+", as.character(n)),
+    list_charges = paste0(count_as_disposed, collapse = "; ")
+  ) |>
+  ungroup()
+
+parties_sum_no_marijuana |>
+  filter(n >= 2) |>
+  ggplot(aes(
+    x = n_capped, 
+  )) +
+  scale_y_continuous(labels = scales::comma) +
+  stat_count() +
+  geom_text(aes(label = format(after_stat(count), big.mark = ",")), stat = "count", vjust = -0.2) +
+  labs(title = "Non-marijuana simple possession charges\nper defendant",
+       subtitle = "Non-marijuana CF / CM simple possession charges\nfiled 2001-2022",
+       x = "N non-marijuana possession charges in data",
+       y = "Total defendants",
+       caption = "This data is based on the total number\nof charges in our dataset, not cases")
+
+```
+
+### How many defendants have 4+ **non-marijuana** simple possession charges in a ten-year timespan?
+
+Finally, SB108 stipulates that the felony charge only comes into effect after 3+ simple possession **convictions** in a **ten year timespan**. Therefore, we'll filter out charges that ended in a dismissal (leaving only convictions and deferred / suspended dispositions) and repeat the analysis with an added 10-year rolling timeframe.
+
+```{r}
+poi <- parties |>
+  arrange(oscn_id, disposition_date) |>
+  group_by(oscn_id) |>
+  nest() |>
+  mutate(
+    rolling_10_year_n = map_int(
+      data, # Shouldn't this be `d` so that we're only checking the ones we care about?
+      ~ {
+        .x$disposition_date |>
+          as_tibble() |>
+          mutate(
+            lag_3_years = lag(value, 3)
+          ) |>
+          filter(
+            interval(
+              lag_3_years,
+              value
+            ) / years(1) <= 10
+          ) |>
+          nrow()
+      }
+    )
+  ) |>
+  filter(
+    rolling_10_year_n > 0
+  )
+```
+
+```{r}
+# poi |>
+#   unnest(cols = data) |>
+#   ungroup() |>
+#   distinct(count_as_disposed, charge_desc)
+```
+
+```{r}
+# poi |>
+#   nrow()
+```
