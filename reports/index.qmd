@@ -1,3 +1,7 @@
+---
+format:
+  ojo-report-template-html: default
+---
 
 ## [HB 3205](hb3205/hb3205.qmd)
 

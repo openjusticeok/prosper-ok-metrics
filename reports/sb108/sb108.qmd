@@ -36,8 +36,9 @@ library(gt)
 library(lubridate)
 library(tidyr)
 library(purrr)
+library(extrafont)
 
-theme_set(ojo_theme())
+#theme_set(theme_bw(base_family = "Roboto") %+replace% ojo_theme())
 
 oscn_county_list <- c("TULSA", "OKLAHOMA", "CLEVELAND", "ROGERS", "PAYNE",
                       "COMANCHE", "GARFIELD", "CANADIAN", "LOGAN", "ADAIR",
@@ -224,12 +225,15 @@ result_clean |>
   ) |>
   ggplot(aes(x = probability)) +
     geom_histogram() +
-    geom_vline(aes(xintercept = 0.8), color = ojo_pal[5], linetype = "da") +
-    annotate(geom = "label", x = 0.8, y = 30000,
-             label = "0.80\ncutoff", color = ojo_pal[5]) +
-  scale_y_continuous(labels = scales::comma) +
-  labs(title = "Distribution of\nUCCS match probabilities",
-       y = "observations")
+    # geom_vline(aes(xintercept = 0.8), color = ojo_pal[5], linetype = "dashed") +
+    # annotate(geom = "label", x = 0.8, y = 30000,
+    #          label = "0.80 cutoff", color = ojo_pal[5]) +
+  #scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "Distribution of UCCS match probabilities",
+    x = NULL,
+    y = NULL
+  )
 ```
 
 ```{r, filtered-data}
@@ -320,7 +324,8 @@ most_common_included |>
   select(count_as_disposed, n) |>
   slice_max(order_by = n,
             n = 20) |>
-  knitr::kable(format.args = list(big.mark = ","))
+  gt::gt()
+  #knitr::kable(format.args = list(big.mark = ","))
 
 ```
 
@@ -332,7 +337,8 @@ most_common_excluded |>
   select(count_as_disposed, n) |>
   slice_max(order_by = n,
             n = 20) |>
-  knitr::kable(format.args = list(big.mark = ","))
+  gt::gt()
+  # knitr::kable(format.args = list(big.mark = ","))
 
 ```
 
@@ -437,45 +443,37 @@ parties_sum_no_marijuana |>
 
 ### How many defendants have 4+ **non-marijuana** simple possession charges in a ten-year timespan?
 
-Finally, SB108 stipulates that the felony charge only comes into effect after 3+ simple possession **convictions** in a **ten year timespan**. Therefore, we'll filter out charges that ended in a dismissal (leaving only convictions and deferred / suspended dispositions) and repeat the analysis with an added 10-year rolling timeframe.
+Finally, SB108 stipulates that the felony charge only comes into effect after 3+ simple possession **convictions** in a **ten year time-span**. Therefore, we'll filter out charges that ended in a dismissal (leaving only convictions and deferred / suspended dispositions) and repeat the analysis with an added 10-year rolling time-frame.
 
 ```{r}
-poi <- parties |>
+poi <- parties_clean |>
+  filter(!marijuana) |>
   arrange(oscn_id, disposition_date) |>
   group_by(oscn_id) |>
   nest() |>
   mutate(
-    rolling_10_year_n = map_int(
-      data, # Shouldn't this be `d` so that we're only checking the ones we care about?
+    rolling_10_year_4_filings = map_lgl(
+      data,
       ~ {
-        .x$disposition_date |>
-          as_tibble() |>
-          mutate(
-            lag_3_years = lag(value, 3)
-          ) |>
-          filter(
-            interval(
-              lag_3_years,
-              value
-            ) / years(1) <= 10
-          ) |>
-          nrow()
+        date_sequence <- .x$date_filed
+        any(sapply(date_sequence, function(d) {
+          sum(between(date_sequence, d, d + years(10))) >= 4
+        }))
       }
     )
   ) |>
-  filter(
-    rolling_10_year_n > 0
-  )
+  filter(rolling_10_year_4_filings) |>
+  unnest(cols = data) |>
+  ungroup()
 ```
 
 ```{r}
-# poi |>
-#   unnest(cols = data) |>
-#   ungroup() |>
-#   distinct(count_as_disposed, charge_desc)
+poi |>
+  distinct(count_as_disposed, charge_desc)
 ```
 
 ```{r}
-# poi |>
-#   nrow()
+poi |>
+  distinct(oscn_id) |>
+  count()
 ```
