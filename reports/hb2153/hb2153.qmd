@@ -1,5 +1,5 @@
 ---
-title: DRAFT - SB 108 Prospective Impact Analysis
+title: HB 2153 Impact Analysis
 subtitle: Open Justice Oklahoma
 format:
   ojo-report-template-html: default
@@ -19,11 +19,9 @@ knitr:
     message: FALSE
     warning: FALSE
 description: |
-  Estimating the number of Oklahomans directly impacted by HB 3205, a reform of juvenile court fees. Analysis conducted at the request of [Oklahomans for Criminal Justice Reform (OCJR)](https://okjusticereform.org/) and [ProsperOK](https://www.prosperok.org/).
-abstract-title: "Executive Summary"
+
 abstract: |
-  Open Justice Oklahoma estimates that between 12,968 and	16,037 Oklahomans benefitted from reduced fines and fees associated
-  with HB 3205 for Q2 and Q3 of FY 2023.
+
 ---
 
 ```{r, setup}
@@ -49,7 +47,7 @@ oscn_county_list <- c("TULSA", "OKLAHOMA", "CLEVELAND", "ROGERS", "PAYNE",
 
 ## Introduction
 
-Oklahoma's 2023 legislative session saw the introduction of SB 108. This bill, rolling back provisions of State Question 780, would make possession of a controlled substance (excluding marijuana) a felony crime after the fourth such conviction in ten years. While the punishment for a misdemeanor possession conviction is up to \$1,000 dollars and/or up to one year confinement, a felony conviction for the same crime can result in a fine of up to \$5,000 dollars and/or up to 5 years imprisonment.
+Oklahoma's 2023 legislative session saw the introduction of HB 2153. This bill, rolling back provisions of State Question 780, would make possession of a controlled substance (excluding marijuana) a felony crime after the fourth such conviction in ten years. While the punishment for a misdemeanor possession conviction is up to \$1,000 dollars and/or up to one year confinement, a felony conviction for the same crime can result in a fine of up to \$5,000 dollars and/or up to 5 years imprisonment.
 
 This analysis uses historical data on convictions for possession of a controlled substance to better understand how prevalent the situation of having four or more convictions within 10 years is, and thereby, estimate the number of people who would be impacted by this legislation should it be enacted into law in a future legislative session.
 
@@ -132,7 +130,7 @@ n_total_cases <- data |>
   nrow()
 ```
 
-In the data, there were `r format(n_oscn_cases, big.mark = ",")` unique **cases** filed in OSCN counties, compared to `r format(n_total_cases, big.mark = ",")` cases filed statewide. In other words, `r 100 * round(n_oscn_cases / n_total_cases, 4)`% of the cases were filed in the 13 OSCN counties. Accordingly, we can approximate what the statewide results might look like by assuming our end result accounts for roughly `r 100 * round(n_oscn_cases / n_total_cases, 2)`% of the total population affected by SB108.
+In the data, there were `r format(n_oscn_cases, big.mark = ",")` unique **cases** filed in OSCN counties, compared to `r format(n_total_cases, big.mark = ",")` cases filed statewide. In other words, `r 100 * round(n_oscn_cases / n_total_cases, 4)`% of the cases were filed in the 13 OSCN counties. Accordingly, we can approximate what the statewide results might look like by assuming our end result accounts for roughly `r 100 * round(n_oscn_cases / n_total_cases, 2)`% of the total population affected by HB 2153.
 
 * **Data availability, per county:**
 ```{r}
@@ -411,7 +409,7 @@ parties_sum |>
 
 ### How many **non-marijuana** simple possession charges per defendant?
 
-Next, we'll repeat this same analysis with marijuana-specific charges removed, as they would be excluded from SB108:
+Next, we'll repeat this same analysis with marijuana-specific charges removed, as they would be excluded from HB 2153:
 
 ```{r}
 
@@ -443,7 +441,7 @@ parties_sum_no_marijuana |>
 
 ### How many defendants have 4+ **non-marijuana** simple possession charges in a ten-year timespan?
 
-Finally, SB108 stipulates that the felony charge only comes into effect after 3+ simple possession **convictions** in a **ten year time-span**. Therefore, we'll filter out charges that ended in a dismissal (leaving only convictions and deferred / suspended dispositions) and repeat the analysis with an added 10-year rolling time-frame.
+Finally, HB 2153 stipulates that the felony charge only comes into effect after 3+ simple possession **convictions** in a **ten year time-span**. Therefore, we'll filter out charges that ended in a dismissal (leaving only convictions and deferred / suspended dispositions) and repeat the analysis with an added 10-year rolling time-frame.
 
 ```{r}
 poi <- parties_clean |>
