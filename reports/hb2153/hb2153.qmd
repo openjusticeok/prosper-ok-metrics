@@ -18,6 +18,8 @@ knitr:
     echo: FALSE
     message: FALSE
     warning: FALSE
+execute: 
+  freeze: auto
 description: |
 
 abstract: |
