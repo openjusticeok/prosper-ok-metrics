@@ -59,26 +59,86 @@ parties_2014_2022 |>
 
 # * Total number of SQ780 offenses charged in 2014, 2015, and 2016
 
-# ojodb <- ojo_connect()
-# 
-# data <- ojo_tbl("case", .con = ojodb) |>
-#   select(
-#     id,
-#     district,
-#     case_type,
-#     date_filed,
-#     date_closed,
-#     created_at,
-#     updated_at
-#   ) |>
-#   filter(
-#     case_type %in% c("CM", "CF"),
-#     date_filed >= "2014-01-01",
-#     date_filed < "2023-01-01"
-#   ) |>
-#   left_join(
-#     ojo_tbl("count", .con = ojodb),
-#     by = c("id" = "case_id"),
-#     suffix = c("", "_count")
-#   ) |>
-#   ojo_collect()
+ojodb <- ojo_connect()
+
+data <- ojo_tbl("case", .con = ojodb) |>
+  select(
+    id,
+    district,
+    case_type,
+    date_filed,
+    date_closed,
+    created_at,
+    updated_at
+  ) |>
+  filter(
+    case_type %in% c("CM", "CF"),
+    date_filed >= "2014-01-01",
+    date_filed < "2023-01-01"
+  ) |>
+  left_join(
+    ojo_tbl("count", .con = ojodb),
+    by = c("id" = "case_id"),
+    suffix = c("", "_count")
+  ) |>
+  ojo_collect()
+
+# 63 O.S. 2011 Section 2-402
+data |> 
+  filter(
+    str_detect(count_as_disposed, "(?i)CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |\\bPRESCRIP|\\bNARC|\\bMETH|\\bC\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bMA.*NA\\b|\\bMJ\\b|\\bMARI\\b|(?i)salt|ephedrine"), 
+    !str_detect(count_as_disposed, "(?i)DOMESTIC|(?i)ASSAULT|(?i)FIREARM|(?i)DISTRIBUTE|(?i)INTENT|(?i)MANUFACTURE|(?i)DISPENSE|TUO|alcohol|acohol|alchol")
+  ) |> 
+  view()
+
+# 21 O.S. 2011 Section 1704 and 1705
+data |> 
+  filter(
+    str_detect(count_as_disposed, "(?i)larceny|theft|\\bstol(e|en)\\b"), 
+    !str_detect(count_as_disposed, "(?i)gas|automobile|vehicle")
+  ) |> 
+  view()
+
+# 21 O.S. 2011 Section 1713
+data |> 
+  filter(
+    str_detect(count_as_disposed, "(?i)RCSP|(?i)stolen property|(?i)embezzled property|(?i)stoeln property")
+  ) |> 
+  view()
+
+# 21 O.S. 2011 Section 1719.1
+data |> 
+  filter(
+    str_detect(count_as_disposed, "(?i)fish|(?i)domesticated game")
+  ) |> 
+  view()
+
+# 21 O.S. 2011 Section 1722
+data |> 
+  filter(
+    str_detect(count_as_disposed, "oil|(?i)drilling|(?i)gas")
+  ) |> 
+  view()
+
+# 21 O.S. 2011 Section 1731
+data |> 
+  filter(
+    str_detect(count_as_disposed, "(?i)meat|corporeal property")
+  ) |> 
+  view()
+
+# 59 O.S. 2011, Section 1512
+data |> 
+  filter(
+    str_detect(count_as_disposed, "(?i)repay pawn|(?i)pawnbroker|pawn shop")
+  ) |> 
+  view()
+
+# 21 O.S. 2011, Section 1579 and Section 1621
+data |> 
+  filter(
+    str_detect(count_as_disposed, "forgery|forged|(?i)counterfeit")
+  ) |> 
+  view()
+
+
