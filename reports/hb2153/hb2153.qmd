@@ -1,5 +1,5 @@
 ---
-title: HB 2153 Impact Analysis
+title: HB 2153 Analysis
 subtitle: Open Justice Oklahoma
 format:
   ojo-report-template-html: default
