@@ -23,7 +23,7 @@ execute:
 description: |
   Estimating the number of Oklahomans with four or more simple possession convictions, 2001 through 2022. Analysis conducted at the request of [Oklahomans for Criminal Justice Reform (OCJR)](https://okjusticereform.org/) and [ProsperOK](https://www.prosperok.org/).
 abstract: |
-  We estimate that at least 
+  We estimate that at least 2,945 Oklahomans have received 4 for more convictions for drug possession since 2001. This estimate is likely to underestimate the actual number of individuals in these circumstances due to the lack of data pre-2001 and other data availibility issues described below.
 ---
 
 ```{r, setup}
@@ -488,8 +488,17 @@ Finally, HB 2153 stipulates that the felony charge only comes into effect on the
 ```{r}
 tibble(
   OSCN = n_oscn_poi,
-  Statewide = n_total_poi
+  Statewide = floor(n_total_poi) 
 ) |>
-  gt()
+  gt() |>
+  gt::fmt_number(
+    decimals = 0
+  ) |>
+  gt::tab_footnote(
+    footnote = "Estimated using the disposition rate of OSCN county cases",
+    locations = cells_column_labels(
+      columns = Statewide
+    )
+  )
 ```
 
