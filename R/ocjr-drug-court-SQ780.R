@@ -24,37 +24,51 @@ parties_df <- read_csv(here("data/parties_convictions_2001_2022.csv"))
 parties_2014_2022 <- parties_df |>
   filter(
     date_filed >= "2014-01-01",
-    date_filed < "2023-01-01"
-  ) |> 
+    date_filed < "2023-01-01",
+  ) |>
   mutate(year = lubridate::year(date_filed)) |>
+  distinct(party, case_type, date_filed, year) |>
   group_by(year, case_type) |>
-  #group_by(year) |>
   count()
 
 parties_2014_2022 |> 
-  pivot_wider(names_from = case_type, values_from = n) |> 
-  ungroup() |> 
+  pivot_wider(names_from = case_type, values_from = n) |>
+  mutate(
+    total = CM + CF,
+    statewide = round(total * 2.3778)
+  ) |>
+  ungroup() |>
   gt() |> 
   cols_label(contains("CM") ~ "Misdemeanor", 
              contains("CF") ~ "Felony", 
              contains("y") ~ "Year",
+             total ~ "Total (OSCN)",
+             statewide ~ "Statewide Estimate"
             ) |>
   tab_header(
-    title = "Annual Simple Possession Drug Charges", 
+    title = "Annual Simple Possession Drug Convictions", 
     subtitle = "Before and After SQ780 Passing"
   )
 
 parties_2014_2022 |>
   ggplot(aes(x = year, y = n, fill = case_type)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  scale_x_continuous(breaks = c(2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous(breaks = 2014:2022) +
   theme(axis.text.x = element_text(angle = 45, vjust=0.5)) + 
   scale_y_continuous(labels = scales::comma) +
-  labs(title = "Simple Possession Drug Charges",
+  labs(title = "Simple Possession Drug Convictions, OSCN Counties",
        subtitle = "Before and After SQ780 Passing",
        x = "Year",
-       y = "Number of Charges",
-       caption = "This data is based on the total number\nof charges in our dataset, not cases")
+       y = "Number of Convictions",
+       caption = "This data is based on the total number\nof parties convicted, not the number of cases\nfiled.")
+
+parties_2014_2022 |> 
+  pivot_wider(names_from = case_type, values_from = n) |>
+  mutate(
+    total = CM + CF,
+    statewide = round(total * 2.3778)
+  ) |>
+  write_csv(here("data/parties_convictions_2014_2022.csv"))
 
 
 # * Total number of SQ780 offenses charged in 2014, 2015, and 2016
