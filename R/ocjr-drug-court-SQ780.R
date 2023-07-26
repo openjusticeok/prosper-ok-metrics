@@ -58,7 +58,6 @@ parties_2014_2022 |>
 
 
 # * Total number of SQ780 offenses charged in 2014, 2015, and 2016
-
 ojodb <- ojo_connect()
 
 data <- ojo_tbl("case", .con = ojodb) |>
@@ -73,7 +72,7 @@ data <- ojo_tbl("case", .con = ojodb) |>
   ) |>
   filter(
     case_type %in% c("CM", "CF"),
-    date_filed >= "2014-01-01",
+    date_filed >= "2001-01-01",
     date_filed < "2023-01-01"
   ) |>
   left_join(
@@ -83,7 +82,15 @@ data <- ojo_tbl("case", .con = ojodb) |>
   ) |>
   ojo_collect()
 
-# 63 O.S. 2011 Section 2-402
+write_csv(data, here("data/cm_cf_2001_2022.csv"))
+
+# We are limited to the 13 official OSCN counties since 
+# the other counties do not report the charges in each case.
+oscn_county_list <- c("TULSA", "OKLAHOMA", "CLEVELAND", "ROGERS", "PAYNE",
+                      "COMANCHE", "GARFIELD", "CANADIAN", "LOGAN", "ADAIR",
+                      "PUSHMATAHA", "ROGER MILLS", "ELLIS")
+
+# 63 O.S. 2011 Section 2-402 -- simple posession
 data |> 
   filter(
     str_detect(count_as_disposed, "(?i)CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |\\bPRESCRIP|\\bNARC|\\bMETH|\\bC\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bMA.*NA\\b|\\bMJ\\b|\\bMARI\\b|(?i)salt|ephedrine"), 
@@ -91,43 +98,45 @@ data |>
   ) |> 
   view()
 
-# 21 O.S. 2011 Section 1704 and 1705
+# 21 O.S. 2011 Section 1704 and 1705 -- grand and petit larceny
 data |> 
   filter(
     str_detect(count_as_disposed, "(?i)larceny|theft|\\bstol(e|en)\\b"), 
-    !str_detect(count_as_disposed, "(?i)gas|automobile|vehicle")
+    !str_detect(count_as_disposed, "(?i)gas|automobile|vehicle|LMFR|(?i)concealing")
   ) |> 
   view()
 
-# 21 O.S. 2011 Section 1713
+# 21 O.S. 2011 Section 1713 -- buying/receiving/concealing stolen property
 data |> 
   filter(
-    str_detect(count_as_disposed, "(?i)RCSP|(?i)stolen property|(?i)embezzled property|(?i)stoeln property")
+    str_detect(count_as_disposed, "(?i)RCSP|(?i)stolen property|(?i)embezzled property|(?i)stoeln|concealing stolen")
   ) |> 
   view()
 
-# 21 O.S. 2011 Section 1719.1
+# 21 O.S. 2011 Section 1719.1 -- taking domesticated fish and game
 data |> 
   filter(
     str_detect(count_as_disposed, "(?i)fish|(?i)domesticated game")
   ) |> 
   view()
 
-# 21 O.S. 2011 Section 1722
+# 21 O.S. 2011 Section 1722 -- unlawfully taking crude oil/gas/related
 data |> 
   filter(
     str_detect(count_as_disposed, "oil|(?i)drilling|(?i)gas")
   ) |> 
   view()
 
-# 21 O.S. 2011 Section 1731
+# 21 O.S. 2011 Section 1731 
+# -- Larceny of merchandise (edible meat or other physical property)
+# held for sale in retail or wholesale establishments 
 data |> 
   filter(
-    str_detect(count_as_disposed, "(?i)meat|corporeal property")
+    str_detect(count_as_disposed, "LMFR|larceny of merchandise|meat|corporeal property")
   ) |> 
   view()
 
-# 59 O.S. 2011, Section 1512
+# 59 O.S. 2011, Section 1512 -- pawn
 data |> 
   filter(
     str_detect(count_as_disposed, "(?i)repay pawn|(?i)pawnbroker|pawn shop")
@@ -140,5 +149,3 @@ data |>
     str_detect(count_as_disposed, "forgery|forged|(?i)counterfeit")
   ) |> 
   view()
-
-
