@@ -54,10 +54,18 @@ data_case <- ojo_tbl("case", .con = ojodb) |>
   ) |>
   ojo_collect()
 
-oscn_cases <- data_case |>
+# write_csv(data_case, here("data/cm_cf_2001_2022.csv"))
+# df_case <- read_csv(here("data/cm_cf_2001_2022.csv"))
+df_case <- data_case
+
+oscn_cases <- df_case |>
   filter(district %in% oscn_county_list)
 
-# Pulling relevant minute tables
+#check
+oscn_ids <- oscn_cases |>
+  distinct(id)
+
+############ Pulling relevant minute tables
 # We first look for any mention of suspended sentences in the description column. 
 # It appears that revocation or application for revocation of a suspended sentence is not uncommon and might be worth noting. 
 # If we want to include cases that result in a revocation of the suspended sentence or want to do further analysis with that on what might happen.
@@ -76,39 +84,51 @@ data_minutes <- ojo_tbl("minute") |>
          ) |>
   ojo_collect()
 
-<<<<<<< Updated upstream
+# write_csv(data_minutes, here("data/min_2001_2022.csv"))
+# df_min <- read_csv(here("data/min_2001_2022.csv"))
+df_min <- data_minutes
 
+#578004
+df_min <- df_min |> 
+  filter(
+    !str_detect(description, "(?i)dismiss|(?i)\\brevok(e|ed|ing)\\b|(?i)\\brevoc(atio|aton|ation)\\b")
+         )
 
-oscn_cases |>
-  inner_join(
-    oscn_cases |>
-      distinct(id),
-    by = c("case_id" = "id"),
-    copy = TRUE
-  )
-
-# check for case_id's that are in 
-join_case_min <- minute_ids |>
-   anti_join(
-     oscn_cases,
-     by = c("case_id" = "id"))
-=======
-minute_ids <- data_minutes |>
+#check
+minute_ids <- df_min |>
   distinct(case_id)
 
-data_minutes("description") |>
-  inner_join(
-    oscn_cases,
-    by = c("case_id" = "id"))
+# df_min("description") |>
+#   inner_join(
+#     oscn_cases,
+#     by = c("case_id" = "id"))
 
-# check for cases being filtered out with minute regex
-# join_case_min <- minute_ids |>
-#   #inner_join()
-#    anti_join(
-#      oscn_cases,
-#      by = c("case_id" = "id"))
-# #
->>>>>>> Stashed changes
+join_case_min <- df_min |>
+  inner_join(
+    oscn_cases |>
+      distinct(),
+      by = c("case_id" = "id"),
+    copy = TRUE
+    ) |>
+  mutate(year = lubridate::year(date)) 
+
+# 78830 unique case ids 
+# check that we only have 13 OSCN counties
+join_case_min |> 
+  distinct(district) |> 
+  count()
+
+#check for cases being filtered out with minute regex
+df_min |>
+  anti_join(
+    oscn_cases,
+    by = c("case_id" = "id")) |> 
+  view()
+
+annual_suspended <- join_case_min |>
+  distinct(id, year) |>
+  group_by(year) |>
+  count()
 
 
 # Extrapolate to state-wide
