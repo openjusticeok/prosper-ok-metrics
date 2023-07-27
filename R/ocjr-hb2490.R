@@ -44,8 +44,8 @@ data_case <- ojo_tbl("case", .con = ojodb) |>
     ) |>
   filter(
     case_type %in% c("CM", "CF"),
-    date_filed >= "2001-01-01",
-    date_filed < "2023-01-01"
+    date_filed >= start_date,
+    date_filed < end_date
   ) |>
   left_join(
     ojo_tbl("count", .con = ojodb),
@@ -61,14 +61,9 @@ oscn_cases <- data_case |>
 # We first look for any mention of suspended sentences in the description column. 
 # It appears that revocation or application for revocation of a suspended sentence is not uncommon and might be worth noting. 
 # If we want to include cases that result in a revocation of the suspended sentence or want to do further analysis with that on what might happen.
-data_minutes <- ojo_tbl("minute") |>    
-<<<<<<< Updated upstream
-  filter(date >= "2001-01-01",
-          date < "2023-01-01") |>
-=======
+data_minutes <- ojo_tbl("minute") |>
   filter(date >= start_date,
-          date < end_date) |>
->>>>>>> Stashed changes
+         date < end_date) |>
    select(id,
           case_id,
           date,
@@ -76,17 +71,12 @@ data_minutes <- ojo_tbl("minute") |>
           description,
           count,
           amount) |>
-<<<<<<< Updated upstream
-  filter(str_detect(description, "(?i)suspended sentence"), 
-         !str_detect(description, "(?i)\\brevok(e|ed|ing)\\b")
+  filter(str_detect(description, "(?i)suspended sentence")) |> 
+  filter(!str_detect(description, "(?i)\\brevok(e|ed|ing)\\b")
          ) |>
-=======
-#   filter(str_detect(description, "(?i)suspended")
-# !str_detect(description, min_desc_exclude)
-# ) |>
->>>>>>> Stashed changes
   ojo_collect()
 
+<<<<<<< Updated upstream
 
 
 oscn_cases |>
@@ -102,6 +92,23 @@ join_case_min <- minute_ids |>
    anti_join(
      oscn_cases,
      by = c("case_id" = "id"))
+=======
+minute_ids <- data_minutes |>
+  distinct(case_id)
+
+data_minutes("description") |>
+  inner_join(
+    oscn_cases,
+    by = c("case_id" = "id"))
+
+# check for cases being filtered out with minute regex
+# join_case_min <- minute_ids |>
+#   #inner_join()
+#    anti_join(
+#      oscn_cases,
+#      by = c("case_id" = "id"))
+# #
+>>>>>>> Stashed changes
 
 
 # Extrapolate to state-wide
