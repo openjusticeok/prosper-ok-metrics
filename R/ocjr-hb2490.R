@@ -73,13 +73,21 @@ data_minutes <- ojo_tbl("minute") |>
          ) |>
   ojo_collect()
 
+
+
+oscn_cases |>
+  inner_join(
+    oscn_cases |>
+      distinct(id),
+    by = c("case_id" = "id"),
+    copy = TRUE
+  )
+
 # check for case_id's that are in 
 join_case_min <- minute_ids |>
-  #inner_join()
    anti_join(
      oscn_cases,
      by = c("case_id" = "id"))
-#
 
 
 # Extrapolate to state-wide
