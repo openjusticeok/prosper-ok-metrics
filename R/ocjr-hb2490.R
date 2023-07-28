@@ -11,22 +11,7 @@ library(extrafont)
 
 ojodb <- ojo_connect()
 
-# Pulling the number of suspended sentences for CMs / CFs in the 13 OSCN counties
-oscn_county_list <- c(
-  "TULSA",
-  "OKLAHOMA",
-  "CLEVELAND",
-  "ROGERS",
-  "PAYNE",
-  "COMANCHE",
-  "GARFIELD",
-  "CANADIAN",
-  "LOGAN",
-  "ADAIR",
-  "PUSHMATAHA",
-  "ROGER MILLS",
-  "ELLIS"
-)
+# Pulling the number of suspended sentences for CMs / CFs 
 
 start_date <- ymd("2001-01-01")
 end_date <- ymd("2023-01-01")
@@ -58,11 +43,8 @@ data_case <- ojo_tbl("case", .con = ojodb) |>
 # df_case <- read_csv(here("data/cm_cf_2001_2022.csv"))
 df_case <- data_case
 
-oscn_cases <- df_case |>
-  filter(district %in% oscn_county_list)
-
 #check
-oscn_ids <- oscn_cases |>
+df_ids <- df_case |>
   distinct(id)
 
 ############ Pulling relevant minute tables
@@ -79,7 +61,7 @@ data_minutes <- ojo_tbl("minute") |>
           description,
           count,
           amount) |>
-  filter(str_detect(description, "(?i)suspended sentence")) |> 
+  filter(str_detect(description, "(?i)^\\ssuspended sentence")) |> 
   filter(!str_detect(description, "(?i)\\brevok(e|ed|ing)\\b")
          ) |>
   ojo_collect()
@@ -88,10 +70,10 @@ data_minutes <- ojo_tbl("minute") |>
 # df_min <- read_csv(here("data/min_2001_2022.csv"))
 df_min <- data_minutes
 
-#578004
+#111058
 df_min <- df_min |> 
   filter(
-    !str_detect(description, "(?i)dismiss|(?i)\\brevok(e|ed|ing)\\b|(?i)\\brevoc(atio|aton|ation)\\b")
+    !str_detect(description, "(?i)dismiss|(?i)\\brevok(e|ed|ing)\\b|(?i)\\brevoc(atio|aton|ation)\\b|(?i)torevoke|revocke")
          )
 
 #check
@@ -105,24 +87,24 @@ minute_ids <- df_min |>
 
 join_case_min <- df_min |>
   inner_join(
-    oscn_cases |>
+    df_case |>
       distinct(),
       by = c("case_id" = "id"),
     copy = TRUE
     ) |>
   mutate(year = lubridate::year(date)) 
 
-# 78830 unique case ids 
-# check that we only have 13 OSCN counties
-join_case_min |> 
-  distinct(district) |> 
-  count()
+join_case_min$description |> 
+  view()
 
+# 84 cases filtered out
 #check for cases being filtered out with minute regex
-df_min |>
+# For some reason it filters these out (these rows contain suspended sentence in the string) and when I checked for spelling/spacing issues I was unable to resolve the problem. 
+test <- df_min |>
   anti_join(
-    oscn_cases,
+    df_case,
     by = c("case_id" = "id")) |> 
+  #distinct(id) |> 
   view()
 
 annual_suspended <- join_case_min |>
@@ -130,6 +112,27 @@ annual_suspended <- join_case_min |>
   group_by(year) |>
   count()
 
+# Check if we should be splitting OSCN counties from the rest
+oscn_county_list <- c(
+  "TULSA",
+  "OKLAHOMA",
+  "CLEVELAND",
+  "ROGERS",
+  "PAYNE",
+  "COMANCHE",
+  "GARFIELD",
+  "CANADIAN",
+  "LOGAN",
+  "ADAIR",
+  "PUSHMATAHA",
+  "ROGER MILLS",
+  "ELLIS"
+)
 
-# Extrapolate to state-wide
+oscn_cases <- df_case |>
+  filter(district %in% oscn_county_list)
 
+# check that we only have 13 OSCN counties
+# join_case_min |> 
+#   distinct(district) |> 
+#   count()
