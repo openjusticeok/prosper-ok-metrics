@@ -2,7 +2,7 @@ library(readr)
 library(stringr)
 library(here)
 library(janitor)
-library(glue)  
+library(glue)
 library(ojoverse)
 library(lubridate)
 library(ojodb)
@@ -30,22 +30,22 @@ parties_2014_2022 <- parties_df |>
   group_by(year, case_type) |>
   count()
 
-parties_2014_2022 |> 
+parties_2014_2022 |>
   pivot_wider(names_from = case_type, values_from = n) |>
   mutate(
     total = CM + CF,
     statewide = round(total * 2.3778)
   ) |>
   ungroup() |>
-  gt() |> 
-  cols_label(contains("CM") ~ "Misdemeanor", 
-             contains("CF") ~ "Felony", 
+  gt() |>
+  cols_label(contains("CM") ~ "Misdemeanor",
+             contains("CF") ~ "Felony",
              contains("y") ~ "Year",
              total ~ "Total (OSCN)",
              statewide ~ "Statewide Estimate"
             ) |>
   tab_header(
-    title = "Annual Simple Possession Drug Convictions", 
+    title = "Annual Simple Possession Drug Convictions",
     subtitle = "Before and After SQ780 Passing"
   )
 
@@ -53,7 +53,7 @@ parties_2014_2022 |>
   ggplot(aes(x = year, y = n, fill = case_type)) +
   geom_bar(stat = "identity") +
   scale_x_continuous(breaks = 2014:2022) +
-  theme(axis.text.x = element_text(angle = 45, vjust=0.5)) + 
+  theme(axis.text.x = element_text(angle = 45, vjust=0.5)) +
   scale_y_continuous(labels = scales::comma) +
   labs(title = "Simple Possession Drug Convictions, OSCN Counties",
        subtitle = "Before and After SQ780 Passing",
@@ -61,7 +61,7 @@ parties_2014_2022 |>
        y = "Number of Convictions",
        caption = "This data is based on the total number\nof parties convicted, not the number of cases\nfiled.")
 
-parties_2014_2022 |> 
+parties_2014_2022 |>
   pivot_wider(names_from = case_type, values_from = n) |>
   mutate(
     total = CM + CF,
@@ -94,7 +94,7 @@ ojodb <- ojo_connect()
 #     suffix = c("", "_count")
 #   ) |>
 #   ojo_collect()
-# 
+#
 # write_csv(data, here("data/cm_cf_2001_2022.csv"))
 data <- read_csv(here("data/cm_cf_2001_2022.csv"))
 
@@ -106,7 +106,7 @@ charge_predictions <- read_csv(
 
 uccs <- read_csv(here("data/uccs-schema.csv"))
 
-# We are limited to the 13 official OSCN counties since 
+# We are limited to the 13 official OSCN counties since
 # the other counties do not report the charges in each case.
 oscn_county_list <- c("TULSA", "OKLAHOMA", "CLEVELAND", "ROGERS", "PAYNE",
                       "COMANCHE", "GARFIELD", "CANADIAN", "LOGAN", "ADAIR",
@@ -148,82 +148,115 @@ result_clean <- data |>
   ) |>
   left_join(uccs, by = "uccs_code")
 
+drug_toc <- result_clean |>
+  filter()
+
+property_toc <-
+
 ## Gathering relevant charges
-# SQ780 charges include: simple possession of controlled substances 
+# SQ780 charges include: simple possession of controlled substances
 # other drugs include ephedrine, salts, optical isomers
 
-# larceny -- stolen property, buying or receiving stolen property, 
-#             concealing or withholding stolen property, 
-#             aiding in concealing such property, taking domesticated fish or game, 
-#             theft of crude oil or gas or any machinery necessary for the 
+# larceny -- stolen property, buying or receiving stolen property,
+#             concealing or withholding stolen property,
+#             aiding in concealing such property, taking domesticated fish or game,
+#             theft of crude oil or gas or any machinery necessary for the
 #             drilling or production of oil wells, larceny of merchandise or edible meat
 
-# property crimes -- 
-#                   
-# pawnbroker stuff -- failure to repay pawnbroker, 
-#                   operating a pawnshop without appropriate license, 
+# property crimes --
+#
+# pawnbroker stuff -- failure to repay pawnbroker,
+#                   operating a pawnshop without appropriate license,
 
-# forgery/counterfeiting -- selling, exchanging, delivering a forged or counterfeited money 
+# forgery/counterfeiting -- selling, exchanging, delivering a forged or counterfeited money
 
 # 63 O.S. 2011 Section 2-402 -- simple possession
-result_clean |> 
+result_clean |>
   filter(
-    str_detect(count_as_disposed, "(?i)CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |\\bPRESCRIP|\\bNARC|\\bMETH|\\bC\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bMA.*NA\\b|\\bMJ\\b|\\bMARI\\b|(?i)salt|ephedrine"), 
+    str_detect(count_as_disposed, "(?i)CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |\\bPRESCRIP|\\bNARC|\\bMETH|\\bC\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bMA.*NA\\b|\\bMJ\\b|\\bMARI\\b|(?i)salt|ephedrine"),
     !str_detect(count_as_disposed, "(?i)DOMESTIC|(?i)ASSAULT|(?i)FIREARM|(?i)DISTRIBUTE|(?i)INTENT|(?i)MANUFACTURE|(?i)DISPENSE|TUO|alcohol|acohol|alchol")
-  ) |> 
+  ) |>
   view()
 # include uccs_drug_plus = probability >= 0.8 & uccs_code >= 3090 & uccs_code <= 3230
 
 # 21 O.S. 2011 Section 1704 and 1705 -- grand and petit larceny
-result_clean |> 
+result_clean |>
   filter(
-    str_detect(count_as_disposed, "(?i)larceny|theft|\\bstol(e|en)\\b"), 
+    str_detect(count_as_disposed, "(?i)larceny|theft|\\bstol(e|en)\\b"),
     !str_detect(count_as_disposed, "(?i)gas|automobile|vehicle|LMFR|(?i)concealing")
-  ) |> 
+  ) |>
   view()
 
 # 21 O.S. 2011 Section 1713 -- buying/receiving/concealing stolen property
-result_clean |> 
+result_clean |>
   filter(
     str_detect(count_as_disposed, "(?i)RCSP|(?i)stolen property|(?i)embezzled property|(?i)stoeln|concealing stolen")
-  ) |> 
+  ) |>
   view()
 
 # 21 O.S. 2011 Section 1719.1 -- taking domesticated fish and game
-result_clean |> 
+result_clean |>
   filter(
     str_detect(count_as_disposed, "(?i)fish|(?i)domesticated game")
-  ) |> 
+  ) |>
   view()
 
 # 21 O.S. 2011 Section 1722 -- unlawfully taking crude oil/gas/related
-result_clean |> 
+result_clean |>
   filter(
     str_detect(count_as_disposed, "oil|(?i)drilling|(?i)gas")
-  ) |> 
+  ) |>
   view()
 
-# 21 O.S. 2011 Section 1731 
+# 21 O.S. 2011 Section 1731
 # -- Larceny of merchandise (edible meat or other physical property)
-# held for sale in retail or wholesale establishments 
-result_clean |> 
+# held for sale in retail or wholesale establishments
+result_clean |>
   filter(
-    str_detect(count_as_disposed, "LMFR|larceny of merchandise|meat|corporeal property")
-  ) |> 
+    str_detect(count_as_disposed, "LMFR|larceny of merchandise|meat")
+  ) |>
+  view()
+
+# 21 O.S. 2011, Sections 1451 - embezzlement
+result_clean |>
+  filter(
+    str_detect(count_as_disposed, "(?i)embezzlement|embezlement|emblezzlement|embzzlement")
+  ) |>
+  view()
+
+# 21 O.S. 2011, Sections 1503 - defrauding hospitality/lodging
+result_clean |>
+  filter(
+    str_detect(count_as_disposed, "(?i)(hotel|inn|restaurant|boarding house|rooming house|motel|auto camp|trailer camp|apartment|rental unit|rental house)")
+  ) |>
+  view()
+
+# 21 O.S. 2011, Sections 1521 - vehicle embezzlement
+result_clean |>
+  filter(
+    str_detect(count_as_disposed, "(?i)vehicle with bogus|(?i)embezzlement of a motor")
+  ) |>
+  view()
+
+# 21 O.S. 2011, Sections 1541.1, 1541.2, 1541.3
+result_clean |>
+  filter(
+    str_detect(count_as_disposed, "cheat|defraud")
+  ) |>
   view()
 
 # 59 O.S. 2011, Section 1512 -- pawn
-result_clean |> 
+result_clean |>
   filter(
     str_detect(count_as_disposed, "(?i)repay pawn|(?i)pawnbroker|pawn shop")
-  ) |> 
+  ) |>
   view()
 
 # 21 O.S. 2011, Section 1579 and Section 1621
-result_clean |> 
+result_clean |>
   filter(
     str_detect(count_as_disposed, "forgery|forged|(?i)counterfeit")
-  ) |> 
+  ) |>
   view()
 
 data_clean <- result_clean |>
@@ -245,7 +278,7 @@ data_clean <- result_clean |>
     poss = str_detect(count_as_disposed, "(?i)poss|(?i)poass of cds|(?i)poissession"), # added typos I found in `n`
     dist = str_detect(count_as_disposed, "(?i)\\bdist"),
     intent = str_detect(count_as_disposed, "(?i)intent|\\bint\\b"),
-    paraphernalia = str_detect(count_as_disposed, "(?i)paraph.*\\b|(?i)\\bpara\\b|(?i)p.*nalia"), # added typos 
+    paraphernalia = str_detect(count_as_disposed, "(?i)paraph.*\\b|(?i)\\bpara\\b|(?i)p.*nalia"), # added typos
     weapon = str_detect(count_as_disposed, "(?i)weapon"),
     trafficking = str_detect(count_as_disposed, "(?i)traffick"),
     endeavor = str_detect(count_as_disposed, "(?i)endeavor|\\bend\\b"),
@@ -257,16 +290,20 @@ data_clean <- result_clean |>
     tax = str_detect(count_as_disposed, "(?i)\\btax\\b"),
     minor = str_detect(count_as_disposed, "(?i)minor|child|under.*21"),
     inmate = str_detect(count_as_disposed, "(?i)inmate|jail|contrab|penal|\\bfac"),
-    larceny = str_detect(count_as_disposed, "(?i)larceny|theft|LMFR|larceny of merchandise|meat|corporeal property"),
-                                                          #|\\bstol(e|en)\\b"),
-    receive_stolen = str_detect(count_as_disposed, "(?i)RCSP|(?i)stolen property|(?i)embezzled property|(?i)stoeln|concealing stolen"),
-    misc = str_detect(count_as_disposed, "(?i)fish|(?i)domesticated game|oil|(?i)drilling|(?i)gas"),
-    pawn = str_detect(count_as_disposed, "(?i)repay pawn|(?i)pawnbroker|pawn shop"),
-    forgery = str_detect(count_as_disposed, "forgery|forged|(?i)counterfeit"),
     vehicle = str_detect(count_as_disposed, "(?i)(?<!\\snon|not\\s)(?:\\sMV\\b|motor vehicle)"),
     proceeds = str_detect(count_as_disposed, "(?i)ac.*\\bp(r|o){0,2}|proceed"),
+    larceny = str_detect(count_as_disposed, "(?i)larceny|theft|LMFR|larceny of merchandise|meat|corporeal property|\\bstol(e|en)\\b"),
+    receive_stolen = str_detect(count_as_disposed, "(?i)RCSP|(?i)stolen property|(?i)stoeln|concealing stolen"),
+    embezzle = str_detect(count_as_disposed, "(?i)embezzlement|embezlement|emblezzlement|embzzlement"),
+    misc = str_detect(count_as_disposed, "(?i)fish|(?i)domesticated game|oil|(?i)drilling|(?i)gas"),
+    pawn = str_detect(count_as_disposed, "(?i)repay pawn|(?i)pawnbroker|pawn shop"),
+    hospitality = str_detect(count_as_disposed, "(?i)(hotel|inn|restaurant|boarding house|rooming house|motel|auto camp|trailer camp|apartment|rental unit|rental house)"),
+    forgery = str_detect(count_as_disposed, "forgery|forged|(?i)counterfeit"),
     drug = str_detect(count_as_disposed, "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |\\bPRESCRIP|\\bNARC|\\bMETH|\\bC\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bMA.*NA\\b|\\bMJ\\b|\\bMARI\\b"),
     uccs_drug = probability >= 0.8 & uccs_code >= 3090 & uccs_code <= 3162,
     uccs_drug_plus = probability >= 0.8 & uccs_code >= 3090 & uccs_code <= 3230
   ) |>
   arrange(count_as_disposed)
+
+
+
