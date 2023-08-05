@@ -148,11 +148,6 @@ result_clean <- data |>
   ) |>
   left_join(uccs, by = "uccs_code")
 
-drug_toc <- result_clean |>
-  filter()
-
-property_toc <-
-
 ## Gathering relevant charges
 # SQ780 charges include: simple possession of controlled substances
 # other drugs include ephedrine, salts, optical isomers
@@ -169,6 +164,12 @@ property_toc <-
 #                   operating a pawnshop without appropriate license,
 
 # forgery/counterfeiting -- selling, exchanging, delivering a forged or counterfeited money
+
+drug_toc <- result_clean |>
+  filter(offense_type_desc=="Drug") # num of rows - 301680
+
+property_toc <- result_clean |>
+  filter(offense_type_desc=="Property") # num of rows - 329911
 
 # 63 O.S. 2011 Section 2-402 -- simple possession
 result_clean |>
@@ -286,6 +287,7 @@ data_clean <- result_clean |>
     manufacture = str_detect(count_as_disposed, "(?i)\\bmanufac"),
     commercial = str_detect(count_as_disposed, "(?i)COMM FAC"),
     school_park_church = str_detect(count_as_disposed, "(?i)school|education|park|church|day care|\\spk\\s"),
+    conspiracy = str_detect(count_as_disposed, "(?i)\\bconsp"),
     maintaining = str_detect(count_as_disposed, "(?i)\\bmaint.*(place|dwelling)"),
     tax = str_detect(count_as_disposed, "(?i)\\btax\\b"),
     minor = str_detect(count_as_disposed, "(?i)minor|child|under.*21"),
@@ -305,5 +307,36 @@ data_clean <- result_clean |>
   ) |>
   arrange(count_as_disposed)
 
+# 262172
+clean_df <- data_clean |> 
+  filter(
+    (uccs_drug_plus & !intent & !proceeds & !maintaining & !conspiracy & !school_park_church) |
+      (poss & drug & !dist & !intent & !paraphernalia & !weapon & !trafficking &
+         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
+         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) |
+      (larceny & !dist & !intent & !paraphernalia & !weapon & !trafficking &
+         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
+         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds)|
+      (receive_stolen & !dist & !intent & !paraphernalia & !weapon & !trafficking &
+         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
+         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds)|
+      (embezzle & !dist & !intent & !paraphernalia & !weapon & !trafficking &
+         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
+         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) |
+      (misc & !dist & !intent & !paraphernalia & !weapon & !trafficking &
+         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
+         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) |
+      (pawn & !dist & !intent & !paraphernalia & !weapon & !trafficking &
+         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
+         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) | 
+      (hospitality & !dist & !intent & !paraphernalia & !weapon & !trafficking &
+        !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
+        !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) |
+      (forgery & !dist & !intent & !paraphernalia & !weapon & !trafficking &
+         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
+         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds)
+    )
 
+# check uccs codes for  property charges
+  
 
