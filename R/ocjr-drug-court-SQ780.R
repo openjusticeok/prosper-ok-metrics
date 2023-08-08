@@ -171,13 +171,21 @@ drug_toc <- result_clean |>
 property_toc <- result_clean |>
   filter(offense_type_desc=="Property") # num of rows - 329911
 
+# find appropriate property uccs codes
+property_codes <- uccs |>
+  filter(offense_type_desc=="Property") |>
+  filter(
+    !str_detect(charge_desc, "(?i)arson|(?i)hit and run|(?i)vehicle|(?i)auto|(?i)trespass")
+  ) |>
+  select(uccs_code)
+
 # 63 O.S. 2011 Section 2-402 -- simple possession
 result_clean |>
   filter(
     str_detect(count_as_disposed, "(?i)CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |\\bPRESCRIP|\\bNARC|\\bMETH|\\bC\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bMA.*NA\\b|\\bMJ\\b|\\bMARI\\b|(?i)salt|ephedrine"),
     !str_detect(count_as_disposed, "(?i)DOMESTIC|(?i)ASSAULT|(?i)FIREARM|(?i)DISTRIBUTE|(?i)INTENT|(?i)MANUFACTURE|(?i)DISPENSE|TUO|alcohol|acohol|alchol")
   ) |>
-  view()
+  View()
 # include uccs_drug_plus = probability >= 0.8 & uccs_code >= 3090 & uccs_code <= 3230
 
 # 21 O.S. 2011 Section 1704 and 1705 -- grand and petit larceny
@@ -186,28 +194,28 @@ result_clean |>
     str_detect(count_as_disposed, "(?i)larceny|theft|\\bstol(e|en)\\b"),
     !str_detect(count_as_disposed, "(?i)gas|automobile|vehicle|LMFR|(?i)concealing")
   ) |>
-  view()
+  View()
 
 # 21 O.S. 2011 Section 1713 -- buying/receiving/concealing stolen property
 result_clean |>
   filter(
     str_detect(count_as_disposed, "(?i)RCSP|(?i)stolen property|(?i)embezzled property|(?i)stoeln|concealing stolen")
   ) |>
-  view()
+  View()
 
 # 21 O.S. 2011 Section 1719.1 -- taking domesticated fish and game
 result_clean |>
   filter(
     str_detect(count_as_disposed, "(?i)fish|(?i)domesticated game")
   ) |>
-  view()
+  View()
 
 # 21 O.S. 2011 Section 1722 -- unlawfully taking crude oil/gas/related
 result_clean |>
   filter(
     str_detect(count_as_disposed, "oil|(?i)drilling|(?i)gas")
   ) |>
-  view()
+  View()
 
 # 21 O.S. 2011 Section 1731
 # -- Larceny of merchandise (edible meat or other physical property)
@@ -216,49 +224,49 @@ result_clean |>
   filter(
     str_detect(count_as_disposed, "LMFR|larceny of merchandise|meat")
   ) |>
-  view()
+  View()
 
 # 21 O.S. 2011, Sections 1451 - embezzlement
 result_clean |>
   filter(
     str_detect(count_as_disposed, "(?i)embezzlement|embezlement|emblezzlement|embzzlement")
   ) |>
-  view()
+  View()
 
 # 21 O.S. 2011, Sections 1503 - defrauding hospitality/lodging
 result_clean |>
   filter(
     str_detect(count_as_disposed, "(?i)(hotel|inn|restaurant|boarding house|rooming house|motel|auto camp|trailer camp|apartment|rental unit|rental house)")
   ) |>
-  view()
+  View()
 
 # 21 O.S. 2011, Sections 1521 - vehicle embezzlement
 result_clean |>
   filter(
     str_detect(count_as_disposed, "(?i)vehicle with bogus|(?i)embezzlement of a motor")
   ) |>
-  view()
+  View()
 
 # 21 O.S. 2011, Sections 1541.1, 1541.2, 1541.3
 result_clean |>
   filter(
     str_detect(count_as_disposed, "cheat|defraud")
   ) |>
-  view()
+  View()
 
 # 59 O.S. 2011, Section 1512 -- pawn
 result_clean |>
   filter(
     str_detect(count_as_disposed, "(?i)repay pawn|(?i)pawnbroker|pawn shop")
   ) |>
-  view()
+  View()
 
 # 21 O.S. 2011, Section 1579 and Section 1621
 result_clean |>
   filter(
     str_detect(count_as_disposed, "forgery|forged|(?i)counterfeit")
   ) |>
-  view()
+  View()
 
 data_clean <- result_clean |>
   select(
@@ -303,15 +311,19 @@ data_clean <- result_clean |>
     forgery = str_detect(count_as_disposed, "forgery|forged|(?i)counterfeit"),
     drug = str_detect(count_as_disposed, "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |\\bPRESCRIP|\\bNARC|\\bMETH|\\bC\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bMA.*NA\\b|\\bMJ\\b|\\bMARI\\b"),
     uccs_drug = probability >= 0.8 & uccs_code >= 3090 & uccs_code <= 3162,
-    uccs_drug_plus = probability >= 0.8 & uccs_code >= 3090 & uccs_code <= 3230
+    uccs_drug_plus = probability >= 0.8 & uccs_code >= 3090 & uccs_code <= 3230,
+    uccs_property = probability >= 0.8 & uccs_code %in% property_codes$uccs_code
   ) |>
   arrange(count_as_disposed)
 
-# 262172
-clean_df <- data_clean |> 
+# 407675
+clean_df <- data_clean |>
   filter(
     (uccs_drug_plus & !intent & !proceeds & !maintaining & !conspiracy & !school_park_church) |
       (poss & drug & !dist & !intent & !paraphernalia & !weapon & !trafficking &
+         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
+         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) |
+      (uccs_property & !dist & !intent & !paraphernalia & !weapon & !trafficking &
          !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
          !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) |
       (larceny & !dist & !intent & !paraphernalia & !weapon & !trafficking &
@@ -328,7 +340,7 @@ clean_df <- data_clean |>
          !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) |
       (pawn & !dist & !intent & !paraphernalia & !weapon & !trafficking &
          !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
-         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) | 
+         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) |
       (hospitality & !dist & !intent & !paraphernalia & !weapon & !trafficking &
         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) |
@@ -338,5 +350,5 @@ clean_df <- data_clean |>
     )
 
 # check uccs codes for  property charges
-  
+
 
