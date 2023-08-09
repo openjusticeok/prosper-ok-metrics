@@ -278,7 +278,7 @@ ggplot(sq780_counts, aes(x=year, y=n, group=case_type)) +
        y = "Number of Charges", 
        color = "Case Type",
        caption = "This data is based on the total number of charges in \nthe court records, not cases among OSCN counties only."
-       )
+  )
 
 
 ########################### SQ780 offenses:
