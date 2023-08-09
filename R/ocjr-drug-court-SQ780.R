@@ -148,22 +148,6 @@ result_clean <- data |>
   ) |>
   left_join(uccs, by = "uccs_code")
 
-## Gathering relevant charges
-# SQ780 charges include: simple possession of controlled substances
-# other drugs include ephedrine, salts, optical isomers
-
-# larceny -- stolen property, buying or receiving stolen property,
-#             concealing or withholding stolen property,
-#             aiding in concealing such property, taking domesticated fish or game,
-#             theft of crude oil or gas or any machinery necessary for the
-#             drilling or production of oil wells, larceny of merchandise or edible meat
-
-# property crimes --
-#
-# pawnbroker stuff -- failure to repay pawnbroker,
-#                   operating a pawnshop without appropriate license,
-
-# forgery/counterfeiting -- selling, exchanging, delivering a forged or counterfeited money
 
 drug_toc <- result_clean |>
   filter(offense_type_desc=="Drug") # num of rows - 301680
@@ -179,109 +163,15 @@ property_codes <- uccs |>
   ) |>
   select(uccs_code)
 
-# 63 O.S. 2011 Section 2-402 -- simple possession
-result_clean |>
-  filter(
-    str_detect(count_as_disposed, "(?i)CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |\\bPRESCRIP|\\bNARC|\\bMETH|\\bC\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bMA.*NA\\b|\\bMJ\\b|\\bMARI\\b|(?i)salt|ephedrine"),
-    !str_detect(count_as_disposed, "(?i)DOMESTIC|(?i)ASSAULT|(?i)FIREARM|(?i)DISTRIBUTE|(?i)INTENT|(?i)MANUFACTURE|(?i)DISPENSE|TUO|alcohol|acohol|alchol")
-  ) |>
-  View()
-# include uccs_drug_plus = probability >= 0.8 & uccs_code >= 3090 & uccs_code <= 3230
-
-# 21 O.S. 2011 Section 1704 and 1705 -- grand and petit larceny
-result_clean |>
-  filter(
-    str_detect(count_as_disposed, "(?i)larceny|theft|\\bstol(e|en)\\b"),
-    !str_detect(count_as_disposed, "(?i)gas|automobile|vehicle|LMFR|(?i)concealing")
-  ) |>
-  View()
-
-# 21 O.S. 2011 Section 1713 -- buying/receiving/concealing stolen property
-result_clean |>
-  filter(
-    str_detect(count_as_disposed, "(?i)RCSP|(?i)stolen property|(?i)embezzled property|(?i)stoeln|concealing stolen")
-  ) |>
-  View()
-
-# 21 O.S. 2011 Section 1719.1 -- taking domesticated fish and game
-result_clean |>
-  filter(
-    str_detect(count_as_disposed, "(?i)fish|(?i)domesticated game")
-  ) |>
-  View()
-
-# 21 O.S. 2011 Section 1722 -- unlawfully taking crude oil/gas/related
-result_clean |>
-  filter(
-    str_detect(count_as_disposed, "oil|(?i)drilling|(?i)gas")
-  ) |>
-  View()
-
-# 21 O.S. 2011 Section 1731
-# -- Larceny of merchandise (edible meat or other physical property)
-# held for sale in retail or wholesale establishments
-result_clean |>
-  filter(
-    str_detect(count_as_disposed, "LMFR|larceny of merchandise|meat")
-  ) |>
-  View()
-
-# 21 O.S. 2011, Sections 1451 - embezzlement
-result_clean |>
-  filter(
-    str_detect(count_as_disposed, "(?i)embezzlement|embezlement|emblezzlement|embzzlement")
-  ) |>
-  View()
-
-# 21 O.S. 2011, Sections 1503 - defrauding hospitality/lodging
-result_clean |>
-  filter(
-    str_detect(count_as_disposed, "(?i)(hotel|inn|restaurant|boarding house|rooming house|motel|auto camp|trailer camp|apartment|rental unit|rental house)")
-  ) |>
-  View()
-
-# 21 O.S. 2011, Sections 1521 - vehicle embezzlement
-result_clean |>
-  filter(
-    str_detect(count_as_disposed, "(?i)vehicle with bogus|(?i)embezzlement of a motor")
-  ) |>
-  View()
-
-# 21 O.S. 2011, Sections 1541.1, 1541.2, 1541.3
-result_clean |>
-  filter(
-    str_detect(count_as_disposed, "cheat|defraud")
-  ) |>
-  View()
-
-# 59 O.S. 2011, Section 1512 -- pawn
-result_clean |>
-  filter(
-    str_detect(count_as_disposed, "(?i)repay pawn|(?i)pawnbroker|pawn shop")
-  ) |>
-  View()
-
-# 21 O.S. 2011, Section 1579 and Section 1621
-result_clean |>
-  filter(
-    str_detect(count_as_disposed, "forgery|forged|(?i)counterfeit")
-  ) |>
-  View()
+columns <- c(
+  "id", "case_type", "date_filed", "count_as_disposed", 
+  "disposition_date", "disposition", "charge_desc", 
+  "offense_category_desc", "offense_type_desc", 
+  "probability", "uccs_code", "party"
+)
 
 data_clean <- result_clean |>
-  select(
-    id,
-    case_type,
-    date_filed,
-    count_as_disposed,
-    disposition_date,
-    disposition,
-    charge_desc,
-    offense_category_desc,
-    offense_type_desc,
-    probability,
-    uccs_code,
-    party
+  select(all_of(columns)
   ) |>
   mutate(
     poss = str_detect(count_as_disposed, "(?i)poss|(?i)poass of cds|(?i)poissession"), # added typos I found in `n`
@@ -316,39 +206,167 @@ data_clean <- result_clean |>
   ) |>
   arrange(count_as_disposed)
 
-# 407675
-clean_df <- data_clean |>
+# 406777 rows
+clean_df <- data_clean |> 
   filter(
-    (uccs_drug_plus & !intent & !proceeds & !maintaining & !conspiracy & !school_park_church) |
-      (poss & drug & !dist & !intent & !paraphernalia & !weapon & !trafficking &
-         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
-         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) |
-      (uccs_property & !dist & !intent & !paraphernalia & !weapon & !trafficking &
-         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
-         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) |
-      (larceny & !dist & !intent & !paraphernalia & !weapon & !trafficking &
-         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
-         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds)|
-      (receive_stolen & !dist & !intent & !paraphernalia & !weapon & !trafficking &
-         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
-         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds)|
-      (embezzle & !dist & !intent & !paraphernalia & !weapon & !trafficking &
-         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
-         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) |
-      (misc & !dist & !intent & !paraphernalia & !weapon & !trafficking &
-         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
-         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) |
-      (pawn & !dist & !intent & !paraphernalia & !weapon & !trafficking &
-         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
-         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) |
-      (hospitality & !dist & !intent & !paraphernalia & !weapon & !trafficking &
-        !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
-        !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds) |
-      (forgery & !dist & !intent & !paraphernalia & !weapon & !trafficking &
-         !endeavor & !wildlife & !manufacture & !commercial & !school_park_church &
-         !conspiracy & !maintaining & !minor & !inmate & !vehicle & !proceeds)
-    )
+    (uccs_drug_plus & !(dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife | manufacture | commercial | school_park_church | conspiracy | maintaining | minor | inmate | vehicle | proceeds))|
+    (poss & drug & !(dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife | manufacture | commercial | school_park_church | conspiracy | maintaining | minor | inmate | vehicle | proceeds))|
+    (uccs_property & !(dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife | manufacture | commercial | school_park_church | conspiracy | maintaining | minor | inmate | vehicle | proceeds))|
+    (larceny & !(dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife | manufacture | commercial | school_park_church | conspiracy | maintaining | minor | inmate | vehicle | proceeds))|
+    (receive_stolen & !(dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife | manufacture | commercial | school_park_church | conspiracy | maintaining | minor | inmate | vehicle | proceeds))|
+    (embezzle & !(dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife | manufacture | commercial | school_park_church | conspiracy | maintaining | minor | inmate | vehicle | proceeds))|
+    (misc & !(dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife | manufacture | commercial | school_park_church | conspiracy | maintaining | minor | inmate | vehicle | proceeds))|
+    (pawn & !(dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife | manufacture | commercial | school_park_church | conspiracy | maintaining | minor | inmate | vehicle | proceeds))|
+    (hospitality & !(dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife | manufacture | commercial | school_park_church | conspiracy | maintaining | minor | inmate | vehicle | proceeds))|
+    (forgery & !(dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife | manufacture | commercial | school_park_church | conspiracy | maintaining | minor | inmate | vehicle | proceeds))
+  ) |> 
+  select(id, case_type, date_filed, count_as_disposed, disposition_date, 
+         disposition, charge_desc, offense_category_desc, offense_type_desc,
+         probability, uccs_code, party, uccs_drug_plus, poss, drug, 
+         uccs_property, larceny, receive_stolen, embezzle, misc, pawn,
+         hospitality, forgery)
 
-# check uccs codes for  property charges
+# * Total number of SQ780 offenses charged in 2014, 2015, and 2016
+sq780_counts <- clean_df |>
+  filter(
+    date_filed >= "2014-01-01",
+    date_filed < "2023-01-01",
+  ) |>
+  mutate(year = lubridate::year(date_filed)) |>
+  distinct(id, case_type, date_filed, year) |>
+  group_by(year, case_type) |>
+  count()
 
+# expanding to non-OSCN counties
+# using statewide formula from simple possession analysis
+sq780_counts |>
+  pivot_wider(names_from = case_type, values_from = n) |>
+  mutate(
+    total = CM + CF,
+    statewide = round(total * 2.3778)
+  ) |>
+  ungroup() |>
+  gt() |>
+  cols_label(contains("CM") ~ "Misdemeanor",
+             contains("CF") ~ "Felony",
+             contains("y") ~ "Year",
+             total ~ "Total (OSCN)",
+             statewide ~ "Statewide Estimate"
+  ) |>
+  tab_header(
+    title = "Simple Possession Drug and Property Crime Convictions",
+    subtitle = "Before and After SQ780 Passing"
+  )
+
+ggplot(sq780_counts, aes(x=year, y=n, group=case_type)) +
+  geom_line(aes(color=case_type), linewidth=0.5, alpha=0.9) +
+  scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+  scale_y_continuous(labels = scales::comma) +
+  theme(legend.position="bottom",
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10)) +
+  theme(
+    plot.title = element_text(size = 14),
+    axis.title = element_text(size = 12),
+    plot.subtitle = element_text(size = 8),
+    plot.caption = element_text(size = 8),
+    axis.text = element_text(size = 10)) +
+  scale_x_continuous(breaks = 2014:2022) +
+  labs(title = "SQ780 Offenses 2014-2022",
+       subtitle = "Simple possession drug and property crime charges\nfiled before and after the passing of SQ780",
+       x = "Year",
+       y = "Number of Charges", 
+       color = "Case Type",
+       caption = "This data is based on the total number of charges in \nthe court records, not cases among OSCN counties only."
+       )
+
+
+########################### SQ780 offenses:
+# 63 O.S. 2011 Section 2-402 -- simple possession
+# result_clean |>
+#   filter(
+#     str_detect(count_as_disposed, "(?i)CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |\\bPRESCRIP|\\bNARC|\\bMETH|\\bC\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bMA.*NA\\b|\\bMJ\\b|\\bMARI\\b|(?i)salt|ephedrine"),
+#     !str_detect(count_as_disposed, "(?i)DOMESTIC|(?i)ASSAULT|(?i)FIREARM|(?i)DISTRIBUTE|(?i)INTENT|(?i)MANUFACTURE|(?i)DISPENSE|TUO|alcohol|acohol|alchol")
+#   ) |>
+#   View()
+# 
+# # 21 O.S. 2011 Section 1704 and 1705 -- grand and petit larceny
+# result_clean |>
+#   filter(
+#     str_detect(count_as_disposed, "(?i)larceny|theft|\\bstol(e|en)\\b"),
+#     !str_detect(count_as_disposed, "(?i)gas|automobile|vehicle|LMFR|(?i)concealing")
+#   ) |>
+#   View()
+# 
+# # 21 O.S. 2011 Section 1713 -- buying/receiving/concealing stolen property
+# result_clean |>
+#   filter(
+#     str_detect(count_as_disposed, "(?i)RCSP|(?i)stolen property|(?i)embezzled property|(?i)stoeln|concealing stolen")
+#   ) |>
+#   View()
+# 
+# # 21 O.S. 2011 Section 1719.1 -- taking domesticated fish and game
+# result_clean |>
+#   filter(
+#     str_detect(count_as_disposed, "(?i)fish|(?i)domesticated game")
+#   ) |>
+#   View()
+# 
+# # 21 O.S. 2011 Section 1722 -- unlawfully taking crude oil/gas/related
+# result_clean |>
+#   filter(
+#     str_detect(count_as_disposed, "oil|(?i)drilling|(?i)gas")
+#   ) |>
+#   View()
+# 
+# # 21 O.S. 2011 Section 1731
+# # -- Larceny of merchandise (edible meat or other physical property)
+# # held for sale in retail or wholesale establishments
+# result_clean |>
+#   filter(
+#     str_detect(count_as_disposed, "LMFR|larceny of merchandise|meat")
+#   ) |>
+#   View()
+# 
+# # 21 O.S. 2011, Sections 1451 - embezzlement
+# result_clean |>
+#   filter(
+#     str_detect(count_as_disposed, "(?i)embezzlement|embezlement|emblezzlement|embzzlement")
+#   ) |>
+#   View()
+# 
+# # 21 O.S. 2011, Sections 1503 - defrauding hospitality/lodging
+# result_clean |>
+#   filter(
+#     str_detect(count_as_disposed, "(?i)(hotel|inn|restaurant|boarding house|rooming house|motel|auto camp|trailer camp|apartment|rental unit|rental house)")
+#   ) |>
+#   View()
+# 
+# # 21 O.S. 2011, Sections 1521 - vehicle embezzlement
+# result_clean |>
+#   filter(
+#     str_detect(count_as_disposed, "(?i)vehicle with bogus|(?i)embezzlement of a motor")
+#   ) |>
+#   View()
+# 
+# # 21 O.S. 2011, Sections 1541.1, 1541.2, 1541.3
+# result_clean |>
+#   filter(
+#     str_detect(count_as_disposed, "cheat|defraud")
+#   ) |>
+#   View()
+# 
+# # 59 O.S. 2011, Section 1512 -- pawn
+# result_clean |>
+#   filter(
+#     str_detect(count_as_disposed, "(?i)repay pawn|(?i)pawnbroker|pawn shop")
+#   ) |>
+#   View()
+# 
+# # 21 O.S. 2011, Section 1579 and Section 1621
+# result_clean |>
+#   filter(
+#     str_detect(count_as_disposed, "forgery|forged|(?i)counterfeit")
+#   ) |>
+#   View()
 
