@@ -193,7 +193,13 @@ oscn_cases <- df_case |>
 # Andrew review ================================================================
 
 # Looks like about 14ish% of all the cases in the timespan had a minute indicating a sus sentence
-perc_with_sus <- nrow(final |> filter(!is.na(n_sus_mins))) / nrow(final)
+perc_with_sus <- nrow(final |> filter(sus_detected)) / nrow(final)
+
+# Focused timespan:
+final_focused <- final |> filter(file_year >= ymd("2014-01-01"),
+                                 file_year < ymd("2019-01-01"))
+
+perc_with_sus <- nrow(final_focused |> filter(sus_detected)) / nrow(final_focused)
 
 # Checking results by count: ---------------------------------------------------
 final |>
