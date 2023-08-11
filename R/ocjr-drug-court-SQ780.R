@@ -178,10 +178,10 @@ data_clean <- result_clean |>
   select(all_of(columns)
   ) |>
   mutate(
-    poss = str_detect(count_as_disposed, "(?i)poss|(?i)poass of cds|(?i)poissession"), # added typos I found in `n`
+    poss = str_detect(count_as_disposed, "(?i)poss|poass of cds|poissession"), # added typos I found in `n`
     dist = str_detect(count_as_disposed, "(?i)\\bdist"),
     intent = str_detect(count_as_disposed, "(?i)intent|\\bint\\b"),
-    paraphernalia = str_detect(count_as_disposed, "(?i)paraph.*\\b|(?i)\\bpara\\b|(?i)p.*nalia"), # added typos
+    paraphernalia = str_detect(count_as_disposed, "(?i)paraph.*\\b|\\bpara\\b|p.*nalia"), # added typos
     weapon = str_detect(count_as_disposed, "(?i)weapon"),
     trafficking = str_detect(count_as_disposed, "(?i)traffick"),
     endeavor = str_detect(count_as_disposed, "(?i)endeavor|\\bend\\b"),
@@ -197,14 +197,16 @@ data_clean <- result_clean |>
     vehicle = str_detect(count_as_disposed, "(?i)(?<!\\snon|not\\s)(?:\\sMV\\b|motor vehicle)"),
     proceeds = str_detect(count_as_disposed, "(?i)ac.*\\bp(r|o){0,2}|proceed"),
     larceny = str_detect(count_as_disposed, "(?i)larceny|theft|LMFR|larceny of merchandise|meat|corporeal property|\\bstol(e|en)\\b"),
-    receive_stolen = str_detect(count_as_disposed, "(?i)RCSP|(?i)stolen property|(?i)stoeln|concealing stolen"),
+    receive_stolen = str_detect(count_as_disposed, "(?i)RCSP|stolen property|stoeln|concealing stolen"),
     embezzle = str_detect(count_as_disposed, "(?i)embezzlement|embezlement|emblezzlement|embzzlement"),
-    misc = str_detect(count_as_disposed, "(?i)fish|(?i)domesticated game|oil|(?i)drilling|(?i)gas"),
-    pawn = str_detect(count_as_disposed, "(?i)repay pawn|(?i)pawnbroker|pawn shop"),
+    misc = str_detect(count_as_disposed, "(?i)fish|domesticated game|oil|drilling|gas"),
+    pawn = str_detect(count_as_disposed, "(?i)repay pawn|pawnbroker|pawn shop|in pawn"),
     hospitality = str_detect(count_as_disposed, "(?i)(hotel|inn|restaurant|boarding house|rooming house|motel|auto camp|trailer camp|apartment|rental unit|rental house)"),
-    forgery = str_detect(count_as_disposed, "forgery|forged|(?i)counterfeit|bogus check"), # Andrew: added "bogus check"
-    drug = str_detect(count_as_disposed, "CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |\\bPRESCRIP|\\bNARC|\\bMETH|\\bC\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bMA.*NA\\b|\\bMJ\\b|\\bMARI\\b"),
-    impersonate_officer = str_detect(count_as_disposed, "personating police"), # Andrew: added
+    forgery = str_detect(count_as_disposed, "(?i)forgery|forged|counterfeit|bogus check"), # Andrew: added "bogus check"
+    drug = str_detect(count_as_disposed, "(?i)CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |\\bPRESCRIP|\\bNARC|\\bMETH|\\bC\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|\\bPARAPH\\b|\\bMA.*NA\\b|\\bMJ\\b|\\bMARI\\b"),
+    impersonate_officer = str_detect(count_as_disposed, "(?i)personating police"), # Andrew: added
+    tax_stamp = str_detect(count_as_disposed, "(?i)tax stamp"), # Andrew: added
+    a_b_upon = str_detect(count_as_disposed, "(?i)a b "), # This was getting picked up by UCCS property
     uccs_drug = probability >= 0.8 & uccs_code >= 3090 & uccs_code <= 3162,
     uccs_drug_plus = probability >= 0.8 & uccs_code >= 3090 & uccs_code <= 3230,
     uccs_property = probability >= 0.8 & uccs_code %in% property_codes$uccs_code,
@@ -212,7 +214,8 @@ data_clean <- result_clean |>
     disqualifying_regex = if_else(
       dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife |
         manufacture | commercial | school_park_church | conspiracy | maintaining |
-        minor | inmate | vehicle | proceeds | impersonate_officer,
+        minor | inmate | vehicle | proceeds | impersonate_officer | tax_stamp |
+        a_b_upon,
       TRUE, FALSE
     ),
     # Any drug regex? Not worried about uccs codes with this variable yet
@@ -244,22 +247,60 @@ data_clean <- result_clean |>
 #          uccs_property, larceny, receive_stolen, embezzle, misc, pawn,
 #          hospitality, forgery)
 
-# This should be equivalent to the above, minus the `filter(sq780_drugs, sq780_props)`
+# This should be equivalent to the above, minus the `sq780_statute = case_when`
 # and `filter(count_as_disposed == "")` bits, but is hopefully more readable
 clean_df <- data_clean |>
   mutate(
     # Is the charge a drug possession charge covered by SQ780? -----------------
     sq780_drugs = if_else(
       # UCCS code or regex indicating drug possession, and no disqualifying regex
-      (uccs_drug_plus | regex_drugs) & !disqualifying_regex,
-      TRUE, FALSE),
+      (uccs_drug_plus | regex_drugs) & !disqualifying_regex, TRUE, FALSE),
     # Is the charge a property crime covered by SQ780? -------------------------
     sq780_props = if_else(
       # UCCS code or regex indicating 780 property crime, and no disqualifying regex
-      (uccs_property | regex_props) & !disqualifying_regex,
-      TRUE, FALSE),
-    # TODO: This is where we would add the code to classify by specific statute
-    ) |>
+      (uccs_property | regex_props) & !disqualifying_regex, TRUE, FALSE),
+    # Classify by specific statute ---------------------------------------------
+    # Simple possession
+    sq780_statute = case_when(
+      sq780_drugs ~
+        "63 O.S. Section 2-402 -- Simple Drug Possession",
+      # Grand / petit larceny
+      larceny & !receive_stolen ~
+        "21 O.S. Section 1704, 1705 -- Grand/Petit Larceny",
+      # Buying / receiving stolen property
+      larceny & receive_stolen ~
+        "21 O.S. Section 1713 -- Buying/Receiving/Concealing Stolen Property",
+      # Domesticated fish / game -- using new regex since it's split up above
+      str_detect(count_as_disposed, "(?i)fish|(?i)domesticated game") ~
+        "21 O.S. Section 1719.1 -- Taking Domesticated Gish/Game",
+      # Taking crude oil / gas / related
+      str_detect(count_as_disposed, "(?i)oil|drilling|gas") ~
+        "21 O.S. Section 1722 -- Unlawfully Taking Oil/Gas",
+      # Larceny of merchandise in retail or wholesale establishment
+      larceny & str_detect(count_as_disposed, "(?i)meat|edible|retail|wholesale") ~
+        "21 O.S. Section 1731 -- Larceny of Merchandise from Retail or Wholesale",
+      # Embezzlement
+      embezzle ~
+        "21 O.S. Sections 1451 -- Embezzlement",
+      # Defrauding hotel / lodging
+      hospitality ~
+        "21 O.S. Sections 1503 -- Defrauding Hospitality/Lodging",
+      # Vehicle Embezzlement
+      embezzle & str_detect(count_as_disposed, "(?i)vehicle|motor") ~
+        "21 O.S. Sections 1521 -- Vehicle Embezzlement",
+      # Fraud
+      str_detect(count_as_disposed, "cheat|defraud|personat") ~
+        "21 O.S. Sections 1541.1, 1541.2, 1541.3 -- Fraud",
+      # Pawn Shop Fraud
+      pawn ~
+        "59 O.S. Section 1512 -- Defrauding Pawn Shop",
+      # Forgery
+      forgery ~
+        "21 O.S. Section 1579, Section 1621 -- Forgery",
+      # Default
+      TRUE ~ "Unknown / Other"
+    )
+  ) |>
   # I'm also gonna remove the filter for now so we can see what got classified as non-780
   # filter(sq780_drugs | sq780_props) |>
   select(id, case_type, date_filed, count_as_disposed, disposition_date,
@@ -267,8 +308,8 @@ clean_df <- data_clean |>
          probability, uccs_code, party, uccs_drug_plus, poss, drug,
          uccs_property, larceny, receive_stolen, embezzle, misc, pawn,
          hospitality, forgery,
-         # keeping my two new vars as well
-         sq780_drugs, sq780_props) |>
+         # keeping my new vars as well
+         sq780_drugs, sq780_props, sq780_statute) |>
   # There are a few of these cluttering things up
   filter(count_as_disposed != "")
 
@@ -279,7 +320,10 @@ clean_df |>
   count(count_as_disposed, sort = T) |>
   print(n = 200)
 
-# Looks pretty good, don't see anything erroneous in the top 200 most common
+# Looked at the top 200 most common
+# - Tax stamp shouldn't be counted here because it's still a felony I believe -- added to regex
+# - is "Larceny of a CDS" type stuff covered under 780? That's currently included as a property crime
+# - is "Attempting to obtain CDS" stuff covered?
 
 # Property crimes next... ------------------------------------------------------
 clean_df |>
@@ -287,13 +331,15 @@ clean_df |>
   count(count_as_disposed, sort = T) |>
   print(n = 200)
 
-# Compared top 200 to the text of SQ780; I didn't see anything included that shouldn't have been
+# Looked at the top 200 most common
 # I'd like to have someone who's more familiar look over the top ~100 though just to be sure
-
-# "IMPERSONATING POLICE OFFICER"? (#187, only 99 instances though) -- Added to regex above.
-# "FALSE PERSONATION"? -- not added to regex above
-# Currently, "CREATING A LIABILITY BY FALSE PERSONATION" is not counted because it's a public order
+# - "IMPERSONATING POLICE OFFICER"? -- Added to regex above.
+# - "FALSE PERSONATION"? -- not added to regex above
+# - Currently, "CREATING A LIABILITY BY FALSE PERSONATION" is not counted because it's a public order
 # crime in UCCS. However, "FALSE PERSONATION" is included, because it's fraud / property crime in UCCS
+# - Is "Burglary" covered / different from larceny? "Breaking and Entering"?
+# - Is "Malicious injury to property" covered?
+# - Is credit card fraud stuff covered?
 
 # Looking at the excluded charges ----------------------------------------------
 clean_df |>
@@ -301,9 +347,31 @@ clean_df |>
   count(count_as_disposed, sort = T) |>
   print(n = 200)
 
-# Checked top 200
+# Looked at the top 200 most common
+# - "BOGUS CHECK" is on here a few times, that's covered under Section 1541 -- Added to regex above.
 
-# "BOGUS CHECK" is on here a few times, that's covered under Section 1541 -- Added to regex above.
+# Looking by sq780_statute var -------------------------------------------------
+clean_df |>
+  filter(sq780_drugs | sq780_props) |>
+  select(!c(id, case_type, date_filed, disposition_date, party, uccs_code)) |>
+  View()
+
+clean_df |>
+  select(!c(id, case_type, date_filed, disposition_date, party, uccs_code)) |>
+  filter(sq780_drugs | sq780_props) |>
+  group_by(sq780_statute) |>
+  summarize(
+    n_charges = n()
+  ) |>
+  arrange(desc(n_charges))
+
+# "Unknown / other"s only -- these are currently counted as SQ780 charges, but don't have a
+# specific statute attached yet.
+clean_df |>
+  filter(sq780_drugs | sq780_props) |>
+  filter(sq780_statute == "Unknown / Other") |>
+  count(count_as_disposed, sort = T) |>
+  print(n = 30)
 
 # Summarizing for export =======================================================
 
@@ -316,8 +384,7 @@ sq780_counts <- clean_df |>
   ) |>
   mutate(year = lubridate::year(date_filed)) |>
   distinct(id, case_type, date_filed, year) |>
-  group_by(year, case_type) |>
-  count()
+  count(year, case_type) # You can do this in one step w/out group_by()!
 
 # expanding to non-OSCN counties
 # using statewide formula from simple possession analysis
@@ -343,7 +410,8 @@ sq780_counts |>
 ggplot(sq780_counts, aes(x=year, y=n, group=case_type)) +
   geom_line(aes(color=case_type), linewidth=0.5, alpha=0.9) +
   scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
-  scale_y_continuous(labels = scales::comma) +
+  scale_y_continuous(labels = scales::comma,
+                     limits = c(0, NA)) +
   theme(legend.position="bottom",
         legend.title = element_text(size = 10),
         legend.text = element_text(size = 10)) +
@@ -353,14 +421,14 @@ ggplot(sq780_counts, aes(x=year, y=n, group=case_type)) +
     plot.subtitle = element_text(size = 8),
     plot.caption = element_text(size = 8),
     axis.text = element_text(size = 10)) +
-  scale_x_continuous(breaks = 2014:2022) +
+  # scale_x_continuous(breaks = 2014:2022) +
   labs(title = "SQ780 Offenses 2014-2022",
        subtitle = "Simple possession drug and property crime charges\nfiled before and after the passing of SQ780",
        x = "Year",
        y = "Number of Charges",
        color = "Case Type",
        caption = "This data is based on the total number of charges in \nthe court records, not cases among OSCN counties only."
-       )
+  )
 
 
 ########################### SQ780 offenses:
