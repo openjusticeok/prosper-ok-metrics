@@ -1,0 +1,22 @@
+{
+  "index.qmd": {
+    "index.html": "ea9e7a4c"
+  },
+  "hb3205/hb3205.qmd": {
+    "index.html": "8d470b12",
+    "hb3205.tex": "116755c9",
+    "hb3205.html": "fdd2d978"
+  },
+  "hb1795/hb1795.qmd": {
+    "hb1795.html": "46373936",
+    "hb1795.tex": "c9222c2b"
+  },
+  "sb108/sb108.qmd": {
+    "sb108.html": "cdd2b3ba",
+    "sb108.tex": "e00d76d1"
+  },
+  "hb2153/hb2153.qmd": {
+    "hb2153.html": "74ea9353",
+    "hb2153.tex": "0766f293"
+  }
+}
