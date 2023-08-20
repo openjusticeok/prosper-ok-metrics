@@ -23,34 +23,34 @@ prepare <- function(x) {
     str_squish()
 }
 
-criminal_dispositions <- c(
+criminal_charges <- c(
   criminal_counts_filed,
   criminal_counts_disposed
 ) |>
   as_tibble() |>
   rename(
-    disposition = value
+    charge = value
   ) |>
   mutate(
-    disposition = prepare(disposition)
+    charge = prepare(charge)
   ) |>
   distinct() |>
   drop_na() |>
-  filter(disposition != "")
+  filter(charge != "")
 
-write_csv(criminal_dispositions, here("data/criminal_dispositions.csv"))
+write_csv(criminal_charges, here("data/criminal_charges.csv"))
 
 results <- read_xlsx(
   here("data/toc-results/82f3de5bac1c4baeb0b4736996cdf9da.xlsx"),
   sheet = 2
 ) |>
   select(
-    disposition,
+    charge,
     uccs_code,
     probability
   )
 
-write_csv(results, here("data/toc-results/disposition_predictions.csv"))
+write_csv(results, here("data/toc-results/charge_predictions.csv"))
 
 uccs <- read_xlsx(
   here("data/toc-results/82f3de5bac1c4baeb0b4736996cdf9da.xlsx"),

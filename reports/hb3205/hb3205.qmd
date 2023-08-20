@@ -2,8 +2,7 @@
 title: HB 3205 Impact Estimate
 subtitle: Open Justice Oklahoma
 format:
-  ojo-report-template-html:
-    output-file: index.html
+  ojo-report-template-html: default
   pdf:
     pdf-engine: xelatex
 author: Polina Rozhkova and Brancen Gregory
@@ -13,6 +12,8 @@ number-sections: true
 smooth-scroll: true
 title-block-banner: "black"
 title-block-banner-color: "white"
+execute: 
+  freeze: auto
 knitr:
   opts_chunk:
     fig.align: center

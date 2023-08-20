@@ -1,0 +1,20 @@
+project:
+    type: website
+
+website:
+    title: "ProsperOK Quarterly Reporting"
+    navbar:
+      background: black
+      foreground: "#f6be00"
+      logo: "www/ojo-logo-white.png"
+      search: false
+      left:
+        - text: "Reports"
+          menu:
+            - hb3205/hb3205.qmd
+            - hb1795/hb1795.qmd
+            - hb2153/hb2153.qmd
+
+format:
+    html:
+        theme: cosmo
