@@ -20,9 +20,9 @@ parties_df <- read_csv(here("data/parties_convictions_2001_2022.csv"))
 # * Number of simply possession cases charged in 2014, 2015, 2016
 # * Number of simple possessions in 2021 and 2022
 
-parties_2014_2022 <- parties_df |>
+parties_2013_2022 <- parties_df |>
   filter(
-    date_filed >= "2014-01-01",
+    date_filed >= "2013-01-01",
     date_filed < "2023-01-01",
   ) |>
   mutate(year = lubridate::year(date_filed)) |>
@@ -30,7 +30,7 @@ parties_2014_2022 <- parties_df |>
   group_by(year, case_type) |>
   count()
 
-parties_2014_2022 |>
+parties_2013_2022 |>
   pivot_wider(names_from = case_type, values_from = n) |>
   mutate(
     total = CM + CF,
@@ -47,27 +47,40 @@ parties_2014_2022 |>
   tab_header(
     title = "Annual Simple Possession Drug Convictions",
     subtitle = "Before and After SQ780 Passing"
-  )
+  ) |>
+  tab_options(
+    column_labels.font.size = "small",
+    table.font.size = "small",
+    heading.title.font.size = "medium",
+    heading.subtitle.font.size = "small")
 
-parties_2014_2022 |>
+parties_2013_2022 |>
   ggplot(aes(x = year, y = n, fill = case_type)) +
   geom_bar(stat = "identity") +
-  scale_x_continuous(breaks = 2014:2022) +
-  theme(axis.text.x = element_text(angle = 45, vjust=0.5)) +
+  scale_x_continuous(breaks = 2013:2022) +
+  theme(axis.text.x = element_text(angle = 45, vjust=0.5),
+        text=element_text(size=12)) +
   scale_y_continuous(labels = scales::comma) +
   labs(title = "Simple Possession Drug Convictions, OSCN Counties",
-       subtitle = "Before and After SQ780 Passing",
+       color = "Case Type",
+       subtitle = "Impact of SQ780 Passing",
        x = "Year",
        y = "Number of Convictions",
-       caption = "This data is based on the total number\nof parties convicted, not the number of cases\nfiled.")
+       caption = "Data represents the total number of parties convicted, \nnot the number of cases filed.") +
+  scale_fill_manual(values=c("#999999", "#E69F00"),
+                    name="Case Type",
+                    labels=c("Felony", "Misdemeanor")) +
+  annotate("text", x = 2018.2, y = 8200, label = "SQ780 in Effect",
+           family = "serif", fontface = "italic", colour = "darkred",
+           size = 3)
 
-parties_2014_2022 |>
+parties_2013_2022 |>
   pivot_wider(names_from = case_type, values_from = n) |>
   mutate(
     total = CM + CF,
     statewide = round(total * 2.3778)
   ) |>
-  write_csv(here("data/parties_convictions_2014_2022.csv"))
+  write_csv(here("data/parties_convictions_2013_2022.csv"))
 
 
 # * Total number of SQ780 offenses charged in 2014, 2015, and 2016
@@ -164,9 +177,9 @@ property_codes <- uccs |>
   select(uccs_code)
 
 columns <- c(
-  "id", "case_type", "date_filed", "count_as_disposed", 
-  "disposition_date", "disposition", "charge_desc", 
-  "offense_category_desc", "offense_type_desc", 
+  "id", "case_type", "date_filed", "count_as_disposed",
+  "disposition_date", "disposition", "charge_desc",
+  "offense_category_desc", "offense_type_desc",
   "probability", "uccs_code", "party"
 )
 
@@ -207,7 +220,7 @@ data_clean <- result_clean |>
   arrange(count_as_disposed)
 
 # 406777 rows
-clean_df <- data_clean |> 
+clean_df <- data_clean |>
   filter(
     (uccs_drug_plus & !(dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife | manufacture | commercial | school_park_church | conspiracy | maintaining | minor | inmate | vehicle | proceeds))|
     (poss & drug & !(dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife | manufacture | commercial | school_park_church | conspiracy | maintaining | minor | inmate | vehicle | proceeds))|
@@ -219,10 +232,10 @@ clean_df <- data_clean |>
     (pawn & !(dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife | manufacture | commercial | school_park_church | conspiracy | maintaining | minor | inmate | vehicle | proceeds))|
     (hospitality & !(dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife | manufacture | commercial | school_park_church | conspiracy | maintaining | minor | inmate | vehicle | proceeds))|
     (forgery & !(dist | intent | paraphernalia | weapon | trafficking | endeavor | wildlife | manufacture | commercial | school_park_church | conspiracy | maintaining | minor | inmate | vehicle | proceeds))
-  ) |> 
-  select(id, case_type, date_filed, count_as_disposed, disposition_date, 
+  ) |>
+  select(id, case_type, date_filed, count_as_disposed, disposition_date,
          disposition, charge_desc, offense_category_desc, offense_type_desc,
-         probability, uccs_code, party, uccs_drug_plus, poss, drug, 
+         probability, uccs_code, party, uccs_drug_plus, poss, drug,
          uccs_property, larceny, receive_stolen, embezzle, misc, pawn,
          hospitality, forgery)
 
@@ -256,7 +269,12 @@ sq780_counts |>
   tab_header(
     title = "Simple Possession Drug and Property Crime Convictions",
     subtitle = "Before and After SQ780 Passing"
-  )
+  ) |>
+  tab_options(
+    column_labels.font.size = "small",
+    table.font.size = "small",
+    heading.title.font.size = "medium",
+    heading.subtitle.font.size = "small")
 
 ggplot(sq780_counts, aes(x=year, y=n, group=case_type)) +
   geom_line(aes(color=case_type), linewidth=0.5, alpha=0.9) +
@@ -275,7 +293,7 @@ ggplot(sq780_counts, aes(x=year, y=n, group=case_type)) +
   labs(title = "SQ780 Offenses 2014-2022",
        subtitle = "Simple possession drug and property crime charges\nfiled before and after the passing of SQ780",
        x = "Year",
-       y = "Number of Charges", 
+       y = "Number of Charges",
        color = "Case Type",
        caption = "This data is based on the total number of charges in \nthe court records, not cases among OSCN counties only."
   )
@@ -289,7 +307,7 @@ ggplot(sq780_counts, aes(x=year, y=n, group=case_type)) +
 #     !str_detect(count_as_disposed, "(?i)DOMESTIC|(?i)ASSAULT|(?i)FIREARM|(?i)DISTRIBUTE|(?i)INTENT|(?i)MANUFACTURE|(?i)DISPENSE|TUO|alcohol|acohol|alchol")
 #   ) |>
 #   View()
-# 
+#
 # # 21 O.S. 2011 Section 1704 and 1705 -- grand and petit larceny
 # result_clean |>
 #   filter(
@@ -297,28 +315,28 @@ ggplot(sq780_counts, aes(x=year, y=n, group=case_type)) +
 #     !str_detect(count_as_disposed, "(?i)gas|automobile|vehicle|LMFR|(?i)concealing")
 #   ) |>
 #   View()
-# 
+#
 # # 21 O.S. 2011 Section 1713 -- buying/receiving/concealing stolen property
 # result_clean |>
 #   filter(
 #     str_detect(count_as_disposed, "(?i)RCSP|(?i)stolen property|(?i)embezzled property|(?i)stoeln|concealing stolen")
 #   ) |>
 #   View()
-# 
+#
 # # 21 O.S. 2011 Section 1719.1 -- taking domesticated fish and game
 # result_clean |>
 #   filter(
 #     str_detect(count_as_disposed, "(?i)fish|(?i)domesticated game")
 #   ) |>
 #   View()
-# 
+#
 # # 21 O.S. 2011 Section 1722 -- unlawfully taking crude oil/gas/related
 # result_clean |>
 #   filter(
 #     str_detect(count_as_disposed, "oil|(?i)drilling|(?i)gas")
 #   ) |>
 #   View()
-# 
+#
 # # 21 O.S. 2011 Section 1731
 # # -- Larceny of merchandise (edible meat or other physical property)
 # # held for sale in retail or wholesale establishments
@@ -327,42 +345,42 @@ ggplot(sq780_counts, aes(x=year, y=n, group=case_type)) +
 #     str_detect(count_as_disposed, "LMFR|larceny of merchandise|meat")
 #   ) |>
 #   View()
-# 
+#
 # # 21 O.S. 2011, Sections 1451 - embezzlement
 # result_clean |>
 #   filter(
 #     str_detect(count_as_disposed, "(?i)embezzlement|embezlement|emblezzlement|embzzlement")
 #   ) |>
 #   View()
-# 
+#
 # # 21 O.S. 2011, Sections 1503 - defrauding hospitality/lodging
 # result_clean |>
 #   filter(
 #     str_detect(count_as_disposed, "(?i)(hotel|inn|restaurant|boarding house|rooming house|motel|auto camp|trailer camp|apartment|rental unit|rental house)")
 #   ) |>
 #   View()
-# 
+#
 # # 21 O.S. 2011, Sections 1521 - vehicle embezzlement
 # result_clean |>
 #   filter(
 #     str_detect(count_as_disposed, "(?i)vehicle with bogus|(?i)embezzlement of a motor")
 #   ) |>
 #   View()
-# 
+#
 # # 21 O.S. 2011, Sections 1541.1, 1541.2, 1541.3
 # result_clean |>
 #   filter(
 #     str_detect(count_as_disposed, "cheat|defraud")
 #   ) |>
 #   View()
-# 
+#
 # # 59 O.S. 2011, Section 1512 -- pawn
 # result_clean |>
 #   filter(
 #     str_detect(count_as_disposed, "(?i)repay pawn|(?i)pawnbroker|pawn shop")
 #   ) |>
 #   View()
-# 
+#
 # # 21 O.S. 2011, Section 1579 and Section 1621
 # result_clean |>
 #   filter(
