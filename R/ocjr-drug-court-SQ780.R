@@ -30,7 +30,7 @@ parties_2013_2022 <- parties_df |>
   group_by(year, case_type) |>
   count()
 
-parties_2013_2022 |>
+simple_poss_old <- parties_2013_2022 |>
   pivot_wider(names_from = case_type, values_from = n) |>
   mutate(
     total = CM + CF,
@@ -53,6 +53,8 @@ parties_2013_2022 |>
     table.font.size = "small",
     heading.title.font.size = "medium",
     heading.subtitle.font.size = "small")
+
+simple_poss_old
 
 parties_2013_2022 |>
   ggplot(aes(x = year, y = n, fill = case_type)) +
@@ -288,8 +290,12 @@ drug_charge_table <- convicted_any_780_drug |>
 
 drug_charge_table
 
+# compare to the simple possession numbers we shared with ocjr in July
+simple_poss_old
 
+#############################################################
 # ________________________Methodology________________________
+#############################################################
 ojodb <- ojo_connect()
 
 # data <- ojo_tbl("case", .con = ojodb) |>
