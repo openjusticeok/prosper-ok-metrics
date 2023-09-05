@@ -14,7 +14,6 @@ library(purrr)
 library(extrafont)
 theme_set(theme_bw(base_family = "Roboto") %+replace% ojo_theme())
 
-
 # Source code in prosper-ok-metrics/reports/hb2153/hb2153.qmd
 parties_df <- read_csv(here("data/parties_convictions_2001_2022.csv"))
 
