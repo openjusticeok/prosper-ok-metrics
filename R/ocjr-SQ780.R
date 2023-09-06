@@ -290,10 +290,10 @@ drug_charge_table <- convicted_any_780_drug |>
 
 drug_charge_table
 
-as_data_frame(sq780_charge_table) |>
-  write_csv(here("output/sq780_charge_table.csv"))
+write_csv(convicted_any_780, here("output/convicted_any_780.csv"))
+write_csv(convicted_any_780_drug, here("output/convicted_any_780_drug.csv"))
 
-# compare to the simple possession numbers we shared with ocjr in July
+# compare table above to the simple possession numbers we shared with ocjr in July
 simple_poss_old
 
 #############################################################
