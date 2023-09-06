@@ -1,7 +1,5 @@
 # Metrics / Details
 
-Tracking sheet from Damion: https://docs.google.com/spreadsheets/d/1JlRMse1aCO1meFZtP1ToTPjZkoW5fsWbdeo38IZnCW8/edit?usp=sharing
-
 ### Drivers' license restoration (and other DL-related reforms)
   * **Bill Description:** 
     * [HB-1795](http://webserver1.lsb.state.ok.us/cf_pdf/2021-22%20int/hb/HB1795%20int.pdf) reduces the number of offenses for which a license can be automatically revoked, allowing fewer Oklahomans to lose their license for non-driving infractions. HB 1795 also increases access to provisionial licenses, reduces the monthly fee for those licenses and regulates against DPS suspension only for failure to pay.
