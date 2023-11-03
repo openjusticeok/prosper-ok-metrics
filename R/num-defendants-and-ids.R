@@ -10,7 +10,6 @@ library(gt)
 library(tidyr)
 library(purrr)
 
-# Number of defendants and number of unique individuals for 2022 CM + CF
 ojodb <- ojo_connect()
 
 start_date <- ymd("2022-01-01")
@@ -40,14 +39,6 @@ data_cases <- ojo_tbl("case", .con = ojodb) |>
   ) |>
   ojo_collect()
 
-unique_case_id_list <- data_cases |>
-  distinct(id)
-
-# number of unique id's for 2022 CM + CF
-unique_case_id_list |>
-  count()
-
-
 parties <- data_cases |>
   left_join(
     ojo_tbl("party", .con = ojodb) |>
@@ -60,10 +51,17 @@ parties <- data_cases |>
     by = c("party" = "id")
   )
 
-# unique oscn_ids
+# Number of unique oscn ids
 parties |>
   distinct(oscn_id) |>
   count()
 
-# test <- data_cases |>
-#   distinct(id, .keep_all = TRUE)
+# Number of defendants
+parties |>
+  distinct(party) |>
+  count()
+
+# number of unique case id's for 2022 CM + CF
+data_cases |>
+  distinct(id) |>
+  count()
