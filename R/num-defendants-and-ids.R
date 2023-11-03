@@ -60,5 +60,10 @@ parties <- data_cases |>
     by = c("party" = "id")
   )
 
+# unique oscn_ids
+parties |>
+  distinct(oscn_id) |>
+  count()
+
 # test <- data_cases |>
 #   distinct(id, .keep_all = TRUE)
