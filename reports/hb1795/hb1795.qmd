@@ -22,7 +22,7 @@ execute:
   freeze: auto
 description: Estimating the number of Oklahomans impacted by the amended provision concerning driver license revocations for individuals with misdemeanor drug charges. Analysis conducted at the request of Oklahomans for Criminal Justice Reform (OCJR) and ProsperOK.
 abstract-title: "Abstract"
-abstract: Between 7,652 and 13,472 Oklahomans with misdemeanor drug charges were impacted by provisions in HB 1795 between January 1, 2022 and June 30, 2023.
+abstract: Between XXX and XXX Oklahomans with misdemeanor drug charges were impacted by provisions in HB 1795 between January 1, 2022 and December 30, 2023.
 ---
 
 ```{r}
@@ -38,19 +38,20 @@ library(ojoverse)
 library(lubridate)
 library(gt)
 library(downloadthis)
+library(kableExtra)
 ```
 
 ## Background
 
-Oklahoma’s [House Bill 1795](http://webserver1.lsb.state.ok.us/cf_pdf/2021-22%20ENR/hB/HB1795%20ENR.PDF) went into effect November 1, 2021 (Q2 FY 2022). This new law reduces the number of offenses that can lead to a license revocation, although certain circumstances may still result in revocation. Additionally, HB 1795 aims to make provisional licenses more accessible and affordable. The bill introduces restrictions on license suspensions due to failure to pay, and it included an important provision that reduces the minimum payment plan for outstanding fines and fees. Previously set at \$25 per month, HB 1795 lowers the minimum monthly payment to \$5. The aforementioned fees encompass various charges such as provisional license fees, warrant fees, court costs or fees, and driver license reinstatement fees.
+Oklahoma’s [House Bill 1795](http://webserver1.lsb.state.ok.us/cf_pdf/2021-22%20ENR/hB/HB1795%20ENR.PDF) went into effect November 1, 2021 (Q2 FY 2022). This new law reduces the number of offenses that can lead to a license revocation, although certain circumstances may still result in revocation. Additionally, HB 1795 sought to enhance the accessibility and affordability of provisional licenses. The legislation imposed restrictions on license suspensions resulting from "failure to pay" and incorporated a significant provision reducing the minimum payment plan for outstanding fines and fees. Previously set at \$25 per month, HB 1795 lowers the minimum monthly payment to \$5. The aforementioned fees encompass various charges such as provisional license fees, warrant fees, court costs or fees, and driver license reinstatement fees.
 
 ## Data and Methodology
 
 Open Justice Oklahoma maintains a database of administrative court records which includes information on all criminal misdemeanors and felonies filed in Oklahoma beginning in 2001. Case information is systematically collected from publicly available data hosted on the [Oklahoma State Court Network (OSCN)](https://www.oscn.net/v4/) website. This analysis uses Oklahoma court records beginning January 1, 2022 (Q3 FY 2022) to estimate the impact of HB 1795 during a period of full implementation. We explore two provisions of the bill in order to estimate lower and upper bounds for the number of individuals with misdemeanor drug charges that were impacted by the bill’s passing.
 
-To estimate the lower bound, we focus on the provision concerned with modifying the types of offenses requiring immediate revocation of driving privileges (Section 6-205). Using the Department of Safety [violation codes](https://oklahoma.gov/content/dam/ok/en/dps/VCB%20February%202022.pdf) we pull court records for individuals who are charged with possession of a controlled dangerous substance as defined by Oklahoma’s [Uniform Controlled Dangerous Substances Act](http://www.oklegislature.gov/cf_pdf/2003-04%20INT/hb/HB2166%20int.pdf) while operating a motor vehicle. Court records also include drug violation codes that are similar but do not specify use of a motor vehicle. These violation codes provide a minimum estimate of individuals whose drug charges would have resulted in immediate driver license suspension or revocation prior to the enactment of HB 1795.
+To estimate the lower bound, we focus on the provision concerned with modifying the types of offenses requiring immediate revocation of driving privileges (Section 6-205). Using the Department of Safety [violation codes](https://oklahoma.gov/content/dam/ok/en/dps/VCB%20February%202022.pdf) we pull court records for individuals who are charged with possession of a controlled dangerous substance as defined by Oklahoma’s [Uniform Controlled Dangerous Substances Act](http://www.oklegislature.gov/cf_pdf/2003-04%20INT/hb/HB2166%20int.pdf) while driving a motor vehicle. Court records also include drug violation codes that are similar but do not specify use of a motor vehicle. These violation codes provide a minimum estimate of individuals whose drug charges would have resulted in immediate driver license suspension or revocation prior to the enactment of HB 1795.
 
-Prior to the bill’s passing, individuals could have their license suspended or revoked for the failure to pay court fines or fees. Some of these fines and fees are imposed on individuals who are charged with misdemeanor drug offenses. Following this logic, we account for any individuals who may be subject to fines and fees due to a misdemeanor drug possession charge. We combine the previously calculated lower bound and adjust for duplicate entries (individuals that may appear in both methods) for an upper bound estimate. 
+Prior to the bill’s passing, individuals could have their license suspended or revoked for the failure to pay court fines or fees. Some of these fines and fees are imposed on individuals who are charged with misdemeanor drug offenses. Following this logic, we account for any individuals who may be subject to fines and/or fees due to a misdemeanor drug possession charge. We combine the previously calculated lower bound and adjust for duplicate entries (individuals that may appear in both methods) for an upper bound estimate. 
 
 ```{r}
 drugs <- "(?i)CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |PRESCRIP|NARC|METH|C\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|MARIJUANA|MARIHUANA|MJ"
@@ -69,7 +70,7 @@ min_desc_exclude <- "(WITHDRAW|ERROR|RETURN|UNABLE|REVOKE|LIFT|RECALL|NOT PROCES
 # Replace with fiscal quarter using ojo_fiscal_year
 cumulative_period_start <- ymd("2022-01-01")
 reporting_period_start <- ymd("2023-01-01")
-reporting_period_end <- ymd("2023-06-01")
+reporting_period_end <- ymd("2023-12-01")
 ```
 
 ```{r, cache=TRUE}
@@ -179,9 +180,33 @@ both_methods_persons <- ojo_tbl("party", .con = ojodb) |>
     copy = TRUE
   ) |>
   filter(role == "Defendant") |>
-  distinct(oscn_id) |>
-  count() |>
+  distinct(oscn_id, .keep_all = TRUE) |> 
+  #distinct(oscn_id) |>
+  #count() |>
   collect()
+```
+
+```{r}
+# Techniques to estimate the lower and upper bounds of individuals facing these charges in Dec 2023
+
+# start by looking at the number of individuals with these charges month by month
+# there is maybe something crazy happening here...
+both_methods_persons |> 
+  mutate(date = lubridate::as_date(created_at), 
+         month_year = floor_date(date, unit = "month")
+  ) |> 
+  count(month_year)
+
+# Just use Dec 2022 -- kind of dumb but the easiest route
+
+# simple moving avg or median -- might be sufficient but not great 
+
+
+# weighted moving avg or med.
+
+# predicting Dec. 2023 using something more high brow like KNN -- might be overkill 
+
+
 ```
 
 ## Results
