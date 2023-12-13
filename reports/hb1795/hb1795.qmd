@@ -22,7 +22,7 @@ execute:
   freeze: auto
 description: Estimating the number of Oklahomans impacted by the amended provision concerning driver license revocations for individuals with misdemeanor drug charges. Analysis conducted at the request of Oklahomans for Criminal Justice Reform (OCJR) and ProsperOK.
 abstract-title: "Abstract"
-abstract: Between XXX and XXX Oklahomans with misdemeanor drug charges were impacted by provisions in HB 1795 between January 1, 2022 and December 30, 2023.
+abstract: Between _9215_ and _16144_ Oklahomans with misdemeanor drug charges were impacted by provisions in HB 1795 between January 1, 2022 and December 1, 2023.
 ---
 
 ```{r}
@@ -77,7 +77,6 @@ reporting_period_end <- ymd("2023-12-01")
 
 ojodb <- ojo_connect()
 
-# All misdemeanors
 all_cases <- ojo_tbl("case", .con = ojodb) |>
   filter(
     case_type == "CM",
@@ -103,7 +102,7 @@ all_cases <- ojo_tbl("case", .con = ojodb) |>
   ) |>
   mutate(
     count_as_filed = if_else(
-      is.na(open_count), 
+      is.na(open_count),
       count_as_filed,
       open_count
     )
@@ -125,7 +124,8 @@ total_persons <- ojo_tbl("party", .con = ojodb) |>
 
 # Pulling every case with at least one misdemeanor drug charge
 # (excluding distribution/intent to dispense/etc.)
-case_misdemeanor_drug <- all_cases |>
+case_misdemeanor_drug <- 
+  all_cases |>
   filter(
     str_detect(count_as_filed, drugs)
   ) |>
@@ -149,7 +149,8 @@ drug_misdemeanor_persons <- ojo_tbl("party", .con = ojodb) |>
 # A conservative estimate of the number of impacted individuals can be made by
 # filtering misdemeanors by DPS violation code and related codes.
 # For the most part, this excludes drug offenses occurring outside of motor vehicle
-case_dps_violation <- all_cases |>
+case_dps_violation <- 
+  all_cases |>
   filter(str_detect(count_as_filed, dps_codes),
          !str_detect(count_as_filed, dps_exclude))
 
@@ -184,42 +185,178 @@ both_methods_persons <- ojo_tbl("party", .con = ojodb) |>
   #distinct(oscn_id) |>
   #count() |>
   collect()
+
+```
+
+
+### Estimating December 2023
+```{r}
+start <- ymd("2010-01-01")
+end <- ymd("2023-12-01")
+
+all_cases_big <- ojo_tbl("case", .con = ojodb) |>
+  filter(
+    case_type == "CM",
+    date_filed >= start,
+    date_filed < end
+  ) |>
+  select(
+    id,
+    case_type,
+    district,
+    date_filed,
+    counts,
+    open_counts
+  ) |>
+  mutate(
+    count = unnest(counts),
+    open_count = unnest(open_counts)
+  ) |>
+  left_join(
+    ojo_tbl("count", .con = ojodb),
+    by = c("count" = "id"),
+    suffix = c("", ".count")
+  ) |>
+  mutate(
+    count_as_filed = if_else(
+      is.na(open_count),
+      count_as_filed,
+      open_count
+    )
+  ) |>
+  collect()
+
+# Defendants for all cases
+total_persons_big <- ojo_tbl("party", .con = ojodb) |>
+  right_join(
+    all_cases_big |>
+      distinct(id),
+    by = c("case_id" = "id"),
+    copy = TRUE
+  ) |>
+  filter(role == "Defendant") |>
+  distinct(oscn_id) |>
+  count() |>
+  collect()
+
+# Pulling every case with at least one misdemeanor drug charge
+# (excluding distribution/intent to dispense/etc.)
+case_misdemeanor_drug_big <- 
+  all_cases_big |>
+  filter(
+    str_detect(count_as_filed, drugs)
+  ) |>
+  filter(
+    !str_detect(count_as_filed, drug_exclude)
+  )
+
+# Defendants in cases above:
+drug_misdemeanor_persons_big <- ojo_tbl("party", .con = ojodb) |>
+  right_join(
+    case_misdemeanor_drug_big |>
+      distinct(id),
+    by = c("case_id" = "id"),
+    copy = TRUE
+  ) |>
+  filter(role == "Defendant") |>
+  distinct(oscn_id) |>
+  count() |>
+  collect()
+
+# A conservative estimate of the number of impacted individuals can be made by
+# filtering misdemeanors by DPS violation code and related codes.
+# For the most part, this excludes drug offenses occurring outside of motor vehicle
+case_dps_violation_big <- 
+  all_cases_big |>
+  filter(str_detect(count_as_filed, dps_codes),
+         !str_detect(count_as_filed, dps_exclude))
+
+# This calculates number of defendants:
+dps_violation_persons_big <- ojo_tbl("party", .con = ojodb) |>
+  right_join(
+    case_dps_violation_big |>
+      distinct(id),
+    by = c("case_id" = "id"),
+    copy = TRUE
+  ) |>
+  filter(role == "Defendant") |>
+  distinct(oscn_id) |> 
+  count() |>
+  collect()
+
+# Upper Bound including people from DPS OR misdemeanor method:
+both_methods_persons_big <- ojo_tbl("party", .con = ojodb) |>
+  right_join(
+    rbind(
+      case_dps_violation_big |>
+        select(id),
+      case_misdemeanor_drug_big |>
+        select(id)
+    ) |>
+      distinct(),
+    by = c("case_id" = "id"),
+    copy = TRUE
+  ) |>
+  filter(role == "Defendant") |>
+  distinct(oscn_id, .keep_all = TRUE) |> 
+  #distinct(oscn_id) |>
+  #count() |>
+  collect()
+
+# Sanity check
+# party table data starts in May 2021 so we actually only have Dec.2021 and Dec.2022 to estimate/impute the number of people charged in Dec.2023.
+ojo_tbl("party") |> 
+  select(created_at) |> 
+  mutate(year = floor_date(as_date(created_at), unit = "year")
+         ) |> 
+  count(year)
+
 ```
 
 ```{r}
 # Techniques to estimate the lower and upper bounds of individuals facing these charges in Dec 2023
 
 # start by looking at the number of individuals with these charges month by month
-# there is maybe something crazy happening here...
+# unsure why the monthly counts are so different for 2022...
 both_methods_persons |> 
-  mutate(date = lubridate::as_date(created_at), 
-         month_year = floor_date(date, unit = "month")
+  mutate(month_year = floor_date(as_date(created_at), unit = "month")
   ) |> 
   count(month_year)
 
-# Just use Dec 2022 -- kind of dumb but the easiest route
+both_methods_persons_big |> 
+  mutate(month_year = 
+           floor_date(as_date(created_at), unit = "month")
+         ) |> 
+  count(month_year)
 
-# simple moving avg or median -- might be sufficient but not great 
+# option 1) Just use Dec 2022 -- kind of dumb but the easiest route
 
+# option 2) simple moving avg or median -- might be sufficient but not great 
 
-# weighted moving avg or med.
+# option 3) weighted moving avg or med.
 
-# predicting Dec. 2023 using something more high brow like KNN -- might be overkill 
+# option 4) predicting Dec. 2023 using something more high brow like KNN -- might be overkill 
 
 
 ```
 
+
 ## Results
 
 ```{r}
-bind_cols(
+both_methods_persons |> 
+  distinct(oscn_id) |>
+  count() |> 
+  bind_cols(
   dps_violation_persons,
   #drug_misdemeanor_persons,
-  both_methods_persons
-) |>
+  #both_methods_persons) |>
+  ) |> 
   gt() |> 
-  cols_label(contains("1") ~ "Lower Bound", 
-             contains("2") ~ "Upper Bound")|>
+  # cols_label(contains("1") ~ "Lower Bound", 
+  #            contains("2") ~ "Upper Bound") |>
+  cols_label(contains("2") ~ "Lower Bound", 
+             contains("1") ~ "Upper Bound")|>
   tab_header(
     title = "Estimated Impact for Oklahomans with Misdemeanor Drug Charges",
     subtitle = glue::glue("{cumulative_period_start} to {reporting_period_end}")) |> 
