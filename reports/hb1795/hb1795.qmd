@@ -73,6 +73,7 @@ reporting_period_start <- ymd("2023-01-01")
 reporting_period_end <- ymd("2023-12-01")
 ```
 
+
 ```{r, cache=TRUE}
 
 ojodb <- ojo_connect()
@@ -172,9 +173,9 @@ both_methods_persons <- ojo_tbl("party", .con = ojodb) |>
   right_join(
     rbind(
       case_dps_violation |>
-        select(id),
+        select(id, date_filed),
       case_misdemeanor_drug |>
-        select(id)
+        select(id, date_filed)
     ) |>
       distinct(),
     by = c("case_id" = "id"),
@@ -188,6 +189,35 @@ both_methods_persons <- ojo_tbl("party", .con = ojodb) |>
 
 ```
 
+## Results
+
+```{r}
+both_methods_persons |> 
+  distinct(oscn_id) |>
+  count() |> 
+  bind_cols(
+  dps_violation_persons,
+  #drug_misdemeanor_persons,
+  #both_methods_persons) |>
+  ) |> 
+  gt() |> 
+  # cols_label(contains("1") ~ "Lower Bound", 
+  #            contains("2") ~ "Upper Bound") |>
+  cols_label(contains("2") ~ "Lower Bound", 
+             contains("1") ~ "Upper Bound")|>
+  tab_header(
+    title = "Estimated Impact for Oklahomans with Misdemeanor Drug Charges",
+    subtitle = glue::glue("{cumulative_period_start} to {reporting_period_end}")) |> 
+  tab_style(
+    style = cell_text(color = "black", weight = "bold", align = "center"),
+    locations = cells_title("title")
+  ) |> 
+  tab_stubhead("Estimated Impact for Oklahomans with Misdemeanor Drug Charges")
+  
+```
+
+
+## Possibly delete or comment out everything below
 
 ### Estimating December 2023
 ```{r}
@@ -289,9 +319,9 @@ both_methods_persons_big <- ojo_tbl("party", .con = ojodb) |>
   right_join(
     rbind(
       case_dps_violation_big |>
-        select(id),
+        select(id, date_filed),
       case_misdemeanor_drug_big |>
-        select(id)
+        select(id, date_filed)
     ) |>
       distinct(),
     by = c("case_id" = "id"),
@@ -305,65 +335,57 @@ both_methods_persons_big <- ojo_tbl("party", .con = ojodb) |>
 
 # Sanity check
 # party table data starts in May 2021 so we actually only have Dec.2021 and Dec.2022 to estimate/impute the number of people charged in Dec.2023.
-ojo_tbl("party") |> 
-  select(created_at) |> 
-  mutate(year = floor_date(as_date(created_at), unit = "year")
-         ) |> 
-  count(year)
+# ojo_tbl("party") |> 
+#   select(created_at) |> 
+#   mutate(year = floor_date(as_date(created_at), unit = "year")
+#          ) |> 
+#   count(year)
 
-```
-
-```{r}
+###################################################################################################
 # Techniques to estimate the lower and upper bounds of individuals facing these charges in Dec 2023
 
-# start by looking at the number of individuals with these charges month by month
-# unsure why the monthly counts are so different for 2022...
-both_methods_persons |> 
-  mutate(month_year = floor_date(as_date(created_at), unit = "month")
-  ) |> 
-  count(month_year)
+# !!! need to use date_filed and not created_at
+# note that party information was not tracked until 2021 and I'm assuming was back filled
 
-both_methods_persons_big |> 
+# this looks at 2022-01-01 through 2023-12-01
+dec_2022 <- both_methods_persons |> 
+  mutate(month_year = floor_date(as_date(date_filed), unit = "month")
+  ) |> 
+  count(month_year) |> 
+  filter(month_year == "2022-12-01")
+
+# this captures 2010-01-01 through 2023-12-01
+# the monthly counts slightly differ depending on which chunk of time we're looking at
+all_dec <- both_methods_persons_big |> 
   mutate(month_year = 
-           floor_date(as_date(created_at), unit = "month")
+           floor_date(as_date(date_filed), unit = "month"), 
+         month = month(as_date(date_filed))
          ) |> 
-  count(month_year)
+  group_by(month_year, month) |> 
+  count(month_year) |> 
+  filter(month == 12)
 
 # option 1) Just use Dec 2022 -- kind of dumb but the easiest route
+both_methods_persons |> 
+  distinct(oscn_id) |>
+  count() |> 
+  rename(upper = n) |> 
+  mutate(upper = upper + dec_2022$n) |> 
+  bind_cols(
+  dps_violation_persons) |> 
+  rename(lower = n)
 
-# option 2) simple moving avg or median -- might be sufficient but not great 
+# option 2) simple moving avg or median -- might be sufficient but not great
+# library(zoo)
+# all_dec |> 
+#   mutate(SMA = rollapply(n, width = 12, FUN = mean, fill = "extend"))
 
 # option 3) weighted moving avg or med.
+
+
 
 # option 4) predicting Dec. 2023 using something more high brow like KNN -- might be overkill 
 
 
 ```
 
-
-## Results
-
-```{r}
-both_methods_persons |> 
-  distinct(oscn_id) |>
-  count() |> 
-  bind_cols(
-  dps_violation_persons,
-  #drug_misdemeanor_persons,
-  #both_methods_persons) |>
-  ) |> 
-  gt() |> 
-  # cols_label(contains("1") ~ "Lower Bound", 
-  #            contains("2") ~ "Upper Bound") |>
-  cols_label(contains("2") ~ "Lower Bound", 
-             contains("1") ~ "Upper Bound")|>
-  tab_header(
-    title = "Estimated Impact for Oklahomans with Misdemeanor Drug Charges",
-    subtitle = glue::glue("{cumulative_period_start} to {reporting_period_end}")) |> 
-  tab_style(
-    style = cell_text(color = "black", weight = "bold", align = "center"),
-    locations = cells_title("title")
-  ) |> 
-  tab_stubhead("Estimated Impact for Oklahomans with Misdemeanor Drug Charges")
-  
-```
