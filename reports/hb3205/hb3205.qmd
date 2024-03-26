@@ -39,6 +39,7 @@ library(glue)
 library(ojoverse)
 library(lubridate)
 library(gt)
+library(gtExtras)
 library(downloadthis)
 ```
 
@@ -275,7 +276,8 @@ new_county_referrals_quarter |>
   fmt_number(
     columns = c("total_referred", "household_impact_estimate", "family_impact_estimate"),
     decimals = 0
-  )
+  ) |> 
+  gt_theme_nytimes()
 
 ```
 
