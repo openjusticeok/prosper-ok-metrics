@@ -24,8 +24,7 @@ description: |
   Estimating the number of Oklahomans directly impacted by HB 3205, a reform of juvenile court fees. Analysis conducted at the request of [Oklahomans for Criminal Justice Reform (OCJR)](https://okjusticereform.org/) and [ProsperOK](https://www.prosperok.org/).
 abstract-title: "Executive Summary"
 abstract: |
-  Open Justice Oklahoma estimates that between 12,968 and	16,037 Oklahomans benefitted from reduced fines and fees associated
-  with HB 3205 for Q2 and Q3 of FY 2023.
+  Open Justice Oklahoma estimates that between 26,654 and	32,973 Oklahomans benefitted from reduced fines and fees associated with HB 3205 between Q2 of FY 2023 and Q2 of FY 2024.
 ---
 
 ```{r}
@@ -54,7 +53,6 @@ This analysis uses OJA referral data beginning October 1, 2022 (Q2 FY 2023) to e
 ## Data
 
 ```{r}
-
 hh_estimate <- get_acs(
   geography = "county",
   survey = "acs5",
@@ -105,13 +103,9 @@ family_estimate <- get_acs(
     )
   )
 
-# OJA data with monthly referrals 2018-2022
-referrals <- read_excel(here("data", "YoungOffenders.xlsx"), sheet = "Referrals") |>
+# OJA data with monthly referrals 2018-2023
+new_data_referrals <- read_excel(here("data", "OPI_YoungOffenders_03052024 (1).xlsx"), sheet = "Referrals") |>
   janitor::clean_names() |>
-  rename(
-    age = new_age,
-    class = arrest_class
-  ) |>
   mutate(
     month = lubridate::as_date(
       month,
@@ -129,9 +123,11 @@ referrals <- read_excel(here("data", "YoungOffenders.xlsx"), sheet = "Referrals"
       TRUE ~ NA_real_
     )
   )
+
 ```
 
-The Office of Juvenile Affairs (OJA) provided data on youth offender referrals from `r min(referrals$month) |> format("%B %Y")` through `r max(referrals$month) |> format("%B %Y")`. The county and month in which referrals were made are included.
+The Office of Juvenile Affairs (OJA) provided data on youth offender referrals from `r min(new_data_referrals$month) |> format("%B %Y")` through `r max(new_data_referrals$month) |> format("%B %Y")`. The county and month in which referrals were made are included.
+
 While referral counts provide insight into the number of Oklahoma’s youth encountering the juvenile system, they are not sufficient to estimate the number of individuals directly impacted by the reforms outlined in the section above. We used county level estimates of household and family sizes conducted by the Census in the 5-year American Community Survey to estimate the total number of individuals impacted since the burden of court fines and fees, especially in the case of children involved in the criminal legal system, is borne by families of the impacted individual.
 
 County, rather than state, level demographics are used to account for some of the variance in the number of Oklahomans most directly involved in caring for the youth referred to OJA. Though the 5-year estimates from the Census hold household and family size constant across years, this measure was chosen due to data quality issues with the 1-year ACS associated with the Covid-19 pandemic.
@@ -139,7 +135,9 @@ County, rather than state, level demographics are used to account for some of th
 According to Census definitions, household size refers to the total number of individuals living in a housing unit, while family size consists of only those housing unit residents that are related by birth, marriage, or other legal status. Aggregated, household size tends to be greater than family size; taken together, these two estimations provide reasonable bounds for estimating the total direct impact of HB 3205.
 
 ```{r}
-county_referrals_quarter <- referrals |>
+# Correcting overestimate and assuming that each referral id represents one person (this is not always true). The previous code treated each row of data as a unique individual not taking into account that each referral id represents a "case" and each row is an individual charge. 
+new_county_referrals_quarter <- new_data_referrals |>
+  distinct(referral_id, .keep_all = TRUE) |>
   group_by(
     county,
     month,
@@ -172,14 +170,15 @@ county_referrals_quarter <- referrals |>
     household_impact_estimate = num_referred * household_size,
     family_impact_estimate = num_referred * family_size
   )
+
 ```
 
 ::: {.content-visible unless-format="pdf"}
 
 ```{r}
 #| column: page
-
-gt(county_referrals_quarter) |>
+## new data
+gt(new_county_referrals_quarter) |>
   cols_label(
     county = "County",
     month = "Month",
@@ -203,9 +202,9 @@ gt(county_referrals_quarter) |>
     )
   ) |>
   tab_source_note(
-    county_referrals_quarter |>
+    new_county_referrals_quarter |>
       download_this(
-        output_name = "oja_referrals_county_quarterly",
+        output_name = "updated_oja_referrals_county_quarterly",
         output_extension = ".csv"
       )
   ) |>
@@ -235,8 +234,8 @@ Quarterly referral data and estimated impacts are presented in the table below:
 
 ```{r}
 #| column: page
-
-county_referrals_quarter |>
+#| 
+new_county_referrals_quarter |>
   filter(
     quarter >= "2022-10-01"
   ) |>
@@ -277,55 +276,7 @@ county_referrals_quarter |>
     columns = c("total_referred", "household_impact_estimate", "family_impact_estimate"),
     decimals = 0
   )
+
 ```
 
 :::
-
-::: {.content-visible when-format="pdf"}
-
-```{r}
-county_referrals_quarter |>
-  filter(
-    quarter >= "2022-10-01"
-  ) |>
-  group_by(
-    fiscal_year,
-    fiscal_quarter,
-    quarter
-  ) |>
-  summarise(
-    total_referred = sum(num_referred, na.rm = TRUE),
-    household_impact_estimate = sum(household_impact_estimate, na.rm = TRUE),
-    family_impact_estimate = sum(family_impact_estimate, na.rm = TRUE)
-  ) |>
-  ungroup() |>
-  gt() |>
-  grand_summary_rows(
-    columns = c(
-      total_referred,
-      household_impact_estimate,
-      family_impact_estimate
-    ),
-    fns = list(
-      label = "Total",
-      id = "total",
-      fn = "sum"
-    ),
-    fmt = ~ fmt_number(., decimals = 0)
-  ) |>
-  cols_label(
-    quarter = "Quarter Start",
-    fiscal_year = "Fiscal Year",
-    fiscal_quarter = "Fiscal Quarter",
-    total_referred = "Referrals",
-    household_impact_estimate = "Household Impact",
-    family_impact_estimate = "Family Impact"
-  ) |>
-  fmt_number(
-    columns = c("total_referred", "household_impact_estimate", "family_impact_estimate"),
-    decimals = 0
-  )
-```
-
-:::
-
