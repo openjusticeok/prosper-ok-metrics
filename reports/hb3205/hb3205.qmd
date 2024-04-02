@@ -105,7 +105,7 @@ family_estimate <- get_acs(
   )
 
 # OJA data with monthly referrals 2018-2023
-new_data_referrals <- read_excel(here("data", "OPI_YoungOffenders_03052024 (1).xlsx"), sheet = "Referrals") |>
+new_data_referrals <- read_excel(here("data", "OPI_YoungOffenders_03292024_Final.xlsx"), sheet = "Referrals") |>
   janitor::clean_names() |>
   mutate(
     month = lubridate::as_date(
@@ -123,7 +123,14 @@ new_data_referrals <- read_excel(here("data", "OPI_YoungOffenders_03052024 (1).x
       quarter(quarter) == 4 ~ 2,
       TRUE ~ NA_real_
     )
-  )
+  ) |> 
+  rename(county = modenm020,
+         referring_agency = ref_agcy,
+         referral_id = arrest_ref,
+         count_num = cntnbr121,
+         arrest_offense = arrest_off,
+         oja_offense_category = category
+         )
 
 ```
 
