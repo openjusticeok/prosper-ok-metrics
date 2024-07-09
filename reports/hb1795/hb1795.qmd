@@ -82,7 +82,7 @@ all_cases <- ojo_tbl("case", .con = ojodb) |>
   filter(
     case_type == "CM",
     date_filed >= cumulative_period_start,
-    date_filed < reporting_period_end
+    date_filed <= reporting_period_end
   ) |>
   select(
     id,
@@ -221,117 +221,123 @@ both_methods_persons |>
 
 ### Estimating December 2023
 ```{r}
-start <- ymd("2010-01-01")
-end <- ymd("2023-12-01")
 
-all_cases_big <- ojo_tbl("case", .con = ojodb) |>
-  filter(
-    case_type == "CM",
-    date_filed >= start,
-    date_filed < end
-  ) |>
-  select(
-    id,
-    case_type,
-    district,
-    date_filed,
-    counts,
-    open_counts
-  ) |>
-  mutate(
-    count = unnest(counts),
-    open_count = unnest(open_counts)
-  ) |>
-  left_join(
-    ojo_tbl("count", .con = ojodb),
-    by = c("count" = "id"),
-    suffix = c("", ".count")
-  ) |>
-  mutate(
-    count_as_filed = if_else(
-      is.na(open_count),
-      count_as_filed,
-      open_count
-    )
-  ) |>
-  collect()
+## 7/9/2024 -- PR commenting this section out because returning an error when I try to render the HB3205 qmd file. Any changes made here were for that reason.
 
-# Defendants for all cases
-total_persons_big <- ojo_tbl("party", .con = ojodb) |>
-  right_join(
-    all_cases_big |>
-      distinct(id),
-    by = c("case_id" = "id"),
-    copy = TRUE
-  ) |>
-  filter(role == "Defendant") |>
-  distinct(oscn_id) |>
-  count() |>
-  collect()
+
+# ojodb <- ojo_connect()
+# 
+# start <- ymd("2010-01-01")
+# end <- ymd("2023-12-01")
+# 
+# all_cases_big <- ojo_tbl("case", .con = ojodb) |>
+#   filter(
+#     case_type == "CM",
+#     date_filed >= start,
+#     date_filed < end
+#   ) |>
+#   select(
+#     id,
+#     case_type,
+#     district,
+#     date_filed,
+#     counts,
+#     open_counts
+#   ) |>
+#   mutate(
+#     count = unnest(counts),
+#     open_count = unnest(open_counts)
+#   ) |>
+#   left_join(
+#     ojo_tbl("count", .con = ojodb),
+#     by = c("count" = "id"),
+#     suffix = c("", ".count")
+#   ) |>
+#   mutate(
+#     count_as_filed = if_else(
+#       is.na(open_count),
+#       count_as_filed,
+#       open_count
+#     )
+#   ) |>
+#   collect()
+# 
+# # Defendants for all cases
+# total_persons_big <- ojo_tbl("party", .con = ojodb) |>
+#   right_join(
+#     all_cases_big |>
+#       distinct(id),
+#     by = c("case_id" = "id"),
+#     copy = TRUE
+#   ) |>
+#   filter(role == "Defendant") |>
+#   distinct(oscn_id) |>
+#   count() |>
+#   collect()
 
 # Pulling every case with at least one misdemeanor drug charge
 # (excluding distribution/intent to dispense/etc.)
-case_misdemeanor_drug_big <- 
-  all_cases_big |>
-  filter(
-    str_detect(count_as_filed, drugs)
-  ) |>
-  filter(
-    !str_detect(count_as_filed, drug_exclude)
-  )
+# case_misdemeanor_drug_big <- 
+#   all_cases_big |>
+#   filter(
+#     str_detect(count_as_filed, drugs)
+#   ) |>
+#   filter(
+#     !str_detect(count_as_filed, drug_exclude)
+#   )
 
 # Defendants in cases above:
-drug_misdemeanor_persons_big <- ojo_tbl("party", .con = ojodb) |>
-  right_join(
-    case_misdemeanor_drug_big |>
-      distinct(id),
-    by = c("case_id" = "id"),
-    copy = TRUE
-  ) |>
-  filter(role == "Defendant") |>
-  distinct(oscn_id) |>
-  count() |>
-  collect()
+# drug_misdemeanor_persons_big <- ojo_tbl("party", .con = ojodb) |>
+#   right_join(
+#     case_misdemeanor_drug_big |>
+#       distinct(id),
+#     by = c("case_id" = "id"),
+#     copy = TRUE
+#   ) |>
+#   filter(role == "Defendant") |>
+#   distinct(oscn_id) |>
+#   count() |>
+#   collect()
 
 # A conservative estimate of the number of impacted individuals can be made by
 # filtering misdemeanors by DPS violation code and related codes.
 # For the most part, this excludes drug offenses occurring outside of motor vehicle
-case_dps_violation_big <- 
-  all_cases_big |>
-  filter(str_detect(count_as_filed, dps_codes),
-         !str_detect(count_as_filed, dps_exclude))
+# case_dps_violation_big <- 
+#   all_cases_big |>
+#   filter(str_detect(count_as_filed, dps_codes),
+#          !str_detect(count_as_filed, dps_exclude))
 
 # This calculates number of defendants:
-dps_violation_persons_big <- ojo_tbl("party", .con = ojodb) |>
-  right_join(
-    case_dps_violation_big |>
-      distinct(id),
-    by = c("case_id" = "id"),
-    copy = TRUE
-  ) |>
-  filter(role == "Defendant") |>
-  distinct(oscn_id) |> 
-  count() |>
-  collect()
-
-# Upper Bound including people from DPS OR misdemeanor method:
-both_methods_persons_big <- ojo_tbl("party", .con = ojodb) |>
-  right_join(
-    rbind(
-      case_dps_violation_big |>
-        select(id, date_filed),
-      case_misdemeanor_drug_big |>
-        select(id, date_filed)
-    ) |>
-      distinct(),
-    by = c("case_id" = "id"),
-    copy = TRUE
-  ) |>
-  filter(role == "Defendant") |>
-  distinct(oscn_id, .keep_all = TRUE) |> 
-  #distinct(oscn_id) |>
-  #count() |>
-  collect()
+# dps_violation_persons_big <- ojo_tbl("party", .con = ojodb) |>
+#   right_join(
+#     case_dps_violation_big |>
+#       distinct(id),
+#     by = c("case_id" = "id"),
+#     copy = TRUE
+#   ) |>
+#   filter(role == "Defendant") |>
+#   distinct(oscn_id) |> 
+#   count() |>
+#   collect()
+# 
+# # Upper Bound including people from DPS OR misdemeanor method:
+# both_methods_persons_big <- ojo_tbl("party", .con = ojodb) |>
+#   right_join(
+#     rbind(
+#       case_dps_violation_big |>
+#         select(id, date_filed),
+#       case_misdemeanor_drug_big |>
+#         select(id, date_filed)
+#     ) |>
+#       distinct(),
+#     by = c("case_id" = "id"),
+#     copy = TRUE
+#   ) |>
+#   filter(role == "Defendant") |>
+#   distinct(oscn_id, .keep_all = TRUE) |> 
+#   #distinct(oscn_id) |>
+#   #count() |>
+#   collect()
 
 # Sanity check
 # party table data starts in May 2021 so we actually only have Dec.2021 and Dec.2022 to estimate/impute the number of people charged in Dec.2023.
@@ -348,43 +354,33 @@ both_methods_persons_big <- ojo_tbl("party", .con = ojodb) |>
 # note that party information was not tracked until 2021 and I'm assuming was back filled
 
 # this looks at 2022-01-01 through 2023-12-01
-dec_2022 <- both_methods_persons |> 
-  mutate(month_year = floor_date(as_date(date_filed), unit = "month")
-  ) |> 
-  count(month_year) |> 
-  filter(month_year == "2022-12-01")
+# dec_2022 <- both_methods_persons |> 
+#   mutate(month_year = floor_date(as_date(date_filed), unit = "month")
+#   ) |> 
+#   count(month_year) |> 
+#   filter(month_year == "2022-12-01")
 
 # this captures 2010-01-01 through 2023-12-01
 # the monthly counts slightly differ depending on which chunk of time we're looking at
-all_dec <- both_methods_persons_big |> 
-  mutate(month_year = 
-           floor_date(as_date(date_filed), unit = "month"), 
-         month = month(as_date(date_filed))
-         ) |> 
-  group_by(month_year, month) |> 
-  count(month_year) |> 
-  filter(month == 12)
+# all_dec <- both_methods_persons_big |> 
+#   mutate(month_year = 
+#            floor_date(as_date(date_filed), unit = "month"), 
+#          month = month(as_date(date_filed))
+#          ) |> 
+#   group_by(month_year, month) |> 
+#   count(month_year) |> 
+#   filter(month == 12)
 
 # option 1) Just use Dec 2022 -- kind of dumb but the easiest route
-both_methods_persons |> 
-  distinct(oscn_id) |>
-  count() |> 
-  rename(upper = n) |> 
-  mutate(upper = upper + dec_2022$n) |> 
-  bind_cols(
-  dps_violation_persons) |> 
-  rename(lower = n)
-
-# option 2) simple moving avg or median -- might be sufficient but not great
-# library(zoo)
-# all_dec |> 
-#   mutate(SMA = rollapply(n, width = 12, FUN = mean, fill = "extend"))
-
-# option 3) weighted moving avg or med.
-
-
-
-# option 4) predicting Dec. 2023 using something more high brow like KNN -- might be overkill 
+# both_methods_persons |> 
+#   distinct(oscn_id) |>
+#   count() |> 
+#   rename(upper = n) |> 
+#   mutate(upper = upper + dec_2022$n) |> 
+#   bind_cols(
+#   dps_violation_persons) |> 
+#   rename(lower = n)
+# 
 
 
 ```

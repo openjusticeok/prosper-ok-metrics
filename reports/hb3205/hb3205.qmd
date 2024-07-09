@@ -24,7 +24,7 @@ description: |
   Estimating the number of Oklahomans directly impacted by HB 3205, a reform of juvenile court fees. Analysis conducted at the request of [Oklahomans for Criminal Justice Reform (OCJR)](https://okjusticereform.org/) and [ProsperOK](https://www.prosperok.org/).
 abstract-title: "Executive Summary"
 abstract: |
-  Open Justice Oklahoma estimates that between 26,654 and	32,973 Oklahomans benefitted from reduced fines and fees associated with HB 3205 between Q2 of FY 2023 and Q2 of FY 2024.
+  Open Justice Oklahoma estimates that between _______ and	________ Oklahomans benefitted from reduced fines and fees associated with HB 3205 between Q2 of FY 2023 and Q2 of FY 2024.
 ---
 
 ```{r}
