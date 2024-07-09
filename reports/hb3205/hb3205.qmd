@@ -143,9 +143,9 @@ County, rather than state, level demographics are used to account for some of th
 According to Census definitions, household size refers to the total number of individuals living in a housing unit, while family size consists of only those housing unit residents that are related by birth, marriage, or other legal status. Aggregated, household size tends to be greater than family size; taken together, these two estimations provide reasonable bounds for estimating the total direct impact of HB 3205.
 
 ```{r}
-# Correcting overestimate and assuming that each referral id represents one person (this is not always true). The previous code treated each row of data as a unique individual not taking into account that each referral id represents a "case" and each row is an individual charge. 
+# After much back and forth we landed on it being referral offenses and not cases or people that we want to count since fines may be assigned per charge? Or we aren't sure so we are just sticking with using all referrals.
 new_county_referrals_quarter <- new_data_referrals |>
-  distinct(referral_id, .keep_all = TRUE) |>
+  #distinct(referral_id, .keep_all = TRUE) |>
   group_by(
     county,
     month,
