@@ -133,7 +133,6 @@ new_data_referrals <- read_excel(here("data", "OPI_YoungOffenders_03292024_Final
     arrest_offense = arrest_off,
     oja_offense_category = category
   )
-
 ```
 
 The Office of Juvenile Affairs (OJA) provided data on youth offender referrals from `r min(new_data_referrals$month) |> format("%B %Y")` through `r max(new_data_referrals$month) |> format("%B %Y")`. The county and month in which referrals were made are included.
@@ -181,6 +180,75 @@ new_county_referrals_quarter <- new_data_referrals |>
     family_impact_estimate = num_referred * family_size
   )
 
+```
+
+```{r}
+# Testing some things:
+
+# 1) compare unique individuals, referrals and offenses across the whole dataset: looks as expected, increasing from individuals < referrals < offenses
+data_summary <- new_data_referrals |>
+  summarise(
+    n_individuals = n_distinct(individual_id),
+    n_referrals = n_distinct(referral_id),
+    n_offenses = n_distinct(referral_id, count_num)
+  )
+
+data_summary
+
+# 2) n_offenses == number of rows in dataset: True, yay!
+data_summary$n_offenses == nrow(new_data_referrals)
+
+# 3) How different are results at the county / fiscal quarter level using the different metrics?
+
+data_fiscal_quarter_summary <- new_data_referrals |>
+  group_by(
+    county,
+    fiscal_year,
+    fiscal_quarter,
+  ) |>
+  summarise(
+    n_offenses = n(),
+    n_referrals = n_distinct(referral_id),
+    n_individuals = n_distinct(individual_id)
+  ) |>
+  ungroup()
+
+data_fiscal_quarter_summary
+
+# 4) Does offenses >= referrals >= individuals still hold as expected? Yes
+data_fiscal_quarter_summary |>
+  mutate(
+    as_expected = n_offenses >= n_referrals & n_referrals >= n_individuals
+  ) |>
+  count(as_expected)
+
+
+## IMPORTANT! The choice of aggregation level effects the results in (3), above, since the same id will be counted per fiscal quarter and county. If a youth is referred once in each quarter of a year they will show as 1 distinct individual *in each quarter* regardless of whether referral_id or individual_id is used as the indicator.
+
+## In summary, we are needing to avoid this double counting which, crucially, *we could not do without knowing which referrals were attached to one individual*. Only as of April 2, when we received confirmation that 'fnbr' refers to a single individual could we consider accounting for this.
+
+## How do we do so? With *cumulative* counting that is then binned into the final groupings we want, i.e. fiscal quarters.
+
+# In cumulative counting we have to make sure things are ordered correctly in time
+# Note that we are still assuming no individual are in multiple counties... we need to check that assumption or accept that we may double count individuals who appear in multiple
+
+# My first attempt, possibly not complete:
+new_data_referrals |>
+  distinct(
+    county,
+    fiscal_quarter,
+    fiscal_year,
+    individual_id
+  ) |>
+  arrange(county, fiscal_year, fiscal_quarter) |>
+  group_by(county) |>
+  mutate(
+    i = 1,
+    n = cumsum(i)
+  ) |>
+  select(-individual_id) |>
+  group_by(county, fiscal_year, fiscal_quarter) |>
+  slice_max(order_by = n)
 ```
 
 ::: {.content-visible unless-format="pdf"}
