@@ -43,14 +43,28 @@
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \setcounter{secnumdepth}{5}
 % Make \paragraph and \subparagraph free-standing
+\makeatletter
 \ifx\paragraph\undefined\else
   \let\oldparagraph\paragraph
-  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
 \fi
 \ifx\subparagraph\undefined\else
   \let\oldsubparagraph\subparagraph
-  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
 \fi
+\makeatother
 
 
 \providecommand{\tightlist}{%
@@ -83,11 +97,9 @@
 \usepackage{longtable}
 \usepackage{colortbl}
 \usepackage{array}
+\usepackage{anyfontsize}
+\usepackage{multirow}
 \KOMAoption{captions}{tableheading}
-\makeatletter
-\makeatother
-\makeatletter
-\makeatother
 \makeatletter
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
 \AtBeginDocument{%
@@ -124,23 +136,17 @@
 \newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
 \makeatother
 \makeatletter
+\makeatother
+\makeatletter
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
 \@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
 \makeatother
-\makeatletter
-\@ifpackageloaded{tcolorbox}{}{\usepackage[skins,breakable]{tcolorbox}}
-\makeatother
-\makeatletter
-\@ifundefined{shadecolor}{\definecolor{shadecolor}{rgb}{.97, .97, .97}}
-\makeatother
-\makeatletter
-\makeatother
-\makeatletter
-\makeatother
+
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
-\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\usepackage{bookmark}
+
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same} % disable monospaced font for URLs
 \hypersetup{
@@ -152,6 +158,7 @@
   citecolor={Blue},
   urlcolor={Blue},
   pdfcreator={LaTeX via pandoc}}
+
 
 \title{HB 3205 Impact Estimate}
 \usepackage{etoolbox}
@@ -171,10 +178,9 @@ Open Justice Oklahoma estimates that between \_\_\_\_\_\_\_ and
 \_\_\_\_\_\_\_\_ Oklahomans benefitted from reduced fines and fees
 associated with HB 3205 between Q2 of FY 2023 and Q2 of FY 2024.
 \end{abstract}
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[borderline west={3pt}{0pt}{shadecolor}, sharp corners, boxrule=0pt, interior hidden, enhanced, frame hidden, breakable]}{\end{tcolorbox}}\fi
 
-\hypertarget{background}{%
-\section{Background}\label{background}}
+
+\section{Background}\label{background}
 
 A bill reducing fines and fees for families of children involved in the
 criminal legal system (HB 3205) went into effect July 1, 2022 (Q1 FY
@@ -199,8 +205,7 @@ This analysis uses OJA referral data beginning October 1, 2022 (Q2 FY
 2023) to estimate the impact of HB 3205 during a period of full
 implementation.
 
-\hypertarget{data}{%
-\section{Data}\label{data}}
+\section{Data}\label{data}
 
 The Office of Juvenile Affairs (OJA) provided data on youth offender
 referrals from January 2018 through December 2023. The county and month
@@ -232,11 +237,11 @@ reasonable bounds for estimating the total direct impact of HB 3205.
 
 See attached CSV file for full data.
 
-\hypertarget{results}{%
-\section{Results}\label{results}}
+\section{Results}\label{results}
 
 Quarterly referral data and estimated impacts are presented in the table
 below:
+
 
 
 

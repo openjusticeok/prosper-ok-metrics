@@ -3,9 +3,9 @@ title: HB 3205 Impact Estimate
 subtitle: Open Justice Oklahoma
 format:
   ojo-report-template-html: default
-  pdf:
-    pdf-engine: xelatex
-author: Polina Rozhkova and Brancen Gregory
+authors:
+  - Polina Rozhkova
+  - Brancen Gregory
 date: last-modified
 logo: "www/ojo-logo-white.png"
 number-sections: true
@@ -124,13 +124,15 @@ new_data_referrals <- read_excel(here("data", "OPI_YoungOffenders_03292024_Final
       TRUE ~ NA_real_
     )
   ) |> 
-  rename(county = modenm020,
-         referring_agency = ref_agcy,
-         referral_id = arrest_ref,
-         count_num = cntnbr121,
-         arrest_offense = arrest_off,
-         oja_offense_category = category
-         )
+  rename(
+    individual_id = fnbr,
+    county = modenm020,
+    referring_agency = ref_agcy,
+    referral_id = arrest_ref,
+    count_num = cntnbr121,
+    arrest_offense = arrest_off,
+    oja_offense_category = category
+  )
 
 ```
 
@@ -138,7 +140,7 @@ The Office of Juvenile Affairs (OJA) provided data on youth offender referrals f
 
 While referral counts provide insight into the number of Oklahoma’s youth encountering the juvenile system, they are not sufficient to estimate the number of individuals directly impacted by the reforms outlined in the section above. We used county level estimates of household and family sizes conducted by the Census in the 5-year American Community Survey to estimate the total number of individuals impacted since the burden of court fines and fees, especially in the case of children involved in the criminal legal system, is borne by families of the impacted individual.
 
-County, rather than state, level demographics are used to account for some of the variance in the number of Oklahomans most directly involved in caring for the youth referred to OJA. Though the 5-year estimates from the Census hold household and family size constant across years, this measure was chosen due to data quality issues with the 1-year ACS associated with the Covid-19 pandemic.
+County, rather than state, level demographics are used to account for some of the variance in the number of Oklahomans most directly involved in caring for the youth referred to OJA. Though the 5-year estimates from the Census hold household and family size constant across years, this measure was chosen due to data quality issues with the 1-year ACS associated with the COVID-19 pandemic.
 
 According to Census definitions, household size refers to the total number of individuals living in a housing unit, while family size consists of only those housing unit residents that are related by birth, marriage, or other legal status. Aggregated, household size tends to be greater than family size; taken together, these two estimations provide reasonable bounds for estimating the total direct impact of HB 3205.
 
@@ -242,7 +244,7 @@ Quarterly referral data and estimated impacts are presented in the table below:
 
 ```{r}
 #| column: page
-#| 
+#|
 new_county_referrals_quarter |>
   filter(
     quarter >= "2022-10-01"
