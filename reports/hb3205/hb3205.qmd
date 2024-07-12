@@ -249,6 +249,33 @@ new_data_referrals |>
   select(-individual_id) |>
   group_by(county, fiscal_year, fiscal_quarter) |>
   slice_max(order_by = n)
+
+
+### Comparing old and new data 
+clean_oja <- function(df) {
+  colnames(df) <- tolower(gsub(' ', '_', colnames(df)))
+  return(df)
+}
+
+referrals <- read_excel(here("data", "YoungOffenders.xlsx"), sheet = "Referrals") |> 
+  clean_oja() |>
+  mutate(referral_date = as_date(month, format = "%Y/%m")) |> 
+  mutate(county = toupper(county))
+  
+referrals |> 
+  count(Year)
+
+new_data_referrals |> 
+  count(year)
+
+# in new but not in the old -- This is expected for 2023 referrals and *maybe* room for some adjustment between years.
+test1 <- new_data_referrals |> 
+  anti_join(referrals, by = c("referral_id", "year"))
+
+# in the old but not in the new -- This is a bigger problem that should be discussed with Len
+test2 <- referrals |> 
+  anti_join(new_data_referrals, by = c("referral_id"))
+
 ```
 
 ::: {.content-visible unless-format="pdf"}
