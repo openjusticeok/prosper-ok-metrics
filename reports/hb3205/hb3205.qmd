@@ -22,9 +22,6 @@ knitr:
     warning: FALSE
 description: |
   Estimating the number of Oklahomans directly impacted by HB 3205, a reform of juvenile court fees. Analysis conducted at the request of [Oklahomans for Criminal Justice Reform (OCJR)](https://okjusticereform.org/) and [ProsperOK](https://www.prosperok.org/).
-abstract-title: "Executive Summary"
-abstract: |
-  Open Justice Oklahoma estimates that between _______ and	________ Oklahomans benefitted from reduced fines and fees associated with HB 3205 between Q2 of FY 2023 and Q2 of FY 2024.
 ---
 
 ```{r}
@@ -144,7 +141,8 @@ County, rather than state, level demographics are used to account for some of th
 According to Census definitions, household size refers to the total number of individuals living in a housing unit, while family size consists of only those housing unit residents that are related by birth, marriage, or other legal status. Aggregated, household size tends to be greater than family size; taken together, these two estimations provide reasonable bounds for estimating the total direct impact of HB 3205.
 
 ```{r}
-# After much back and forth we landed on it being referral offenses and not cases or people that we want to count since fines may be assigned per charge? Or we aren't sure so we are just sticking with using all referrals.
+# After much back and forth we landed on using unique referral_ids. 
+#TODO: DOCUMENT THIS ASAP AND EXPLAIN WHY using referrals and not offenses or individuals
 new_county_referrals_quarter <- new_data_referrals |>
   #distinct(referral_id, .keep_all = TRUE) |>
   group_by(
@@ -154,9 +152,22 @@ new_county_referrals_quarter <- new_data_referrals |>
     fiscal_year,
     fiscal_quarter
   ) |>
-  count() |>
+  # distinct(
+  #   county,
+  #   month,
+  #   quarter,
+  #   fiscal_year,
+  #   fiscal_quarter,
+  #   referral_id) |>
+  # group_by(
+  #   county,
+  #   month,
+  #   quarter,
+  #   fiscal_year,
+  #   fiscal_quarter) |> 
+  count() |> 
   rename(
-    num_referred = n
+    num_referrals = n
   ) |>
   ungroup() |>
   left_join(
@@ -176,13 +187,13 @@ new_county_referrals_quarter <- new_data_referrals |>
     by = "county"
   ) |>
   mutate(
-    household_impact_estimate = num_referred * household_size,
-    family_impact_estimate = num_referred * family_size
+    household_impact_estimate = num_referrals * household_size,
+    family_impact_estimate = num_referrals * family_size
   )
 
 ```
 
-```{r}
+```{r, include=FALSE, eval=FALSE}
 # Testing some things:
 
 # 1) compare unique individuals, referrals and offenses across the whole dataset: looks as expected, increasing from individuals < referrals < offenses
@@ -263,18 +274,22 @@ referrals <- read_excel(here("data", "YoungOffenders.xlsx"), sheet = "Referrals"
   mutate(county = toupper(county))
   
 referrals |> 
-  count(Year)
+  count(year)
 
 new_data_referrals |> 
   count(year)
 
 # in new but not in the old -- This is expected for 2023 referrals and *maybe* room for some adjustment between years.
 test1 <- new_data_referrals |> 
-  anti_join(referrals, by = c("referral_id", "year"))
+  anti_join(referrals, by = c("referral_id", "year")) |> 
+  group_by(year, month) |> 
+  count()
 
 # in the old but not in the new -- This is a bigger problem that should be discussed with Len
 test2 <- referrals |> 
-  anti_join(new_data_referrals, by = c("referral_id"))
+  anti_join(new_data_referrals, by = c("referral_id")) |> 
+  group_by(year, month) |> 
+  count()
 
 ```
 
@@ -290,7 +305,7 @@ gt(new_county_referrals_quarter) |>
     quarter = "Quarter Start",
     fiscal_year = "Fiscal Year",
     fiscal_quarter = "Fiscal Quarter",
-    num_referred = "Referrals",
+    num_referrals = "Referrals",
     household_size = "Average Household Size",
     household_impact_estimate = "Impacted Oklahomans (Low)",
     family_size = "Average Family Size",
@@ -333,14 +348,8 @@ See attached CSV file for full data.
 
 ## Results
 
-Quarterly referral data and estimated impacts are presented in the table below:
-
-::: {.content-visible unless-format="pdf"}
-
 ```{r}
-#| column: page
-#|
-new_county_referrals_quarter |>
+result_summary <- new_county_referrals_quarter |>
   filter(
     quarter >= "2022-10-01"
   ) |>
@@ -350,11 +359,23 @@ new_county_referrals_quarter |>
     quarter
   ) |>
   summarise(
-    total_referred = sum(num_referred, na.rm = TRUE),
+    total_referred = sum(num_referrals, na.rm = TRUE),
     household_impact_estimate = sum(household_impact_estimate, na.rm = TRUE),
     family_impact_estimate = sum(family_impact_estimate, na.rm = TRUE)
   ) |>
-  ungroup() |>
+  ungroup()
+
+```
+Open Justice Oklahoma estimates that between `r sum(result_summary$household_impact_estimate) |> round(digits = 0) |> format(big.mark = ",")` and	`r sum(result_summary$family_impact_estimate) |> round(digits = 0) |> format(big.mark = ",")` Oklahomans benefited from reduced fines and fees associated with HB 3205 between Q2 of FY 2023 and Q2 of FY 2024.
+
+Quarterly referral data and estimated impacts are presented in the table below:
+
+::: {.content-visible unless-format="pdf"}
+
+```{r}
+#| column: page
+#|
+result_summary |> 
   gt() |>
   grand_summary_rows(
     columns = c(
