@@ -109,20 +109,10 @@ all_cases <- ojo_tbl("case", .con = ojodb) |>
       open_count
     )
   ) |>
-  bind_rows(
-    ojo_tbl("case", schema = "oscn", .con = ojodb) |>
-      left_join(
-        ojo_tbl("count", schema = "oscn", .con = ojodb),
-        by = c("id" = "case_id")
-      )
-  ) |>
   collect()
 
 # Defendants for all cases
 total_persons <- ojo_tbl("party", .con = ojodb) |>
-  bind_rows(
-    ojo_tbl("party", schema = "oscn", .con = ojodb)
-  )
   right_join(
     all_cases |>
       distinct(id),
@@ -147,7 +137,6 @@ case_misdemeanor_drug <-
 
 # Defendants in cases above:
 drug_misdemeanor_persons <- ojo_tbl("party", .con = ojodb) |>
-  bind_rows(ojo_tbl("party", schema = "oscn", .con = ojodb)) |>
   right_join(
     case_misdemeanor_drug |>
       distinct(id),
@@ -169,7 +158,6 @@ case_dps_violation <-
 
 # This calculates number of defendants:
 dps_violation_persons <- ojo_tbl("party", .con = ojodb) |>
-  bind_rows(ojo_tbl("party", schema = "oscn", .con = ojodb)) |>
   right_join(
     case_dps_violation |>
       distinct(id),
@@ -183,9 +171,6 @@ dps_violation_persons <- ojo_tbl("party", .con = ojodb) |>
 
 # Upper Bound including people from DPS OR misdemeanor method:
 both_methods_persons <- ojo_tbl("party", .con = ojodb) |>
-  bind_rows(
-    ojo_tbl("party", .con = ojodb)
-  ) |>
   right_join(
     rbind(
       case_dps_violation |>
