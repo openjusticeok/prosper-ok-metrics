@@ -130,6 +130,7 @@ new_data_referrals <- read_excel(here("data", "OPI_YoungOffenders_03292024_Final
     arrest_offense = arrest_off,
     oja_offense_category = category
   )
+
 ```
 
 The Office of Juvenile Affairs (OJA) provided data on youth offender referrals from `r min(new_data_referrals$month) |> format("%B %Y")` through `r max(new_data_referrals$month) |> format("%B %Y")`. The county and month in which referrals were made are included.
@@ -144,7 +145,7 @@ According to Census definitions, household size refers to the total number of in
 # After much back and forth we landed on using unique referral_ids. 
 #TODO: DOCUMENT THIS ASAP AND EXPLAIN WHY using referrals and not offenses or individuals
 new_county_referrals_quarter <- new_data_referrals |>
-  #distinct(referral_id, .keep_all = TRUE) |>
+  distinct(referral_id, .keep_all = TRUE) |>
   group_by(
     county,
     month,
@@ -290,6 +291,118 @@ test2 <- referrals |>
   anti_join(new_data_referrals, by = c("referral_id")) |> 
   group_by(year, month) |> 
   count()
+
+# When we use old data our referral counts are off and not explained by the discrepancies above 
+
+## OLD DATA
+# referrals <- referrals |> 
+#   mutate(
+#     month = lubridate::as_date(
+#       month,
+#       format = "%Y/%m"
+#     ),
+#     quarter = floor_date(month, "quarter"),
+#     fiscal_year = ojo_fiscal_year(month)
+#   ) |>
+#   mutate(
+#     fiscal_quarter = case_when(
+#       quarter(quarter) == 1 ~ 3,
+#       quarter(quarter) == 2 ~ 4,
+#       quarter(quarter) == 3 ~ 1,
+#       quarter(quarter) == 4 ~ 2,
+#       TRUE ~ NA_real_
+#     )
+#   )
+# |> 
+#   rename(
+#     individual_id = fnbr,
+#     county = modenm020,
+#     referring_agency = ref_agcy,
+#     referral_id = arrest_ref,
+#     count_num = cntnbr121,
+#     arrest_offense = arrest_off,
+#     oja_offense_category = category
+#   )
+
+# old_county_referrals_quarter <- referrals |>
+#   #distinct(referral_id, .keep_all = TRUE) |>
+#   group_by(
+#     county,
+#     month,
+#     quarter,
+#     fiscal_year,
+#     fiscal_quarter
+#   ) |>
+#   count() |> 
+#   rename(
+#     num_referrals = n
+#   ) |>
+#   ungroup() |>
+#   left_join(
+#     hh_estimate |>
+#       select(
+#         county,
+#         household_size = estimate
+#       ),
+#     by = "county"
+#   ) |>
+#   left_join(
+#     family_estimate |>
+#       select(
+#         county,
+#         family_size = estimate
+#       ),
+#     by = "county"
+#   ) |>
+#   mutate(
+#     household_impact_estimate = num_referrals * household_size,
+#     family_impact_estimate = num_referrals * family_size
+#   )
+# 
+# old_result_summary <- old_county_referrals_quarter |>
+#   filter(
+#     quarter >= "2022-10-01"
+#   ) |>
+#   group_by(
+#     fiscal_year,
+#     fiscal_quarter,
+#     quarter
+#   ) |>
+#   summarise(
+#     total_referred = sum(num_referrals, na.rm = TRUE),
+#     household_impact_estimate = sum(household_impact_estimate, na.rm = TRUE),
+#     family_impact_estimate = sum(family_impact_estimate, na.rm = TRUE)
+#   ) |>
+#   ungroup()
+# 
+# old_result_summary |> 
+#   gt() |>
+#   grand_summary_rows(
+#     columns = c(
+#       total_referred,
+#       household_impact_estimate,
+#       family_impact_estimate
+#     ),
+#     fns = list(
+#       label = "Total",
+#       id = "total",
+#       fn = "sum"
+#     ),
+#     fmt = ~ fmt_number(., decimals = 0)
+#   ) |>
+#   cols_label(
+#     quarter = "Quarter Start",
+#     fiscal_year = "Fiscal Year",
+#     fiscal_quarter = "Fiscal Quarter",
+#     total_referred = "Referrals",
+#     household_impact_estimate = "Household Impact",
+#     family_impact_estimate = "Family Impact"
+#   ) |>
+#   fmt_number(
+#     columns = c("total_referred", "household_impact_estimate", "family_impact_estimate"),
+#     decimals = 0
+#   ) |> 
+#   gt_theme_nytimes()
 
 ```
 
