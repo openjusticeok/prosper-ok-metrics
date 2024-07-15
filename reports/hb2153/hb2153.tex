@@ -1,0 +1,510 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  letterpaper,
+  DIV=11,
+  numbers=noendperiod]{scrartcl}
+
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else  
+    % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\setcounter{secnumdepth}{5}
+% Make \paragraph and \subparagraph free-standing
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{241,243,245}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.40,0.45,0.13}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\ExtensionTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.28,0.35,0.67}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.46,0.62}{#1}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\NormalTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.07,0.07,0.07}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{longtable}
+\KOMAoption{captions}{tableheading}
+\makeatletter
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Table of contents}
+\else
+  \newcommand\contentsname{Table of contents}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{List of Figures}
+\else
+  \newcommand\listfigurename{List of Figures}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{List of Tables}
+\else
+  \newcommand\listtablename{List of Tables}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figure}
+\else
+  \newcommand\figurename{Figure}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Table}
+\else
+  \newcommand\tablename{Table}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\makeatletter
+\@ifpackageloaded{tcolorbox}{}{\usepackage[skins,breakable]{tcolorbox}}
+\makeatother
+\makeatletter
+\@ifundefined{shadecolor}{\definecolor{shadecolor}{rgb}{.97, .97, .97}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\makeatother
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={HB 2153 Analysis},
+  pdfauthor={Brancen Gregory},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{HB 2153 Analysis}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Open Justice Oklahoma}
+\author{Brancen Gregory}
+\date{2024-03-25}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+We estimate that at least 2,945 Oklahomans have received 4 for more
+convictions for drug possession since 2001. This estimate is likely to
+underestimate the actual number of individuals in these circumstances
+due to the lack of data pre-2001 and other data availibility issues
+described below.
+\end{abstract}
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[breakable, borderline west={3pt}{0pt}{shadecolor}, interior hidden, enhanced, frame hidden, sharp corners, boxrule=0pt]}{\end{tcolorbox}}\fi
+
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
+
+Oklahoma's 2023 legislative session saw the passage of HB 2153. This
+bill, rolling back provisions of State Question 780, makes possession of
+a controlled substance (excluding marijuana) a felony crime after the
+fourth such conviction in ten years. While the punishment for a
+misdemeanor possession conviction is up to \$1,000 dollars and/or up to
+one year confinement, a felony conviction for the same crime can result
+in a fine of up to \$5,000 dollars and/or up to 5 years imprisonment.
+
+This analysis uses historical data on convictions for possession of a
+controlled substance to better understand how prevalent is the situation
+of having four or more convictions within 10 years. This estimate can
+inform expectations of impact upon implementation of HB 2153.
+
+\hypertarget{data}{%
+\section{Data}\label{data}}
+
+\hypertarget{source}{%
+\subsection{Source}\label{source}}
+
+Open Justice Oklahoma maintains a database of administrative court
+records which includes information on all criminal misdemeanors and
+felonies filed in Oklahoma beginning in 2001. Case information is
+systematically collected from publicly available data hosted on the
+\href{https://www.oscn.net/v4/}{Oklahoma State Court Network (OSCN)}
+website.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Initial data pull: All CF / CM cases filed Jan 1 2001 - Dec
+  31, 2022, statewide}
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data }\OtherTok{\textless{}{-}} \FunctionTok{ojo\_tbl}\NormalTok{(}\StringTok{"case"}\NormalTok{, }\AttributeTok{.con =}\NormalTok{ ojodb) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{filter}\NormalTok{(}
+\NormalTok{    case\_type }\SpecialCharTok{\%in\%} \FunctionTok{c}\NormalTok{(}\StringTok{"CM"}\NormalTok{, }\StringTok{"CF"}\NormalTok{),}
+\NormalTok{    date\_filed }\SpecialCharTok{\textgreater{}=} \StringTok{"2001{-}01{-}01"}\NormalTok{,}
+\NormalTok{    date\_filed }\SpecialCharTok{\textless{}} \StringTok{"2023{-}01{-}01"}
+\NormalTok{  ) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{left\_join}\NormalTok{(}
+    \FunctionTok{ojo\_tbl}\NormalTok{(}\StringTok{"count"}\NormalTok{, }\AttributeTok{.con =}\NormalTok{ ojodb),}
+    \AttributeTok{by =} \FunctionTok{c}\NormalTok{(}\StringTok{"id"} \OtherTok{=} \StringTok{"case\_id"}\NormalTok{),}
+    \AttributeTok{suffix =} \FunctionTok{c}\NormalTok{(}\StringTok{""}\NormalTok{, }\StringTok{"\_count"}\NormalTok{)}
+\NormalTok{  ) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{ojo\_collect}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+Our initial data pull has \textbf{2,460,551 rows}. Since only the 13
+official OSCN counties report the charges in each case, we are limited
+to just those for this analysis of drug possession charges.
+\textbf{1,440,250 of the rows} were from these counties, and
+\textbf{1,438,746 had non-missing values} for \texttt{count\_as\_filed}.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Full list of OSCN counties:} Tulsa, Oklahoma, Cleveland,
+  Rogers, Payne, Comanche, Garfield, Canadian, Logan, Adair, Pushmataha,
+  Roger Mills, Ellis
+\end{itemize}
+
+In the data, there were 740,744 unique \textbf{cases} filed in OSCN
+counties, compared to 1,761,045 cases filed statewide. Cases filed in
+the 13 OSCN counties therefore represent 42.06\% of total cases. If we
+assume a similar disposition rate to these 13 counties in the other 64,
+we can then apply a multiplier of 2.38 to extrapolate our result to a
+statewide estimate.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Data availability, per county:}
+\end{itemize}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.1765}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.1176}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.3676}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.3382}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+District
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+N Rows
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+N with Nonmissing Charge
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Percent Missing Charge
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+TULSA & 503,027 & 502,948 & 0.02\% \\
+OKLAHOMA & 486,990 & 486,748 & 0.05\% \\
+CLEVELAND & 124,083 & 124,074 & 0.01\% \\
+ROGERS & 78,098 & 78,072 & 0.03\% \\
+PAYNE & 61,604 & 60,560 & 1.69\% \\
+COMANCHE & 47,052 & 47,012 & 0.09\% \\
+GARFIELD & 38,612 & 38,607 & 0.01\% \\
+CANADIAN & 37,579 & 37,568 & 0.03\% \\
+LOGAN & 25,094 & 25,087 & 0.03\% \\
+ADAIR & 18,518 & 18,490 & 0.15\% \\
+PUSHMATAHA & 14,420 & 14,419 & 0.01\% \\
+ROGER MILLS & 2,942 & 2,930 & 0.41\% \\
+ELLIS & 2,231 & 2,231 & 0\% \\
+\end{longtable}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Data availability, per filing year}
+\end{itemize}
+
+\begin{longtable}[]{@{}llll@{}}
+\toprule\noalign{}
+Year & N Rows & N with Nonmissing Charge & Percent Missing Charge \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+2001-2003 & 171,592 & 170,865 & 0.42\% \\
+2004-2006 & 179,679 & 179,363 & 0.18\% \\
+2007-2009 & 184,855 & 184,793 & 0.03\% \\
+2010-2012 & 184,765 & 184,682 & 0.04\% \\
+2013-2015 & 234,559 & 234,476 & 0.04\% \\
+2016-2018 & 227,896 & 227,819 & 0.03\% \\
+2019-2021 & 195,667 & 195,554 & 0.06\% \\
+2022-2024 & 61,237 & 61,194 & 0.07\% \\
+\end{longtable}
+
+\hypertarget{methodology}{%
+\subsection{Methodology}\label{methodology}}
+
+This report analyzes data from 13 counties which report data on charges
+as filed and disposed, across all complete years of misdemeanor and
+felony data for charges of possession of a controlled substance. We then
+use a text classification tool to assist with finding all the simple
+drug possession charges in the data, which allows us to finally report
+the number of convictions on such charges per defendant.
+
+Our figures are likely to underestimate the total number of convictions
+by a relatively small, but still methodologically significant amount due
+to the expungement of records over time. The magnitude of this bias will
+be greater for earlier years, but can be roughly quantified by
+exploiting the court case id schema mandated by the Oklahoma Supreme
+Court.
+
+\hypertarget{classifying-charge-descriptions}{%
+\subsection{Classifying Charge
+Descriptions}\label{classifying-charge-descriptions}}
+
+We use the (TOC tool){[}https://cjars-toc.isr.umich.edu/{]} developed by
+researchers at the University of Michigan's Institute for Social
+Research to perform an initial classification of free-text charge
+descriptions into the Unified Crime Classification Standard (UCCS). The
+TOC tool provides estimates of the probability that each classification
+was correct. We set a threshold of 80\% confidence, below which pattern
+matching techniques are used to further classify records for which the
+TOC tool has lower performance.
+
+\begin{figure}
+
+{\centering \includegraphics{hb2153_files/figure-pdf/probability-distribution-1.pdf}
+
+}
+
+\end{figure}
+
+The 20 most common verbatim count descriptions -- looking only at
+charges that were \textbf{included} -- are shown below:
+
+\begin{longtable*}{lr}
+\toprule
+count\_as\_disposed & n \\ 
+\midrule
+UNLAWFUL POSSESSION OF CONTROLLED DRUG & 12318 \\ 
+POSSESSION OF CONTROLLED DANGEROUS SUBSTANCE & 10312 \\ 
+POSSESSION OF CONTROLLED DRUG & 10268 \\ 
+UNLAWFUL POSSESSION OF CONTROLLED DRUG METHAMPHETAMINE & 4874 \\ 
+POSSESSION OF CONTROLLED SUBSTANCE & 4566 \\ 
+POSSESSION OF A CDS METHAMPHETAMINE & 4541 \\ 
+POSSESSION OF A CONTROLLED DANGEROUS SUBSTANCE METH & 4160 \\ 
+POSSESSION OF MARIJUANA & 4006 \\ 
+MARIJUANA MISDEMEANOR & 3853 \\ 
+POSSESSION OF A CONTROLLED DANGEROUS SUBSTANCE MARIJUANA & 3086 \\ 
+POSSESSION OF A CDS MARIJUANA & 2718 \\ 
+UNLAWFUL POSSESSION OF MARIJUANA & 2567 \\ 
+POSSESSION OF A CONTROLLED DANGEROUS SUBSTANCE MARIJUANA SCHD I & 2516 \\ 
+POSSESSION OF A CONTROLLED DANGEROUS SUBSTANCE METH SCHD II & 2064 \\ 
+POSSESSION OF A CDS SCHD II & 2058 \\ 
+POSS OF CDS & 2029 \\ 
+UNLAWFUL POSSESSION OF A CONTROLLED DANGEROUS SUBSTANCE & 1928 \\ 
+CONTROLLED DRUG SCHEDULE II FELONY & 1534 \\ 
+POSSESSION OF A CONTROLLED DANGEROUS SUBSTANCE & 1292 \\ 
+POSSESSION OF A CONTROLLED DANGEROUS SUBSTANCE SCHED II & 1230 \\ 
+\bottomrule
+\end{longtable*}
+
+The 20 most common verbatim count descriptions -- looking only at
+charges that were \textbf{excluded} -- are shown below:
+
+\begin{longtable*}{lr}
+\toprule
+count\_as\_disposed & n \\ 
+\midrule
+DUI ALCOHOL & 29961 \\ 
+POSSESSION OF DRUG PARAPHERNALIA & 24833 \\ 
+DRIVING UNDER SUSPENSION DUS & 24195 \\ 
+UNLAWFUL POSSESSION OF DRUG PARAPHERNALIA & 21474 \\ 
+OBSTRUCTING AN OFFICER & 19190 \\ 
+PUBLIC INTOXICATION & 19048 \\ 
+BURGLARY SECOND DEGREE & 17865 \\ 
+LARCENY OF MERCHANDISE FROM RETAILER & 17307 \\ 
+DRIVING WHILE UNDER THE INFLUENCE & 17203 \\ 
+ASSAULT AND BATTERY DOMESTIC & 17038 \\ 
+VIOLATION OF COMPULSORY EDUCATION ACT & 15400 \\ 
+BOGUS CHECK & 15020 \\ 
+VIOLATION OF PROTECTIVE ORDER & 13403 \\ 
+POSSESSION OF PARAPHERNALIA & 12465 \\ 
+FAILURE TO CARRY INSURANCE SECURITY VERIFICATION FORM & 11183 \\ 
+CONCEALING STOLEN PROPERTY & 10637 \\ 
+UNAUTHORIZED USE OF VEHICLE & 9370 \\ 
+DRIVING UNDER THE INFLUENCE OF ALCOHOL & 8544 \\ 
+RESISTING AN OFFICER & 8510 \\ 
+DRIVING WITHOUT A DRIVER S LICENSE & 8492 \\ 
+\bottomrule
+\end{longtable*}
+
+Finally, we add information on the defendants in each casein order to
+determine how many have 4 or more simple possession charges.
+
+Of the \textbf{152,556 total rows / charges} in the data,
+\textbf{148,126} have an associated person record (\textbf{97.1\%}).
+Records without this unique identifier assigned by the court system are
+excluded from further analysis.
+
+\hypertarget{results}{%
+\section{Results}\label{results}}
+
+\hypertarget{distribution-of-simple-possession-charges}{%
+\subsection{Distribution of Simple Possession
+Charges}\label{distribution-of-simple-possession-charges}}
+
+Excluding indisposed cases, we count how many simple possession charges
+each individual has from 2001 through 2022.
+
+\begin{figure}
+
+{\centering \includegraphics{hb2153_files/figure-pdf/conviction-count-plot-1.pdf}
+
+}
+
+\end{figure}
+
+Next, we repeat this same analysis excluding descriptions mentioning
+marijuana, as HB 2153 provides an exception for these charges.
+
+\begin{figure}
+
+{\centering \includegraphics{hb2153_files/figure-pdf/unnamed-chunk-7-1.pdf}
+
+}
+
+\end{figure}
+
+Finally, HB 2153 stipulates that the felony charge only comes into
+effect on the fourth or higher simple possession \textbf{conviction}
+within a \textbf{ten year time-span}. We therefore limit our count of
+charges to only those within a rolling 10 year window, arriving at our
+final result for OSCN counties. Applying the multiplier derived above,
+we then find an estimate for the number of individuals who, since 2001,
+have been convicted with simple drug possession four or more times.
+
+\setlength{\LTpost}{0mm}
+\begin{longtable*}{rr}
+\toprule
+OSCN & Statewide\textsuperscript{\textit{1}} \\ 
+\midrule
+$1,239$ & $2,945$ \\ 
+\bottomrule
+\end{longtable*}
+\begin{minipage}{\linewidth}
+\textsuperscript{\textit{1}}Estimated using the disposition rate of OSCN county cases\\
+\end{minipage}
+
+
+
+\end{document}

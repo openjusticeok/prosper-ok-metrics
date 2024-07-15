@@ -3,9 +3,9 @@ title: HB 3205 Impact Estimate
 subtitle: Open Justice Oklahoma
 format:
   ojo-report-template-html: default
-  pdf:
-    pdf-engine: xelatex
-author: Polina Rozhkova and Brancen Gregory
+authors:
+  - Polina Rozhkova
+  - Brancen Gregory
 date: last-modified
 logo: "www/ojo-logo-white.png"
 number-sections: true
@@ -22,10 +22,6 @@ knitr:
     warning: FALSE
 description: |
   Estimating the number of Oklahomans directly impacted by HB 3205, a reform of juvenile court fees. Analysis conducted at the request of [Oklahomans for Criminal Justice Reform (OCJR)](https://okjusticereform.org/) and [ProsperOK](https://www.prosperok.org/).
-abstract-title: "Executive Summary"
-abstract: |
-  Open Justice Oklahoma estimates that between 12,968 and	16,037 Oklahomans benefitted from reduced fines and fees associated
-  with HB 3205 for Q2 and Q3 of FY 2023.
 ---
 
 ```{r}
@@ -40,6 +36,7 @@ library(glue)
 library(ojoverse)
 library(lubridate)
 library(gt)
+library(gtExtras)
 library(downloadthis)
 ```
 
@@ -54,7 +51,6 @@ This analysis uses OJA referral data beginning October 1, 2022 (Q2 FY 2023) to e
 ## Data
 
 ```{r}
-
 hh_estimate <- get_acs(
   geography = "county",
   survey = "acs5",
@@ -105,13 +101,9 @@ family_estimate <- get_acs(
     )
   )
 
-# OJA data with monthly referrals 2018-2022
-referrals <- read_excel(here("data", "YoungOffenders.xlsx"), sheet = "Referrals") |>
+# OJA data with monthly referrals 2018-2023
+new_data_referrals <- read_excel(here("data", "OPI_YoungOffenders_03292024_Final.xlsx"), sheet = "Referrals") |>
   janitor::clean_names() |>
-  rename(
-    age = new_age,
-    class = arrest_class
-  ) |>
   mutate(
     month = lubridate::as_date(
       month,
@@ -128,18 +120,32 @@ referrals <- read_excel(here("data", "YoungOffenders.xlsx"), sheet = "Referrals"
       quarter(quarter) == 4 ~ 2,
       TRUE ~ NA_real_
     )
+  ) |> 
+  rename(
+    individual_id = fnbr,
+    county = modenm020,
+    referring_agency = ref_agcy,
+    referral_id = arrest_ref,
+    count_num = cntnbr121,
+    arrest_offense = arrest_off,
+    oja_offense_category = category
   )
+
 ```
 
-The Office of Juvenile Affairs (OJA) provided data on youth offender referrals from `r min(referrals$month) |> format("%B %Y")` through `r max(referrals$month) |> format("%B %Y")`. The county and month in which referrals were made are included.
+The Office of Juvenile Affairs (OJA) provided data on youth offender referrals from `r min(new_data_referrals$month) |> format("%B %Y")` through `r max(new_data_referrals$month) |> format("%B %Y")`. The county and month in which referrals were made are included.
+
 While referral counts provide insight into the number of Oklahoma’s youth encountering the juvenile system, they are not sufficient to estimate the number of individuals directly impacted by the reforms outlined in the section above. We used county level estimates of household and family sizes conducted by the Census in the 5-year American Community Survey to estimate the total number of individuals impacted since the burden of court fines and fees, especially in the case of children involved in the criminal legal system, is borne by families of the impacted individual.
 
-County, rather than state, level demographics are used to account for some of the variance in the number of Oklahomans most directly involved in caring for the youth referred to OJA. Though the 5-year estimates from the Census hold household and family size constant across years, this measure was chosen due to data quality issues with the 1-year ACS associated with the Covid-19 pandemic.
+County, rather than state, level demographics are used to account for some of the variance in the number of Oklahomans most directly involved in caring for the youth referred to OJA. Though the 5-year estimates from the Census hold household and family size constant across years, this measure was chosen due to data quality issues with the 1-year ACS associated with the COVID-19 pandemic.
 
 According to Census definitions, household size refers to the total number of individuals living in a housing unit, while family size consists of only those housing unit residents that are related by birth, marriage, or other legal status. Aggregated, household size tends to be greater than family size; taken together, these two estimations provide reasonable bounds for estimating the total direct impact of HB 3205.
 
 ```{r}
-county_referrals_quarter <- referrals |>
+# After much back and forth we landed on using unique referral_ids. 
+#TODO: DOCUMENT THIS ASAP AND EXPLAIN WHY using referrals and not offenses or individuals
+new_county_referrals_quarter <- new_data_referrals |>
+  distinct(referral_id, .keep_all = TRUE) |>
   group_by(
     county,
     month,
@@ -147,9 +153,22 @@ county_referrals_quarter <- referrals |>
     fiscal_year,
     fiscal_quarter
   ) |>
-  count() |>
+  # distinct(
+  #   county,
+  #   month,
+  #   quarter,
+  #   fiscal_year,
+  #   fiscal_quarter,
+  #   referral_id) |>
+  # group_by(
+  #   county,
+  #   month,
+  #   quarter,
+  #   fiscal_year,
+  #   fiscal_quarter) |> 
+  count() |> 
   rename(
-    num_referred = n
+    num_referrals = n
   ) |>
   ungroup() |>
   left_join(
@@ -169,24 +188,237 @@ county_referrals_quarter <- referrals |>
     by = "county"
   ) |>
   mutate(
-    household_impact_estimate = num_referred * household_size,
-    family_impact_estimate = num_referred * family_size
+    household_impact_estimate = num_referrals * household_size,
+    family_impact_estimate = num_referrals * family_size
   )
+
+```
+
+```{r, include=FALSE, eval=FALSE}
+# Testing some things:
+
+# 1) compare unique individuals, referrals and offenses across the whole dataset: looks as expected, increasing from individuals < referrals < offenses
+data_summary <- new_data_referrals |>
+  summarise(
+    n_individuals = n_distinct(individual_id),
+    n_referrals = n_distinct(referral_id),
+    n_offenses = n_distinct(referral_id, count_num)
+  )
+
+data_summary
+
+# 2) n_offenses == number of rows in dataset: True, yay!
+data_summary$n_offenses == nrow(new_data_referrals)
+
+# 3) How different are results at the county / fiscal quarter level using the different metrics?
+
+data_fiscal_quarter_summary <- new_data_referrals |>
+  group_by(
+    county,
+    fiscal_year,
+    fiscal_quarter,
+  ) |>
+  summarise(
+    n_offenses = n(),
+    n_referrals = n_distinct(referral_id),
+    n_individuals = n_distinct(individual_id)
+  ) |>
+  ungroup()
+
+data_fiscal_quarter_summary
+
+# 4) Does offenses >= referrals >= individuals still hold as expected? Yes
+data_fiscal_quarter_summary |>
+  mutate(
+    as_expected = n_offenses >= n_referrals & n_referrals >= n_individuals
+  ) |>
+  count(as_expected)
+
+
+## IMPORTANT! The choice of aggregation level effects the results in (3), above, since the same id will be counted per fiscal quarter and county. If a youth is referred once in each quarter of a year they will show as 1 distinct individual *in each quarter* regardless of whether referral_id or individual_id is used as the indicator.
+
+## In summary, we are needing to avoid this double counting which, crucially, *we could not do without knowing which referrals were attached to one individual*. Only as of April 2, when we received confirmation that 'fnbr' refers to a single individual could we consider accounting for this.
+
+## How do we do so? With *cumulative* counting that is then binned into the final groupings we want, i.e. fiscal quarters.
+
+# In cumulative counting we have to make sure things are ordered correctly in time
+# Note that we are still assuming no individual are in multiple counties... we need to check that assumption or accept that we may double count individuals who appear in multiple
+
+# My first attempt, possibly not complete:
+new_data_referrals |>
+  distinct(
+    county,
+    fiscal_quarter,
+    fiscal_year,
+    individual_id
+  ) |>
+  arrange(county, fiscal_year, fiscal_quarter) |>
+  group_by(county) |>
+  mutate(
+    i = 1,
+    n = cumsum(i)
+  ) |>
+  select(-individual_id) |>
+  group_by(county, fiscal_year, fiscal_quarter) |>
+  slice_max(order_by = n)
+
+
+### Comparing old and new data 
+clean_oja <- function(df) {
+  colnames(df) <- tolower(gsub(' ', '_', colnames(df)))
+  return(df)
+}
+
+referrals <- read_excel(here("data", "YoungOffenders.xlsx"), sheet = "Referrals") |> 
+  clean_oja() |>
+  mutate(referral_date = as_date(month, format = "%Y/%m")) |> 
+  mutate(county = toupper(county))
+  
+referrals |> 
+  count(year)
+
+new_data_referrals |> 
+  count(year)
+
+# in new but not in the old -- This is expected for 2023 referrals and *maybe* room for some adjustment between years.
+test1 <- new_data_referrals |> 
+  anti_join(referrals, by = c("referral_id", "year")) |> 
+  group_by(year, month) |> 
+  count()
+
+# in the old but not in the new -- This is a bigger problem that should be discussed with Len
+test2 <- referrals |> 
+  anti_join(new_data_referrals, by = c("referral_id")) |> 
+  group_by(year, month) |> 
+  count()
+
+# When we use old data our referral counts are off and not explained by the discrepancies above 
+
+## OLD DATA
+# referrals <- referrals |> 
+#   mutate(
+#     month = lubridate::as_date(
+#       month,
+#       format = "%Y/%m"
+#     ),
+#     quarter = floor_date(month, "quarter"),
+#     fiscal_year = ojo_fiscal_year(month)
+#   ) |>
+#   mutate(
+#     fiscal_quarter = case_when(
+#       quarter(quarter) == 1 ~ 3,
+#       quarter(quarter) == 2 ~ 4,
+#       quarter(quarter) == 3 ~ 1,
+#       quarter(quarter) == 4 ~ 2,
+#       TRUE ~ NA_real_
+#     )
+#   )
+# |> 
+#   rename(
+#     individual_id = fnbr,
+#     county = modenm020,
+#     referring_agency = ref_agcy,
+#     referral_id = arrest_ref,
+#     count_num = cntnbr121,
+#     arrest_offense = arrest_off,
+#     oja_offense_category = category
+#   )
+
+# old_county_referrals_quarter <- referrals |>
+#   #distinct(referral_id, .keep_all = TRUE) |>
+#   group_by(
+#     county,
+#     month,
+#     quarter,
+#     fiscal_year,
+#     fiscal_quarter
+#   ) |>
+#   count() |> 
+#   rename(
+#     num_referrals = n
+#   ) |>
+#   ungroup() |>
+#   left_join(
+#     hh_estimate |>
+#       select(
+#         county,
+#         household_size = estimate
+#       ),
+#     by = "county"
+#   ) |>
+#   left_join(
+#     family_estimate |>
+#       select(
+#         county,
+#         family_size = estimate
+#       ),
+#     by = "county"
+#   ) |>
+#   mutate(
+#     household_impact_estimate = num_referrals * household_size,
+#     family_impact_estimate = num_referrals * family_size
+#   )
+# 
+# old_result_summary <- old_county_referrals_quarter |>
+#   filter(
+#     quarter >= "2022-10-01"
+#   ) |>
+#   group_by(
+#     fiscal_year,
+#     fiscal_quarter,
+#     quarter
+#   ) |>
+#   summarise(
+#     total_referred = sum(num_referrals, na.rm = TRUE),
+#     household_impact_estimate = sum(household_impact_estimate, na.rm = TRUE),
+#     family_impact_estimate = sum(family_impact_estimate, na.rm = TRUE)
+#   ) |>
+#   ungroup()
+# 
+# old_result_summary |> 
+#   gt() |>
+#   grand_summary_rows(
+#     columns = c(
+#       total_referred,
+#       household_impact_estimate,
+#       family_impact_estimate
+#     ),
+#     fns = list(
+#       label = "Total",
+#       id = "total",
+#       fn = "sum"
+#     ),
+#     fmt = ~ fmt_number(., decimals = 0)
+#   ) |>
+#   cols_label(
+#     quarter = "Quarter Start",
+#     fiscal_year = "Fiscal Year",
+#     fiscal_quarter = "Fiscal Quarter",
+#     total_referred = "Referrals",
+#     household_impact_estimate = "Household Impact",
+#     family_impact_estimate = "Family Impact"
+#   ) |>
+#   fmt_number(
+#     columns = c("total_referred", "household_impact_estimate", "family_impact_estimate"),
+#     decimals = 0
+#   ) |> 
+#   gt_theme_nytimes()
+
 ```
 
 ::: {.content-visible unless-format="pdf"}
 
 ```{r}
 #| column: page
-
-gt(county_referrals_quarter) |>
+## new data
+gt(new_county_referrals_quarter) |>
   cols_label(
     county = "County",
     month = "Month",
     quarter = "Quarter Start",
     fiscal_year = "Fiscal Year",
     fiscal_quarter = "Fiscal Quarter",
-    num_referred = "Referrals",
+    num_referrals = "Referrals",
     household_size = "Average Household Size",
     household_impact_estimate = "Impacted Oklahomans (Low)",
     family_size = "Average Family Size",
@@ -203,9 +435,9 @@ gt(county_referrals_quarter) |>
     )
   ) |>
   tab_source_note(
-    county_referrals_quarter |>
+    new_county_referrals_quarter |>
       download_this(
-        output_name = "oja_referrals_county_quarterly",
+        output_name = "updated_oja_referrals_county_quarterly",
         output_extension = ".csv"
       )
   ) |>
@@ -229,28 +461,34 @@ See attached CSV file for full data.
 
 ## Results
 
+```{r}
+result_summary <- new_county_referrals_quarter |>
+  filter(
+    quarter >= "2022-10-01"
+  ) |>
+  group_by(
+    fiscal_year,
+    fiscal_quarter,
+    quarter
+  ) |>
+  summarise(
+    total_referred = sum(num_referrals, na.rm = TRUE),
+    household_impact_estimate = sum(household_impact_estimate, na.rm = TRUE),
+    family_impact_estimate = sum(family_impact_estimate, na.rm = TRUE)
+  ) |>
+  ungroup()
+
+```
+Open Justice Oklahoma estimates that between `r sum(result_summary$household_impact_estimate) |> round(digits = 0) |> format(big.mark = ",")` and	`r sum(result_summary$family_impact_estimate) |> round(digits = 0) |> format(big.mark = ",")` Oklahomans benefited from reduced fines and fees associated with HB 3205 between Q2 of FY 2023 and Q2 of FY 2024.
+
 Quarterly referral data and estimated impacts are presented in the table below:
 
 ::: {.content-visible unless-format="pdf"}
 
 ```{r}
 #| column: page
-
-county_referrals_quarter |>
-  filter(
-    quarter >= "2022-10-01"
-  ) |>
-  group_by(
-    fiscal_year,
-    fiscal_quarter,
-    quarter
-  ) |>
-  summarise(
-    total_referred = sum(num_referred, na.rm = TRUE),
-    household_impact_estimate = sum(household_impact_estimate, na.rm = TRUE),
-    family_impact_estimate = sum(family_impact_estimate, na.rm = TRUE)
-  ) |>
-  ungroup() |>
+#|
+result_summary |> 
   gt() |>
   grand_summary_rows(
     columns = c(
@@ -276,56 +514,9 @@ county_referrals_quarter |>
   fmt_number(
     columns = c("total_referred", "household_impact_estimate", "family_impact_estimate"),
     decimals = 0
-  )
+  ) |> 
+  gt_theme_nytimes()
+
 ```
 
 :::
-
-::: {.content-visible when-format="pdf"}
-
-```{r}
-county_referrals_quarter |>
-  filter(
-    quarter >= "2022-10-01"
-  ) |>
-  group_by(
-    fiscal_year,
-    fiscal_quarter,
-    quarter
-  ) |>
-  summarise(
-    total_referred = sum(num_referred, na.rm = TRUE),
-    household_impact_estimate = sum(household_impact_estimate, na.rm = TRUE),
-    family_impact_estimate = sum(family_impact_estimate, na.rm = TRUE)
-  ) |>
-  ungroup() |>
-  gt() |>
-  grand_summary_rows(
-    columns = c(
-      total_referred,
-      household_impact_estimate,
-      family_impact_estimate
-    ),
-    fns = list(
-      label = "Total",
-      id = "total",
-      fn = "sum"
-    ),
-    fmt = ~ fmt_number(., decimals = 0)
-  ) |>
-  cols_label(
-    quarter = "Quarter Start",
-    fiscal_year = "Fiscal Year",
-    fiscal_quarter = "Fiscal Quarter",
-    total_referred = "Referrals",
-    household_impact_estimate = "Household Impact",
-    family_impact_estimate = "Family Impact"
-  ) |>
-  fmt_number(
-    columns = c("total_referred", "household_impact_estimate", "family_impact_estimate"),
-    decimals = 0
-  )
-```
-
-:::
-
