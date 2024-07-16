@@ -3,8 +3,6 @@ title: HB 1795 Impact Estimate
 subtitle: Open Justice Oklahoma
 format:
   ojo-report-template-html: default
-  pdf:
-    pdf-engine: xelatex
 author: Polina Rozhkova
 date: last-modified
 logo: "www/ojo-logo-white.png"

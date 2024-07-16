@@ -12,6 +12,7 @@ website:
         - text: "Reports"
           menu:
             - hb3205/hb3205.qmd
+            - hb1795/hb1795.qmd
             - hb2153/hb2153.qmd
 
 format:
