@@ -1,17 +1,31 @@
 [
   {
-    "objectID": "index.html#hb-1795",
-    "href": "index.html#hb-1795",
-    "title": "ProsperOK Quarterly Reporting",
-    "section": "HB 1795",
-    "text": "HB 1795"
+    "objectID": "hb2153/hb2153.html",
+    "href": "hb2153/hb2153.html",
+    "title": "HB 2153 Analysis",
+    "section": "",
+    "text": "Oklahoma’s 2023 legislative session saw the passage of HB 2153. This bill, rolling back provisions of State Question 780, makes possession of a controlled substance (excluding marijuana) a felony crime after the fourth such conviction in ten years. While the punishment for a misdemeanor possession conviction is up to $1,000 dollars and/or up to one year confinement, a felony conviction for the same crime can result in a fine of up to $5,000 dollars and/or up to 5 years imprisonment.\nThis analysis uses historical data on convictions for possession of a controlled substance to better understand how prevalent is the situation of having four or more convictions within 10 years. This estimate can inform expectations of impact upon implementation of HB 2153."
   },
   {
-    "objectID": "index.html#hb-2153",
-    "href": "index.html#hb-2153",
-    "title": "ProsperOK Quarterly Reporting",
-    "section": "HB 2153",
-    "text": "HB 2153"
+    "objectID": "hb2153/hb2153.html#introduction",
+    "href": "hb2153/hb2153.html#introduction",
+    "title": "HB 2153 Analysis",
+    "section": "",
+    "text": "Oklahoma’s 2023 legislative session saw the passage of HB 2153. This bill, rolling back provisions of State Question 780, makes possession of a controlled substance (excluding marijuana) a felony crime after the fourth such conviction in ten years. While the punishment for a misdemeanor possession conviction is up to $1,000 dollars and/or up to one year confinement, a felony conviction for the same crime can result in a fine of up to $5,000 dollars and/or up to 5 years imprisonment.\nThis analysis uses historical data on convictions for possession of a controlled substance to better understand how prevalent is the situation of having four or more convictions within 10 years. This estimate can inform expectations of impact upon implementation of HB 2153."
+  },
+  {
+    "objectID": "hb2153/hb2153.html#data",
+    "href": "hb2153/hb2153.html#data",
+    "title": "HB 2153 Analysis",
+    "section": "2 Data",
+    "text": "2 Data\n\n2.1 Source\nOpen Justice Oklahoma maintains a database of administrative court records which includes information on all criminal misdemeanors and felonies filed in Oklahoma beginning in 2001. Case information is systematically collected from publicly available data hosted on the Oklahoma State Court Network (OSCN) website.\n\nInitial data pull: All CF / CM cases filed Jan 1 2001 - Dec 31, 2022, statewide\n\n\ndata &lt;- ojo_tbl(\"case\", .con = ojodb) |&gt;\n  filter(\n    case_type %in% c(\"CM\", \"CF\"),\n    date_filed &gt;= \"2001-01-01\",\n    date_filed &lt; \"2023-01-01\"\n  ) |&gt;\n  left_join(\n    ojo_tbl(\"count\", .con = ojodb),\n    by = c(\"id\" = \"case_id\"),\n    suffix = c(\"\", \"_count\")\n  ) |&gt;\n  ojo_collect()\n\nOur initial data pull has 2,460,551 rows. Since only the 13 official OSCN counties report the charges in each case, we are limited to just those for this analysis of drug possession charges. 1,440,250 of the rows were from these counties, and 1,438,746 had non-missing values for count_as_filed.\n\nFull list of OSCN counties: Tulsa, Oklahoma, Cleveland, Rogers, Payne, Comanche, Garfield, Canadian, Logan, Adair, Pushmataha, Roger Mills, Ellis\n\nIn the data, there were 740,744 unique cases filed in OSCN counties, compared to 1,761,045 cases filed statewide. Cases filed in the 13 OSCN counties therefore represent 42.06% of total cases. If we assume a similar disposition rate to these 13 counties in the other 64, we can then apply a multiplier of 2.38 to extrapolate our result to a statewide estimate.\n\nData availability, per county:\n\n\n\n\n\n\n\n\n\n\n\n\nDistrict\nN Rows\nN with Nonmissing Charge\nPercent Missing Charge\n\n\n\n\nTULSA\n503,027\n502,948\n0.02%\n\n\nOKLAHOMA\n486,990\n486,748\n0.05%\n\n\nCLEVELAND\n124,083\n124,074\n0.01%\n\n\nROGERS\n78,098\n78,072\n0.03%\n\n\nPAYNE\n61,604\n60,560\n1.69%\n\n\nCOMANCHE\n47,052\n47,012\n0.09%\n\n\nGARFIELD\n38,612\n38,607\n0.01%\n\n\nCANADIAN\n37,579\n37,568\n0.03%\n\n\nLOGAN\n25,094\n25,087\n0.03%\n\n\nADAIR\n18,518\n18,490\n0.15%\n\n\nPUSHMATAHA\n14,420\n14,419\n0.01%\n\n\nROGER MILLS\n2,942\n2,930\n0.41%\n\n\nELLIS\n2,231\n2,231\n0%\n\n\n\n\n\n\nData availability, per filing year\n\n\n\n\n\n\nYear\nN Rows\nN with Nonmissing Charge\nPercent Missing Charge\n\n\n\n\n2001-2003\n171,592\n170,865\n0.42%\n\n\n2004-2006\n179,679\n179,363\n0.18%\n\n\n2007-2009\n184,855\n184,793\n0.03%\n\n\n2010-2012\n184,765\n184,682\n0.04%\n\n\n2013-2015\n234,559\n234,476\n0.04%\n\n\n2016-2018\n227,896\n227,819\n0.03%\n\n\n2019-2021\n195,667\n195,554\n0.06%\n\n\n2022-2024\n61,237\n61,194\n0.07%\n\n\n\n\n\n\n\n2.2 Methodology\nThis report analyzes data from 13 counties which report data on charges as filed and disposed, across all complete years of misdemeanor and felony data for charges of possession of a controlled substance. We then use a text classification tool to assist with finding all the simple drug possession charges in the data, which allows us to finally report the number of convictions on such charges per defendant.\nOur figures are likely to underestimate the total number of convictions by a relatively small, but still methodologically significant amount due to the expungement of records over time. The magnitude of this bias will be greater for earlier years, but can be roughly quantified by exploiting the court case id schema mandated by the Oklahoma Supreme Court.\n\n\n2.3 Classifying Charge Descriptions\nWe use the (TOC tool)[https://cjars-toc.isr.umich.edu/] developed by researchers at the University of Michigan’s Institute for Social Research to perform an initial classification of free-text charge descriptions into the Unified Crime Classification Standard (UCCS). The TOC tool provides estimates of the probability that each classification was correct. We set a threshold of 80% confidence, below which pattern matching techniques are used to further classify records for which the TOC tool has lower performance.\n\n\n\n\n\n\n\n\n\nThe 20 most common verbatim count descriptions – looking only at charges that were included – are shown below:\n\n\n\n\n\n\n\n\ncount_as_disposed\nn\n\n\n\n\nUNLAWFUL POSSESSION OF CONTROLLED DRUG\n12318\n\n\nPOSSESSION OF CONTROLLED DANGEROUS SUBSTANCE\n10312\n\n\nPOSSESSION OF CONTROLLED DRUG\n10268\n\n\nUNLAWFUL POSSESSION OF CONTROLLED DRUG METHAMPHETAMINE\n4874\n\n\nPOSSESSION OF CONTROLLED SUBSTANCE\n4566\n\n\nPOSSESSION OF A CDS METHAMPHETAMINE\n4541\n\n\nPOSSESSION OF A CONTROLLED DANGEROUS SUBSTANCE METH\n4160\n\n\nPOSSESSION OF MARIJUANA\n4006\n\n\nMARIJUANA MISDEMEANOR\n3853\n\n\nPOSSESSION OF A CONTROLLED DANGEROUS SUBSTANCE MARIJUANA\n3086\n\n\nPOSSESSION OF A CDS MARIJUANA\n2718\n\n\nUNLAWFUL POSSESSION OF MARIJUANA\n2567\n\n\nPOSSESSION OF A CONTROLLED DANGEROUS SUBSTANCE MARIJUANA SCHD I\n2516\n\n\nPOSSESSION OF A CONTROLLED DANGEROUS SUBSTANCE METH SCHD II\n2064\n\n\nPOSSESSION OF A CDS SCHD II\n2058\n\n\nPOSS OF CDS\n2029\n\n\nUNLAWFUL POSSESSION OF A CONTROLLED DANGEROUS SUBSTANCE\n1928\n\n\nCONTROLLED DRUG SCHEDULE II FELONY\n1534\n\n\nPOSSESSION OF A CONTROLLED DANGEROUS SUBSTANCE\n1292\n\n\nPOSSESSION OF A CONTROLLED DANGEROUS SUBSTANCE SCHED II\n1230\n\n\n\n\n\n\n\nThe 20 most common verbatim count descriptions – looking only at charges that were excluded – are shown below:\n\n\n\n\n\n\n\n\ncount_as_disposed\nn\n\n\n\n\nDUI ALCOHOL\n29961\n\n\nPOSSESSION OF DRUG PARAPHERNALIA\n24833\n\n\nDRIVING UNDER SUSPENSION DUS\n24195\n\n\nUNLAWFUL POSSESSION OF DRUG PARAPHERNALIA\n21474\n\n\nOBSTRUCTING AN OFFICER\n19190\n\n\nPUBLIC INTOXICATION\n19048\n\n\nBURGLARY SECOND DEGREE\n17865\n\n\nLARCENY OF MERCHANDISE FROM RETAILER\n17307\n\n\nDRIVING WHILE UNDER THE INFLUENCE\n17203\n\n\nASSAULT AND BATTERY DOMESTIC\n17038\n\n\nVIOLATION OF COMPULSORY EDUCATION ACT\n15400\n\n\nBOGUS CHECK\n15020\n\n\nVIOLATION OF PROTECTIVE ORDER\n13403\n\n\nPOSSESSION OF PARAPHERNALIA\n12465\n\n\nFAILURE TO CARRY INSURANCE SECURITY VERIFICATION FORM\n11183\n\n\nCONCEALING STOLEN PROPERTY\n10637\n\n\nUNAUTHORIZED USE OF VEHICLE\n9370\n\n\nDRIVING UNDER THE INFLUENCE OF ALCOHOL\n8544\n\n\nRESISTING AN OFFICER\n8510\n\n\nDRIVING WITHOUT A DRIVER S LICENSE\n8492\n\n\n\n\n\n\n\nFinally, we add information on the defendants in each casein order to determine how many have 4 or more simple possession charges.\nOf the 152,556 total rows / charges in the data, 148,126 have an associated person record (97.1%). Records without this unique identifier assigned by the court system are excluded from further analysis."
+  },
+  {
+    "objectID": "hb2153/hb2153.html#results",
+    "href": "hb2153/hb2153.html#results",
+    "title": "HB 2153 Analysis",
+    "section": "3 Results",
+    "text": "3 Results\n\n3.1 Distribution of Simple Possession Charges\nExcluding indisposed cases, we count how many simple possession charges each individual has from 2001 through 2022.\n\n\n\n\n\n\n\n\n\nNext, we repeat this same analysis excluding descriptions mentioning marijuana, as HB 2153 provides an exception for these charges.\n\n\n\n\n\n\n\n\n\nFinally, HB 2153 stipulates that the felony charge only comes into effect on the fourth or higher simple possession conviction within a ten year time-span. We therefore limit our count of charges to only those within a rolling 10 year window, arriving at our final result for OSCN counties. Applying the multiplier derived above, we then find an estimate for the number of individuals who, since 2001, have been convicted with simple drug possession four or more times.\n\n\n\n\n\n\n\n\nOSCN\nStatewide1\n\n\n\n\n1,239\n2,945\n\n\n\n1 Estimated using the disposition rate of OSCN county cases"
   },
   {
     "objectID": "hb3205/hb3205.html",
@@ -32,7 +46,7 @@
     "href": "hb3205/hb3205.html#data",
     "title": "HB 3205 Impact Estimate",
     "section": "2 Data",
-    "text": "2 Data\nThe Office of Juvenile Affairs (OJA) provided data on youth offender referrals from January 2018 through December 2023. The county and month in which referrals were made are included.\nWhile referral counts provide insight into the number of Oklahoma’s youth encountering the juvenile system, they are not sufficient to estimate the number of individuals directly impacted by the reforms outlined in the section above. We used county level estimates of household and family sizes conducted by the Census in the 5-year American Community Survey to estimate the total number of individuals impacted since the burden of court fines and fees, especially in the case of children involved in the criminal legal system, is borne by families of the impacted individual.\nCounty, rather than state, level demographics are used to account for some of the variance in the number of Oklahomans most directly involved in caring for the youth referred to OJA. Though the 5-year estimates from the Census hold household and family size constant across years, this measure was chosen due to data quality issues with the 1-year ACS associated with the COVID-19 pandemic.\nAccording to Census definitions, household size refers to the total number of individuals living in a housing unit, while family size consists of only those housing unit residents that are related by birth, marriage, or other legal status. Aggregated, household size tends to be greater than family size; taken together, these two estimations provide reasonable bounds for estimating the total direct impact of HB 3205.\n\n\n\n\n\n\n\n\n\n Download data\n\n\n\n\n\n\n1 American Community Survey 5-Year Data (2009-2021), Households and Families (S1101)"
+    "text": "2 Data\nThe Office of Juvenile Affairs (OJA) provided data on youth offender referrals from January 2018 through December 2023. The county and month in which referrals were made are included.\nWhile referral counts provide insight into the number of Oklahoma’s youth encountering the juvenile system, they are not sufficient to estimate the number of individuals directly impacted by the reforms outlined in the section above. We used county level estimates of household and family sizes conducted by the Census in the 5-year American Community Survey to estimate the total number of individuals impacted since the burden of court fines and fees, especially in the case of children involved in the criminal legal system, is borne by families of the impacted individual.\nCounty, rather than state, level demographics are used to account for some of the variance in the number of Oklahomans most directly involved in caring for the youth referred to OJA. Though the 5-year estimates from the Census hold household and family size constant across years, this measure was chosen due to data quality issues with the 1-year ACS associated with the COVID-19 pandemic.\nAccording to Census definitions, household size refers to the total number of individuals living in a housing unit, while family size consists of only those housing unit residents that are related by birth, marriage, or other legal status. Aggregated, household size tends to be greater than family size; taken together, these two estimations provide reasonable bounds for estimating the total direct impact of HB 3205.\n\n\n\n\n\n\n\n\n Download data\n\n\n\n\n1 American Community Survey 5-Year Data (2009-2021), Households and Families (S1101)"
   },
   {
     "objectID": "hb3205/hb3205.html#results",
@@ -40,6 +54,20 @@
     "title": "HB 3205 Impact Estimate",
     "section": "3 Results",
     "text": "3 Results\nOpen Justice Oklahoma estimates that between 26,987 and 33,389 Oklahomans benefited from reduced fines and fees associated with HB 3205 between Q2 of FY 2023 and Q2 of FY 2024.\nQuarterly referral data and estimated impacts are presented in the table below:\n\n\n\n\n\n\n\n\n\nFiscal Year\nFiscal Quarter\nQuarter Start\nReferrals\nHousehold Impact\nFamily Impact\n\n\n\n\n\n2023\n2\n2022-10-01\n2,041\n5,248\n6,475\n\n\n\n2023\n3\n2023-01-01\n2,069\n5,310\n6,561\n\n\n\n2023\n4\n2023-04-01\n2,104\n5,400\n6,687\n\n\n\n2024\n1\n2023-07-01\n1,948\n5,000\n6,208\n\n\n\n2024\n2\n2023-10-01\n2,344\n6,030\n7,458\n\n\nTotal\n—\n—\n—\n10,506\n26,987\n33,389"
+  },
+  {
+    "objectID": "index.html#hb-1795",
+    "href": "index.html#hb-1795",
+    "title": "ProsperOK Quarterly Reporting",
+    "section": "HB 1795",
+    "text": "HB 1795"
+  },
+  {
+    "objectID": "index.html#hb-2153",
+    "href": "index.html#hb-2153",
+    "title": "ProsperOK Quarterly Reporting",
+    "section": "HB 2153",
+    "text": "HB 2153"
   },
   {
     "objectID": "hb1795/hb1795.html",
@@ -67,7 +95,7 @@
     "href": "hb1795/hb1795.html#results",
     "title": "HB 1795 Impact Estimate",
     "section": "3 Results",
-    "text": "3 Results\n\n\n\n\n\n\n\n\nEstimated Impact for Oklahomans with Misdemeanor Drug Charges\n\n\n2022-01-01 to 2023-12-01\n\n\nUpper Bound\nLower Bound\n\n\n\n\n22859\n10968"
+    "text": "3 Results\n\n\n\n\n\n\n\n\nEstimated Impact for Oklahomans with Misdemeanor Drug Charges\n\n\n2022-01-01 to 2024-06-30\n\n\n\nFiscal Year\nFiscal Quarter\nLower Bound\nUpper Bound\ncumulative_lower_bound\ncumulative_upper_bound\n\n\n\n\n\n2022\n3\n1,491\n2,822\n1,491\n2,822\n\n\n\n2022\n4\n1,664\n3,059\n3,155\n5,881\n\n\n\n2023\n1\n1,649\n2,906\n4,804\n8,787\n\n\n\n2023\n2\n1,435\n2,515\n6,239\n11,302\n\n\n\n2023\n3\n1,664\n2,886\n7,903\n14,188\n\n\n\n2023\n4\n1,210\n2,412\n9,113\n16,600\n\n\n\n2024\n1\n808\n1,922\n9,921\n18,522\n\n\n\n2024\n2\n297\n1,241\n10,218\n19,763\n\n\n\n2024\n3\n362\n1,501\n10,580\n21,264\n\n\n\n2024\n4\n377\n1,561\n10,957\n22,825\n\n\nTotal\n—\n—\n10,957\n22,825\n—\n—"
   },
   {
     "objectID": "hb1795/hb1795.html#possibly-delete-or-comment-out-everything-below",
