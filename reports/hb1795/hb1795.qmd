@@ -3,6 +3,8 @@ title: HB 1795 Impact Estimate
 subtitle: Open Justice Oklahoma
 format:
   ojo-report-template-html: default
+  pdf:
+    pdf-engine: xelatex
 author: Polina Rozhkova
 date: last-modified
 logo: "www/ojo-logo-white.png"
@@ -19,23 +21,28 @@ knitr:
 execute: 
   freeze: auto
 description: Estimating the number of Oklahomans impacted by the amended provision concerning driver license revocations for individuals with misdemeanor drug charges. Analysis conducted at the request of Oklahomans for Criminal Justice Reform (OCJR) and ProsperOK.
+abstract-title: "Abstract"
+abstract: Between **11,582** and **22,437** Oklahomans with misdemeanor drug charges were impacted by provisions in HB 1795 between January 1, 2022 and December 31, 2024.
 ---
 
-```{r, load-libraries}
+```{r}
 library(readr)
 library(stringr)
 library(readxl)
 library(tidycensus)
-library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(tibble)
 library(here)
 library(janitor)
 library(glue)
-library(ojoverse)
 library(lubridate)
 library(gt)
 library(downloadthis)
 library(kableExtra)
-library(gtExtras)
+library(ojodb)
+library(ojoutils)
+library(ojothemes)
 ```
 
 ## Background
@@ -50,7 +57,7 @@ To estimate the lower bound, we focus on the provision concerned with modifying 
 
 Prior to the bill’s passing, individuals could have their license suspended or revoked for the failure to pay court fines or fees. Some of these fines and fees are imposed on individuals who are charged with misdemeanor drug offenses. Following this logic, we account for any individuals who may be subject to fines and/or fees due to a misdemeanor drug possession charge. We combine the previously calculated lower bound and adjust for duplicate entries (individuals that may appear in both methods) for an upper bound estimate. 
 
-```{r, regex-definition}
+```{r}
 drugs <- "(?i)CDS|C\\.D\\.S|DRUG|OXY|HUFF|AMPHET|ZOLOL|ZOLAM|HYDROC|CODEIN|PRECURS|XANAX|MORPH|METERDI|ZEPAM|LORAZ|VALIU|EPHED|SUB|COCA|PSEUDO| CS|CS | CD|CD |PRESCRIP|NARC|METH|C\\.D\\.|HEROIN|ANHYD|AMMONIA|OPIUM|LORTAB|MARIJUANA|MARIHUANA|MJ"
 drug_exclude <- "(?i)DOMESTIC|ASSAULT|FIREARM|DISTRIBUTE|INTENT|MANUFACTURE|DISPENSE|TUO|alcohol|acohol|alchol"
 vehicle_related <- "VEHICLE"
@@ -62,22 +69,23 @@ dps_related <- "(DPS|DEPARTMENT OF PUBLIC SAFETY|D\\.P\\.S)"
 
 min_desc_dl <- "(SUSPENSION|SUSPEND)"
 min_desc_exclude <- "(WITHDRAW|ERROR|RETURN|UNABLE|REVOKE|LIFT|RECALL|NOT PROCESSED|PENDING|SUSPENSION RELEASE|DEFENDANT APPEARS)"
+
+# Set to reporting period
+# Replace with fiscal quarter using ojo_fiscal_year
+cumulative_period_start <- ymd("2022-01-01")
+reporting_period_start <- ymd("2023-01-01")
+reporting_period_end <- ymd("2024-12-31")
 ```
 
 
-```{r, get-data, cache=TRUE}
-# Set to reporting period
-# Replace with fiscal quarter using ojo_fiscal_year
-reporting_period_start <- ymd("2022-01-01")
-reporting_period_end <- rollback(ymd("2024-07-01"))
-
+```{r, cache=TRUE}
 ojodb <- ojo_connect()
 
 all_cases <- ojo_tbl("case", .con = ojodb) |>
   filter(
     case_type == "CM",
-    date_filed >= reporting_period_start,
-    date_filed <= reporting_period_end
+    date_filed >= cumulative_period_start,
+    date_filed < reporting_period_end
   ) |>
   select(
     id,
@@ -103,7 +111,40 @@ all_cases <- ojo_tbl("case", .con = ojodb) |>
       open_count
     )
   ) |>
-  collect()
+  collect() |>
+  bind_rows(
+    ojo_tbl("case", schema = "oscn", .con = ojodb) |>
+      filter(
+        case_type == "CM",
+        date_filed >= cumulative_period_start,
+        date_filed < reporting_period_end
+      ) |>
+      select(
+        id,
+        case_type,
+        district,
+        date_filed,
+        counts,
+        open_counts
+      ) |>
+      mutate(
+        count = unnest(counts),
+        open_count = unnest(open_counts)
+      ) |>
+      left_join(
+        ojo_tbl("count", schema = "oscn", .con = ojodb),
+        by = c("count" = "id"),
+        suffix = c("", ".count")
+      ) |>
+      mutate(
+        count_as_filed = if_else(
+          is.na(open_count),
+          count_as_filed,
+          open_count
+        )
+      ) |>
+      collect()
+  )
 
 # Defendants for all cases
 total_persons <- ojo_tbl("party", .con = ojodb) |>
@@ -115,13 +156,26 @@ total_persons <- ojo_tbl("party", .con = ojodb) |>
   ) |>
   filter(role == "Defendant") |>
   distinct(oscn_id) |>
-  count() |>
-  collect()
+  collect() |>
+  bind_rows(
+    ojo_tbl("party", schema = "oscn", .con = ojodb) |>
+      right_join(
+        all_cases |>
+          distinct(id),
+        by = c("case_id" = "id"),
+        copy = TRUE
+      ) |>
+      filter(role == "Defendant") |>
+      distinct(oscn_id) |>
+      collect()
+  ) |>
+  count()
+```
 
+```{r, cache=TRUE}
 # Pulling every case with at least one misdemeanor drug charge
 # (excluding distribution/intent to dispense/etc.)
-case_misdemeanor_drug <- 
-  all_cases |>
+case_misdemeanor_drug <- all_cases |>
   filter(
     str_detect(count_as_filed, drugs)
   ) |>
@@ -139,8 +193,21 @@ drug_misdemeanor_persons <- ojo_tbl("party", .con = ojodb) |>
   ) |>
   filter(role == "Defendant") |>
   distinct(oscn_id) |>
-  count() |>
-  collect()
+  collect() |>
+  bind_rows(
+    ojo_tbl("party", schema = "oscn", .con = ojodb) |>
+      right_join(
+        case_misdemeanor_drug |>
+          distinct(id),
+        by = c("case_id" = "id"),
+        copy = TRUE
+      ) |>
+      filter(role == "Defendant") |>
+      distinct(oscn_id) |>
+      collect()
+  ) |>
+  distinct(oscn_id) |>
+  count()
 
 # A conservative estimate of the number of impacted individuals can be made by
 # filtering misdemeanors by DPS violation code and related codes.
@@ -154,27 +221,27 @@ case_dps_violation <-
 dps_violation_persons <- ojo_tbl("party", .con = ojodb) |>
   right_join(
     case_dps_violation |>
-      distinct(id, .keep_all = TRUE) |>
-      select(id, date_filed),
+      distinct(id),
     by = c("case_id" = "id"),
     copy = TRUE
   ) |>
   filter(role == "Defendant") |>
+  distinct(oscn_id) |>
   collect() |>
-  mutate(
-    fiscal_year = ojo_fiscal_year(date_filed),
-    fiscal_quarter = case_when(
-      quarter(date_filed) == 1 ~ 3,
-      quarter(date_filed) == 2 ~ 4,
-      quarter(date_filed) == 3 ~ 1,
-      quarter(date_filed) == 4 ~ 2,
-      TRUE ~ NA_real_
-    )
+  bind_rows(
+    ojo_tbl("party", schema = "oscn", .con = ojodb) |>
+      right_join(
+        case_dps_violation |>
+          distinct(id),
+        by = c("case_id" = "id"),
+        copy = TRUE
+      ) |>
+      filter(role == "Defendant") |>
+      distinct(oscn_id) |>
+      collect()
   ) |>
-  distinct(oscn_id, .keep_all = TRUE) |>
-  group_by(fiscal_year, fiscal_quarter) |>
-  count(name = "lower_bound") |>
-  ungroup()
+  distinct(oscn_id) |>
+  count()
 
 # Upper Bound including people from DPS OR misdemeanor method:
 both_methods_persons <- ojo_tbl("party", .con = ojodb) |>
@@ -190,69 +257,58 @@ both_methods_persons <- ojo_tbl("party", .con = ojodb) |>
     copy = TRUE
   ) |>
   filter(role == "Defendant") |>
-  distinct(oscn_id, .keep_all = TRUE) |>
-  collect()
+  collect() |>
+  bind_rows(
+    ojo_tbl("party", .con = ojodb) |>
+      right_join(
+        rbind(
+          case_dps_violation |>
+            select(id, date_filed),
+          case_misdemeanor_drug |>
+            select(id, date_filed)
+        ) |>
+          distinct(),
+        by = c("case_id" = "id"),
+        copy = TRUE
+      ) |>
+      filter(role == "Defendant") |>
+      collect()
+  ) |>
+  distinct(oscn_id, .keep_all = TRUE)
+```
+
+```{r, include=FALSE}
+all_cases |>
+  mutate(
+    month_filed = floor_date(date_filed, "month")
+  ) |>
+  summarise(
+    .by = "month_filed",
+    n = n_distinct(id)
+  ) |>
+  arrange(month_filed) |>
+  gt_ojo()
 ```
 
 ## Results
 
-```{r, results}
-both_methods_persons |>
-  mutate(
-    fiscal_year = ojo_fiscal_year(date_filed),
-    fiscal_quarter = case_when(
-      quarter(date_filed) == 1 ~ 3,
-      quarter(date_filed) == 2 ~ 4,
-      quarter(date_filed) == 3 ~ 1,
-      quarter(date_filed) == 4 ~ 2,
-      TRUE ~ NA_real_
-    )
-  ) |>
-  distinct(oscn_id, .keep_all = TRUE) |>
-  group_by(fiscal_year, fiscal_quarter) |>
-  count(name = "upper_bound") |>
-  ungroup() |>
-  left_join(
-    dps_violation_persons,
-    by = c("fiscal_year", "fiscal_quarter")
-  ) |>
-  select(
-    fiscal_year,
-    fiscal_quarter,
-    lower_bound,
-    upper_bound
-  ) |>
-  mutate(
-    cumulative_lower_bound = cumsum(lower_bound),
-    cumulative_upper_bound = cumsum(upper_bound)
-  ) |>
-  gt() |>
-  cols_label(
-    "fiscal_year" = "Fiscal Year",
-    "fiscal_quarter" = "Fiscal Quarter",
-    "upper_bound" = "Upper Bound",
-    "lower_bound" = "Lower Bound"
-  ) |>
+```{r}
+both_methods_persons |> 
+  distinct(oscn_id) |>
+  count() |> 
+  bind_cols(
+    dps_violation_persons
+  ) |> 
+  gt() |> 
+  cols_label(contains("2") ~ "Lower Bound", 
+             contains("1") ~ "Upper Bound") |>
   tab_header(
     title = "Estimated Impact for Oklahomans with Misdemeanor Drug Charges",
-    subtitle = glue::glue("{reporting_period_start} to {reporting_period_end}")) |>
+    subtitle = glue::glue("{cumulative_period_start} to {reporting_period_end}")) |> 
   tab_style(
     style = cell_text(color = "black", weight = "bold", align = "center"),
     locations = cells_title("title")
   ) |>
-  grand_summary_rows(
-    columns = c(
-      upper_bound,
-      lower_bound
-    ),
-    fns = list(
-      label = "Total",
-      id = "total",
-      fn = "sum"
-    ),
-    fmt = ~ fmt_number(., decimals = 0)
-  ) |>
-  fmt_integer(columns = c(-"fiscal_year")) |>
-  gt_theme_nytimes()
+  tab_stubhead("Estimated Impact for Oklahomans with Misdemeanor Drug Charges") |>
+  fmt_integer()
 ```
-
