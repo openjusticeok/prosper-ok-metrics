@@ -50,3 +50,5 @@ vignettes/*.pdf
 data/cm_cf_2012_2022.csv
 data/simple_possession_filings_2012_2022.csv
 data/cm_cf_2001_2022.csv
+
+.DS_Store
