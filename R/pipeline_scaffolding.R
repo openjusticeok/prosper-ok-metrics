@@ -1,8 +1,8 @@
 # Shared helper functions for the jail and prison target pipelines.
 
 .pipeline_report_paths <- list(
-  jail = "reports/2025-11-prosper-metrics-jail/2025-11-prosper-metrics-jail.qmd",
-  prison = "reports/2025-11-prosper-metrics-prison/2025-11-prosper-metrics-prison.qmd"
+  jail = here::here("inst", "reports", "2025-11-prosper-metrics-jail", "2025-11-prosper-metrics-jail.qmd"),
+  prison = here::here("inst", "reports", "2025-11-prosper-metrics-prison", "2025-11-prosper-metrics-prison.qmd")
 )
 
 pipeline_report_path <- function(report) {
@@ -61,13 +61,16 @@ produce_output_figures <- function(report, analysis_results) {
 }
 
 render_report <- function(report, analysis_results, figure_outputs, execute = FALSE) {
-  pipeline_report_path(report)
+  input <- pipeline_report_path(report)
   analysis_results
   figure_outputs
 
   quarto::quarto_render(
-    input = pipeline_report_path(report),
+    input = input,
     execute = execute,
-    quiet = TRUE
+    quiet = FALSE
   )
+
+  output_file <- sub("\\.qmd$", ".html", input)
+  normalizePath(output_file, winslash = "/", mustWork = FALSE)
 }
