@@ -12,54 +12,6 @@ pipeline_report_path <- function(report) {
   .pipeline_report_paths[[report]]
 }
 
-check_input_data <- function(report) {
-  pipeline_report_path(report)
-  tibble::tibble(
-    report = report,
-    check = character(),
-    status = "pending"
-  )
-}
-
-process_report_data <- function(report, input_checks) {
-  pipeline_report_path(report)
-  input_checks
-  tibble::tibble(
-    report = report,
-    todo = character()
-  )
-}
-
-check_output_data <- function(report, processed_data) {
-  pipeline_report_path(report)
-  processed_data
-  tibble::tibble(
-    report = report,
-    check = character(),
-    status = "pending"
-  )
-}
-
-analyze_output_data <- function(report, processed_data) {
-  pipeline_report_path(report)
-  processed_data
-  tibble::tibble(
-    report = report,
-    metric = character(),
-    value = numeric()
-  )
-}
-
-produce_output_figures <- function(report, analysis_results) {
-  pipeline_report_path(report)
-  analysis_results
-  tibble::tibble(
-    report = report,
-    figure = character(),
-    path = character()
-  )
-}
-
 render_report <- function(report, analysis_results, figure_outputs, execute = FALSE) {
   input <- pipeline_report_path(report)
   analysis_results
@@ -68,7 +20,7 @@ render_report <- function(report, analysis_results, figure_outputs, execute = FA
   quarto::quarto_render(
     input = input,
     execute = execute,
-    quiet = FALSE
+    quiet = TRUE
   )
 
   output_file <- sub("\\.qmd$", ".html", input)

@@ -15,8 +15,19 @@ tar_option_set(
 )
 
 # Run the R scripts in the R/ folder with your custom functions:
-tar_source()
-# tar_source("other_functions.R") # Source other scripts as needed.
+tar_source("R/pipeline_scaffolding.R")
+tar_source("R/checks/input/jail.R")
+tar_source("R/checks/input/prison.R")
+tar_source("R/checks/output/jail.R")
+tar_source("R/checks/output/prison.R")
+tar_source("R/processing/jail.R")
+tar_source("R/processing/prison.R")
+tar_source("R/analysis/jail_metrics.R")
+tar_source("R/analysis/prison_metrics.R")
+tar_source("R/analysis/jail_figures.R")
+tar_source("R/analysis/prison_figures.R")
+tar_source("R/report_jail.R")
+tar_source("R/report_prison.R")
 
 # Replace the target list below with your own:
 # Estimated total implementation time: ~12 hours
@@ -25,64 +36,64 @@ list(
   # Estimate: 1.0 hour to implement jail input checks
   tar_target(
     name = jail_input_checks,
-    command = check_input_data("jail")
+    command = check_jail_inputs()
   ),
   # Estimate: 1.5 hours to implement jail data processing
   tar_target(
     name = jail_processed_data,
-    command = process_report_data("jail", jail_input_checks)
+    command = process_jail_dataset(jail_input_checks)
   ),
   # Estimate: 1.0 hour to implement jail output checks
   tar_target(
     name = jail_output_checks,
-    command = check_output_data("jail", jail_processed_data)
+    command = verify_jail_outputs(jail_processed_data)
   ),
   # Estimate: 1.5 hours to implement jail analysis routines
   tar_target(
     name = jail_analysis_results,
-    command = analyze_output_data("jail", jail_processed_data)
+    command = analyze_jail_metrics(jail_processed_data)
   ),
   # Estimate: 1.0 hour to implement jail figure generation
   tar_target(
     name = jail_figures,
-    command = produce_output_figures("jail", jail_analysis_results)
+    command = generate_jail_figures(jail_analysis_results)
   ),
   # Estimate: 1.0 hour to wire up jail report rendering
   tar_target(
     name = jail_report,
-    command = render_report("jail", jail_analysis_results, jail_figures),
+    command = render_jail_report(jail_analysis_results, jail_figures),
     format = "file"
   ),
   # Prison pipeline
   # Estimate: 1.0 hour to implement prison input checks
   tar_target(
     name = prison_input_checks,
-    command = check_input_data("prison")
+    command = check_prison_inputs()
   ),
   # Estimate: 1.5 hours to implement prison data processing
   tar_target(
     name = prison_processed_data,
-    command = process_report_data("prison", prison_input_checks)
+    command = process_prison_dataset(prison_input_checks)
   ),
   # Estimate: 1.0 hour to implement prison output checks
   tar_target(
     name = prison_output_checks,
-    command = check_output_data("prison", prison_processed_data)
+    command = verify_prison_outputs(prison_processed_data)
   ),
   # Estimate: 1.5 hours to implement prison analysis routines
   tar_target(
     name = prison_analysis_results,
-    command = analyze_output_data("prison", prison_processed_data)
+    command = analyze_prison_metrics(prison_processed_data)
   ),
   # Estimate: 1.0 hour to implement prison figure generation
   tar_target(
     name = prison_figures,
-    command = produce_output_figures("prison", prison_analysis_results)
+    command = generate_prison_figures(prison_analysis_results)
   ),
   # Estimate: 1.0 hour to wire up prison report rendering
   tar_target(
     name = prison_report,
-    command = render_report("prison", prison_analysis_results, prison_figures),
+    command = render_prison_report(prison_analysis_results, prison_figures),
     format = "file"
   )
 )
