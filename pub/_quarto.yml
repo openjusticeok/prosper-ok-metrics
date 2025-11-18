@@ -1,0 +1,33 @@
+project:
+  type: website
+
+website:
+  title: "CJAC Reports"
+  navbar:
+    background: "#2f507f"
+    foreground: "#ffffff"
+    search: false
+    left:
+      - href: index.qmd
+        text: About
+      - text: Reports
+        menu:
+          - href: length-of-detainment/length-of-detainment.qmd
+            text: Length of Detainment Report
+          # - href: min-sec-and-cm-only/min-sec-and-cm-only.qmd
+          #   text: Min Sec. / Misdemeanor Report
+          - href: homeless-weekly/homeless-weekly.qmd
+            text: Housing Status Report
+          - href: pretrial-case-status/pretrial-case-status.qmd
+            text: Pretrial Status Report
+          # - href: familiar-faces/familiar-faces.qmd
+          #   text: "'Familiar Faces' Report"
+      - href: 'https://cjac-dashboard-new-1000851000971.us-central1.run.app/'
+        target: _blank
+        text: Dashboard
+
+format:
+  html:
+    theme: cosmo
+    css: custom.scss
+    toc: true

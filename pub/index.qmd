@@ -1,0 +1,68 @@
+---
+title: |
+  Oklahoma County Detention Center
+  Population Reports
+format:
+  ojo-report-template-html: default
+logo: "www/okpi-square.png" # Other options are in the /www/ directory
+number-sections: true
+smooth-scroll: true
+knitr:
+  opts_chunk:
+    fig.align: center
+    echo: false
+    message: false
+    warning: false
+title-block-banner: "#2f507f" # The background color for the header banner
+title-block-banner-color: "white" # The text color for the header banner
+fontcolor: "black" # Default text color for the body
+linkcolor: "black" # Default link color for the body
+description: |
+  These reports provide additional details on recent populations and booking events at the Oklahoma County Detention Center (OCDC) in Oklahoma City. They exist to help supplement the Oklahoma County Criminal Justice Advisory Council's (CJAC) data dashboard, and to help inform ongoing discussions in Oklahoma County regarding a new jail to replace the current OCDC facility.
+---
+
+```{r}
+library(tidyverse)
+library(ojodb)
+```
+
+## Reports
+
+### [Overview Status Report](overview-report/overview-report.qmd)
+
+* This report provides an overview status report on the latest snapshot population,
+as well as the last three months' worth of booking and release events.
+
+### [Length of Detainment Report](length-of-detainment/length-of-detainment.qmd)
+
+* This report analyzes how long people are detained in OCDC custody before being
+released or transferred to the custody of another agency.
+
+### [Housing Status Report](homeless-weekly/homeless-weekly.qmd)
+
+* This report focuses on those whose given address indicates that they were
+experiencing homelessness at the time of their booking.
+
+### [Pretrial / Case Status Report](pretrial-case-status/pretrial-case-status.qmd)
+
+* This report focuses on the case status (pretrial vs. sentenced, etc.) of the
+people recently booked and currently held in OCDC.
+
+---
+
+## Appendices
+
+### [Charge Description Appendix](appendix/charge-description-appendix.qmd)
+
+* Throughout the reports published here, we group charge descriptions together
+to make the data easier to understand (e.g. combining "CDS POSS." and "POSSESS DRUG"
+into a single "Drug Possession" category). The appendix above lists the original
+charge descriptions and the categories we use in our reports.
+
+---
+
+*All reports were compiled by the [Oklahoma Policy Institute (OKPI)](https://okpolicy.org/).
+OK Policy is contracted by the [Oklahoma County Criminal Justice Authority (CJAC)](https://www.okcountycjac.com/)
+-- an advisory body designed to oversee and advise the Oklahoma County Jail Trust,
+which manages the Oklahoma County Detention Center (OCDC) --
+to provide data analysis and reporting on OCDC and the people incarcerated there.*

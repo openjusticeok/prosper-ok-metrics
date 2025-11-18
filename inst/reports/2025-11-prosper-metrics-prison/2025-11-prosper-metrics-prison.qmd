@@ -1,0 +1,87 @@
+---
+title: |
+  ProsperOK Metrics Report<br>for Tulsa County Prison Population,<br> Q4 2025
+subtitle: |
+  November 2025 update on Tulsa County Prison Population and Sentences
+format:
+  ojo-report-template-html:
+    theme: default
+    mainfont: "Lora"
+    header-includes: |
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;900&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;900&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+# Formatting options -----------------------------------------------------------
+logo: "www/okpi-square.png" # Other options are in the /www/ directory
+number-sections: true
+smooth-scroll: true
+title-block-banner: "#2f507f" # The background color for the header banner
+title-block-banner-color: "white" # The text color for the header banner
+fontcolor: "black" # Default text color for the body
+linkcolor: "black" # Default link color for the body
+toc: true # This should be 'false' if your end goal is a PDF
+knitr:
+  opts_chunk:
+    fig.align: center
+    echo: false
+    message: false
+    warning: false
+    fig-width: 7
+    fig-height: 5
+    out-width: '100%'
+# Document info ----------------------------------------------------------------
+author: Anthony Flores
+date: last-modified
+description: |
+    This is a status update report using data from the Tulsa County Prison. It was prepared and analyzed by the Oklahoma Policy Institute.
+embed-resources: false
+# abstract-title: Publication Note
+# abstract: 'DRAFT REPORT -- NOT FOR PUBLICATION'
+---
+
+```{r}
+
+# To render to PDF after you've rendered your .html document:
+# pagedown::chrome_print("./report.html", "./report.pdf", format = "pdf")
+
+# We'll build this into the YAML header so you don't have to take this extra step
+# once the {pagedown} people get around to adding quarto support.
+
+```
+
+```{r setup, include=FALSE}
+library(here)
+library(ojodb)
+library(ojothemes)
+library(janitor)
+library(gt)
+library(gtExtras)
+library(tidyverse)
+library(nanoparquet)
+library(ggrepel)
+
+ojothemes::ojo_set_theme(theme = "okpi")
+```
+
+# Overview
+
+This is an overview report to provide some basic numbers about the current
+population and recent bookings at the Oklahoma County Detention Center (OCDC).
+
+It includes aggregations for each in total and by gender:
+
+* Prison Sentences
+* Prison Releases
+* Population by Gender
+* Oklahoma County comparison to Tulsa County vs all other counties
+
+{{< pagebreak >}}
+
+# Prison Sentences
+
+# Prison Releases
+
+# Population by Gender
+
+# Oklahoma County comparison to Tulsa County vs all other counties
