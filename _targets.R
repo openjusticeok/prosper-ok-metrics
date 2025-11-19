@@ -15,19 +15,19 @@ tar_option_set(
 )
 
 # Run the R scripts in the R/ folder with your custom functions:
-tar_source("R/pipeline_scaffolding.R")
-tar_source("R/checks/input/jail.R")
-tar_source("R/checks/input/prison.R")
-tar_source("R/checks/output/jail.R")
-tar_source("R/checks/output/prison.R")
-tar_source("R/processing/jail.R")
-tar_source("R/processing/prison.R")
-tar_source("R/analysis/jail_metrics.R")
-tar_source("R/analysis/prison_metrics.R")
-tar_source("R/analysis/jail_figures.R")
-tar_source("R/analysis/prison_figures.R")
-tar_source("R/report_jail.R")
-tar_source("R/report_prison.R")
+tar_source("R/pipeline_helpers.R")
+tar_source("R/02-check/input/check_raw_jail_data.R")
+tar_source("R/02-check/input/check_raw_prison_data.R")
+tar_source("R/02-check/output/check_processed_jail_data.R")
+tar_source("R/02-check/output/check_processed_prison_data.R")
+tar_source("R/03-process/process_raw_jail_data.R")
+tar_source("R/03-process/process_raw_prison_data.R")
+tar_source("R/04-analyze/jail_metrics.R")
+tar_source("R/04-analyze/prison_metrics.R")
+tar_source("R/04-analyze/jail_figures.R")
+tar_source("R/04-analyze/prison_figures.R")
+tar_source("R/render_report_jail.R")
+tar_source("R/render_report_prison.R")
 
 # Replace the target list below with your own:
 # Estimated total implementation time: ~12 hours

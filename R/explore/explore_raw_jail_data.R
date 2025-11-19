@@ -6,7 +6,6 @@ library(lubridate)
 library(tidyr)
 library(ggplot2)
 
-
 scraped_jail_data <- tulsaCountyJailScraper::scrape_data()
 scraped_jail_bookings <- scraped_jail_data$bookings_tibble |>
   mutate(
