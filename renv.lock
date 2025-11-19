@@ -948,6 +948,49 @@
       "Maintainer": "Jennifer Bryan <jenny@stat.ubc.ca>",
       "Repository": "CRAN"
     },
+    "checkmate": {
+      "Package": "checkmate",
+      "Version": "2.3.3",
+      "Source": "Repository",
+      "Type": "Package",
+      "Title": "Fast and Versatile Argument Checks",
+      "Description": "Tests and assertions to perform frequent argument checks. A substantial part of the package was written in C to minimize any worries about execution time overhead.",
+      "Authors@R": "c( person(\"Michel\", \"Lang\", NULL, \"michellang@gmail.com\", role = c(\"cre\", \"aut\"), comment = c(ORCID = \"0000-0001-9754-0393\")), person(\"Bernd\", \"Bischl\", NULL, \"bernd_bischl@gmx.net\", role = \"ctb\"), person(\"Dénes\", \"Tóth\", NULL, \"toth.denes@kogentum.hu\", role = \"ctb\", comment = c(ORCID = \"0000-0003-4262-3217\")) )",
+      "URL": "https://mllg.github.io/checkmate/, https://github.com/mllg/checkmate",
+      "URLNote": "https://github.com/mllg/checkmate",
+      "BugReports": "https://github.com/mllg/checkmate/issues",
+      "NeedsCompilation": "yes",
+      "ByteCompile": "yes",
+      "Encoding": "UTF-8",
+      "Depends": [
+        "R (>= 3.0.0)"
+      ],
+      "Imports": [
+        "backports (>= 1.1.0)",
+        "utils"
+      ],
+      "Suggests": [
+        "R6",
+        "fastmatch",
+        "data.table (>= 1.9.8)",
+        "devtools",
+        "ggplot2",
+        "knitr",
+        "magrittr",
+        "microbenchmark",
+        "rmarkdown",
+        "testthat (>= 3.0.4)",
+        "tinytest (>= 1.1.0)",
+        "tibble"
+      ],
+      "License": "BSD_3_clause + file LICENSE",
+      "VignetteBuilder": "knitr",
+      "RoxygenNote": "7.3.2",
+      "Collate": "'AssertCollection.R' 'allMissing.R' 'anyInfinite.R' 'anyMissing.R' 'anyNaN.R' 'asInteger.R' 'assert.R' 'helper.R' 'makeExpectation.R' 'makeTest.R' 'makeAssertion.R' 'checkAccess.R' 'checkArray.R' 'checkAtomic.R' 'checkAtomicVector.R' 'checkCharacter.R' 'checkChoice.R' 'checkClass.R' 'checkComplex.R' 'checkCount.R' 'checkDataFrame.R' 'checkDataTable.R' 'checkDate.R' 'checkDirectoryExists.R' 'checkDisjunct.R' 'checkDouble.R' 'checkEnvironment.R' 'checkFALSE.R' 'checkFactor.R' 'checkFileExists.R' 'checkFlag.R' 'checkFormula.R' 'checkFunction.R' 'checkInt.R' 'checkInteger.R' 'checkIntegerish.R' 'checkList.R' 'checkLogical.R' 'checkMatrix.R' 'checkMultiClass.R' 'checkNamed.R' 'checkNames.R' 'checkNull.R' 'checkNumber.R' 'checkNumeric.R' 'checkOS.R' 'checkPOSIXct.R' 'checkPathForOutput.R' 'checkPermutation.R' 'checkR6.R' 'checkRaw.R' 'checkScalar.R' 'checkScalarNA.R' 'checkSetEqual.R' 'checkString.R' 'checkSubset.R' 'checkTRUE.R' 'checkTibble.R' 'checkVector.R' 'coalesce.R' 'isIntegerish.R' 'matchArg.R' 'qassert.R' 'qassertr.R' 'vname.R' 'wfwl.R' 'zzz.R'",
+      "Author": "Michel Lang [cre, aut] (ORCID: <https://orcid.org/0000-0001-9754-0393>), Bernd Bischl [ctb], Dénes Tóth [ctb] (ORCID: <https://orcid.org/0000-0003-4262-3217>)",
+      "Maintainer": "Michel Lang <michellang@gmail.com>",
+      "Repository": "https://p3m.dev/cran/latest"
+    },
     "class": {
       "Package": "class",
       "Version": "7.3-23",
@@ -3467,6 +3510,63 @@
       "Author": "Yihui Xie [aut, cre] (ORCID: <https://orcid.org/0000-0003-0645-5666>, URL: https://yihui.org), Tim Taylor [ctb] (ORCID: <https://orcid.org/0000-0002-8587-7113>)",
       "Maintainer": "Yihui Xie <xie@yihui.name>",
       "Repository": "https://p3m.dev/cran/latest"
+    },
+    "logger": {
+      "Package": "logger",
+      "Version": "0.4.1",
+      "Source": "Repository",
+      "Type": "Package",
+      "Title": "A Lightweight, Modern and Flexible Logging Utility",
+      "Date": "2025-09-10",
+      "Authors@R": "c( person(\"Gergely\", \"Daróczi\", , \"daroczig@rapporter.net\", role = c(\"aut\", \"cre\"), comment = c(ORCID = \"0000-0003-3149-8537\")), person(\"Hadley\", \"Wickham\", , \"hadley@posit.co\", role = \"aut\", comment = c(ORCID = \"0000-0003-4757-117X\")), person(\"Spare Cores\", role = \"fnd\"), person(\"System1\", role = \"fnd\") )",
+      "Description": "Inspired by the the 'futile.logger' R package and 'logging' Python module, this utility provides a flexible and extensible way of formatting and delivering log messages with low overhead.",
+      "License": "MIT + file LICENSE",
+      "URL": "https://daroczig.github.io/logger/",
+      "BugReports": "https://github.com/daroczig/logger/issues",
+      "Depends": [
+        "R (>= 4.0.0)"
+      ],
+      "Imports": [
+        "utils"
+      ],
+      "Suggests": [
+        "botor",
+        "cli",
+        "covr",
+        "crayon",
+        "devtools",
+        "glue",
+        "jsonlite",
+        "knitr",
+        "mirai (>= 1.3.0)",
+        "pander",
+        "parallel",
+        "R.utils",
+        "rmarkdown",
+        "roxygen2",
+        "RPushbullet",
+        "rsyslog",
+        "shiny",
+        "slackr (>= 1.4.1)",
+        "syslognet",
+        "telegram",
+        "testthat (>= 3.0.0)",
+        "withr"
+      ],
+      "Enhances": [
+        "futile.logger",
+        "log4r",
+        "logging"
+      ],
+      "VignetteBuilder": "knitr",
+      "Config/testthat/edition": "3",
+      "Config/testthat/parallel": "TRUE",
+      "Encoding": "UTF-8",
+      "RoxygenNote": "7.3.2",
+      "NeedsCompilation": "no",
+      "Author": "Gergely Daróczi [aut, cre] (ORCID: <https://orcid.org/0000-0003-3149-8537>), Hadley Wickham [aut] (ORCID: <https://orcid.org/0000-0003-4757-117X>), Spare Cores [fnd], System1 [fnd]",
+      "Maintainer": "Gergely Daróczi <daroczig@rapporter.net>",
+      "Repository": "CRAN"
     },
     "lubridate": {
       "Package": "lubridate",
@@ -6233,6 +6333,47 @@
       "Author": "Yihui Xie [aut, cre, cph] (<https://orcid.org/0000-0003-0645-5666>), Posit Software, PBC [cph, fnd], Christophe Dervieux [ctb] (<https://orcid.org/0000-0003-4474-2498>), Devon Ryan [ctb] (<https://orcid.org/0000-0002-8549-0971>), Ethan Heinzen [ctb], Fernando Cagua [ctb]",
       "Maintainer": "Yihui Xie <xie@yihui.name>",
       "Repository": "CRAN"
+    },
+    "tulsaCountyJailScraper": {
+      "Package": "tulsaCountyJailScraper",
+      "Version": "0.0.3",
+      "Source": "GitHub",
+      "Title": "Collect Public Data from the Tulsa County Jail",
+      "Authors@R": "person(\"Brancen\", \"Gregory\", email = \"brancengregory@gmail.com\", role = \"cre\")",
+      "Description": "The Tulsa County jail publishes information to public about bookings and releases. This package helps collect the data in a structured way for analysis.",
+      "License": "GPL (>= 3)",
+      "Encoding": "UTF-8",
+      "Roxygen": "list(markdown = TRUE)",
+      "RoxygenNote": "7.3.2",
+      "Imports": [
+        "checkmate",
+        "dplyr",
+        "fs",
+        "glue",
+        "httr2",
+        "logger",
+        "ojodb (>= 2.11.0)",
+        "purrr",
+        "rlang"
+      ],
+      "URL": "https://openjusticeok.github.io/tulsa-county-jail-scraper/",
+      "Suggests": [
+        "ojoregex (>= 0.6.1)",
+        "ojothemes (>= 1.0.0)",
+        "pointblank",
+        "targets",
+        "testthat (>= 3.0.0)"
+      ],
+      "Config/testthat/edition": "3",
+      "Author": "Brancen Gregory [cre]",
+      "Maintainer": "Brancen Gregory <brancengregory@gmail.com>",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "openjusticeok",
+      "RemoteRepo": "tulsa-county-jail-scraper",
+      "RemoteRef": "main",
+      "RemoteSha": "5be07017c6ae13ecb7ab863720605b4ef1c72fef",
+      "Remotes": "openjusticeok/ojodb, openjusticeok/ojoregex, openjusticeok/ojoregex"
     },
     "tzdb": {
       "Package": "tzdb",
