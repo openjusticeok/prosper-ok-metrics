@@ -71,10 +71,10 @@ population and recent bookings at the Oklahoma County Detention Center (OCDC).
 
 It includes aggregations for each in total and by gender:
 
-* Jail Bookings
-* Jail Releases
-* Tulsa County comparison to Oklahoma County
-* Average Daily Population
+* Tulsa County Jail Bookings
+* Tulsa County Jail Releases
+* Tulsa County Jail comparison to Oklahoma County Jail
+* Average Daily Population at Tulsa County Jail
 
 {{< pagebreak >}}
 

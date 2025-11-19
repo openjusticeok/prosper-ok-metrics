@@ -71,9 +71,9 @@ population and recent bookings at the Oklahoma County Detention Center (OCDC).
 
 It includes aggregations for each in total and by gender:
 
-* Prison Sentences
-* Prison Releases
-* Population by Gender
+* Prison Sentences from Tulsa County
+* Prison Releases from those sentenced in Tulsa County
+* Prison Population by Gender  from Tulsa County
 * Oklahoma County comparison to Tulsa County vs all other counties
 
 {{< pagebreak >}}
