@@ -1,6 +1,3 @@
-data/*.csv
-data/*.xlsx
-
 # History files
 .Rhistory
 .Rapp.history
@@ -47,8 +44,10 @@ vignettes/*.pdf
 # Secrets directory for secrets
 /secrets/
 
-data/cm_cf_2012_2022.csv
-data/simple_possession_filings_2012_2022.csv
-data/cm_cf_2001_2022.csv
+# Data directories
+data/*
+data/output/*
+data/input/*
 
+# macOS system files
 .DS_Store
