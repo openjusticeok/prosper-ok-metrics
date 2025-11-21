@@ -20,10 +20,8 @@ jail_analysis_results|stem|73f716a16dcb66c7|c974bd08830b887a|b5d493e2b0d718a1|-1
 jail_output_checks|stem|b9ffe068a29949a3|257162f4cadd95ea|14ce0ca7a12fc1fd|-844346985||t20411.615429432s|s233b|233|qs|local|vector|||0.07||
 prison_figures|stem|fd9342e9e485ff7a|18635a504c0552bf|9bc72e3b0620d75e|999702478||t20411.6154297627s|s169b|169|qs|local|vector|||0.001||
 jail_figures|stem|640c2efacc9aa65d|712f6e15e6282c3d|093c1efec1b37fe6|2130072054||t20411.6154327399s|s251778b|251778|qs|local|vector|||0.158|Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0. ℹ Please use `linewidth` instead.|
-prison_report_source|stem|6bac1fceaa1cc889|6571ecc9550af0e9|a61be5ede1ad56d4|1050347913|/home/anthony/code/openjusticeok/prosper-ok-metrics/refactor-gpt-5-codex/inst/reports/2025-11-prosper-metrics-prison/2025-11-prosper-metrics-prison.qmd|t20411.8604023709s|s2906b|2906|file|local|vector|||3.084||
-prison_report|stem|38eed66acbdbfed0|cb8a2d337c6b3aad|c2fbf825067dffff|-537407789|/home/anthony/code/openjusticeok/prosper-ok-metrics/refactor-gpt-5-codex/inst/reports/2025-11-prosper-metrics-prison/2025-11-prosper-metrics-prison.html*/home/anthony/code/openjusticeok/prosper-ok-metrics/refactor-gpt-5-codex/inst/reports/2025-11-prosper-metrics-prison/2025-11-prosper-metrics-prison-public.html|t20411.8743468362s|s45340b|45340|file|local|vector|||12.964||
 verify_jail_outputs|function|b0798b9ac3b38bb8
-.pipeline_report_paths|object|c2c75b225ce6d60c
+.pipeline_report_paths|object|1a9ad0ec48bab27e
 ingest_ojodb_jail_data|function|d809ec7078efa94a
 ingest_scraped_jail_data|function|084a27d924aa0801
 read_brek_jail_report_data|function|d2578d2471b14e3e
@@ -33,14 +31,16 @@ process_prison_dataset|function|c24e5324dc470120
 check_prison_inputs|function|83b65daa7b4c64b3
 verify_prison_outputs|function|f4faeb17fed9082a
 check_jail_inputs|function|867e1fc6fcd4f45b
-.Random.seed|object|d203708a751db657
+.Random.seed|object|6455fbb27e4788a2
 analyze_jail_metrics|function|f2afbb11033bdfce
 generate_jail_figures|function|390747e7f22a9273
 generate_prison_figures|function|0ea001c18df327d1
-pipeline_report_path|function|f3b14a5ef4b1afb2
+pipeline_report_path|function|f68d46045b0f0116
 ingest_jail_raw_data|function|4b21d46dc36fb3ef
-render_report|function|11b843340345efab
-render_jail_report|function|5b2bfc7985e67ae3
-render_prison_report|function|31fb64690e431c73
-jail_report_source|stem|1d033add0fa3e9c3|6d6c9efec9e8a1db|a61be5ede1ad56d4|-1756495004|/home/anthony/code/openjusticeok/prosper-ok-metrics/refactor-gpt-5-codex/inst/reports/2025-11-prosper-metrics-jail/2025-11-prosper-metrics-jail.qmd|t20411.8785715709s|s6430b|6430|file|local|vector|||3.037||
-jail_report|stem|314d17c7973c4aa1|a83f60d4655e9b87|d4b9db351a03f89e|440643482|/home/anthony/code/openjusticeok/prosper-ok-metrics/refactor-gpt-5-codex/inst/reports/2025-11-prosper-metrics-jail/2025-11-prosper-metrics-jail.html*/home/anthony/code/openjusticeok/prosper-ok-metrics/refactor-gpt-5-codex/inst/reports/2025-11-prosper-metrics-jail/2025-11-prosper-metrics-jail-public.html|t20411.8829518289s|s153665b|153665|file|local|vector|||18.85||
+render_report|function|774abf20e080a486
+render_jail_report|function|a0b91db82bfc31d2
+render_prison_report|function|58488ef3b73cf201
+jail_report_source|stem|1d033add0fa3e9c3|6d6c9efec9e8a1db|31e4f6b873403eed|-1756495004|/home/anthony/code/openjusticeok/prosper-ok-metrics/feat-gpt5-decompose-pipeline/inst/reports/2025-11-prosper-metrics-jail/2025-11-prosper-metrics-jail.qmd|t20411.8828305124s|s6430b|6430|file|local|vector|||3.235||
+prison_report_source|stem|6bac1fceaa1cc889|6571ecc9550af0e9|31e4f6b873403eed|1050347913|/home/anthony/code/openjusticeok/prosper-ok-metrics/feat-gpt5-decompose-pipeline/inst/reports/2025-11-prosper-metrics-prison/2025-11-prosper-metrics-prison.qmd|t20411.8604023709s|s2906b|2906|file|local|vector|||0.003||
+prison_report|stem|38eed66acbdbfed0|cb8a2d337c6b3aad|e7383c5a65e8f15a|-537407789|/home/anthony/code/openjusticeok/prosper-ok-metrics/feat-gpt5-decompose-pipeline/inst/reports/2025-11-prosper-metrics-prison/2025-11-prosper-metrics-prison.html*/home/anthony/code/openjusticeok/prosper-ok-metrics/feat-gpt5-decompose-pipeline/inst/reports/2025-11-prosper-metrics-prison/2025-11-prosper-metrics-prison-public.html|t20412.7976791177s|s45340b|45340|file|local|vector|||13.515||
+jail_report|stem|6ab471e1e5252b1d|a83f60d4655e9b87|00db6f8f941171a1|440643482|/home/anthony/code/openjusticeok/prosper-ok-metrics/feat-gpt5-decompose-pipeline/inst/reports/2025-11-prosper-metrics-jail/2025-11-prosper-metrics-jail.html*/home/anthony/code/openjusticeok/prosper-ok-metrics/feat-gpt5-decompose-pipeline/inst/reports/2025-11-prosper-metrics-jail/2025-11-prosper-metrics-jail-public.html|t20412.7978935233s|s153665b|153665|file|local|vector|||18.45||

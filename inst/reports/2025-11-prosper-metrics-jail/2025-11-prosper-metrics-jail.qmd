@@ -78,6 +78,8 @@ fmt_num <- function(x) scales::comma(x, accuracy = 1)
 # Overview
 
 ```{r overview-metrics}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
 if (!is.null(jail_analysis)) {
   jail_analysis$key_metrics |>
     dplyr::mutate(
@@ -100,12 +102,16 @@ if (!is.null(jail_analysis)) {
 # Jail Bookings
 
 ```{r}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
 if (!is.null(jail_figures$booking_trend)) {
   jail_figures$booking_trend
 }
 ```
 
 ```{r jail-bookings-table}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
 if (!is.null(jail_analysis)) {
   latest <- jail_analysis$latest_month |>
     dplyr::mutate(
@@ -132,6 +138,8 @@ if (!is.null(jail_analysis)) {
 ```
 
 ```{r jail-releases-heading, results='asis', echo=FALSE}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
 if (!params$public) {
   cat("# Jail Releases\n\n")
 }
@@ -188,6 +196,8 @@ if (nrow(release_shares) > 0) {
 ```
 
 ```{r jail-comparison-heading, results='asis', echo=FALSE}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
 if (!params$public) {
   cat("# Tulsa County comparison to Oklahoma County\n\n")
 }
@@ -222,6 +232,8 @@ if (!is.null(jail_analysis)) {
 # Average Daily Population
 
 ```{r jail-adp}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
 if (!is.null(jail_figures$adp_comparison)) {
   jail_figures$adp_comparison
 }
