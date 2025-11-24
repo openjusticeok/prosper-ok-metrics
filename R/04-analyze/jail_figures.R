@@ -1,11 +1,11 @@
-generate_jail_figures <- function(analysis_results) {
+generate_jail_figures <- function(analysis_results = jail_analysis_results) {
   booking_trends <- analysis_results$booking_trends
   if (nrow(booking_trends) > 0) {
     booking_trend_plot <- ggplot2::ggplot(
       booking_trends,
       ggplot2::aes(x = booking_month, y = bookings, color = source)
     ) +
-      ggplot2::geom_line(size = 1) +
+      ggplot2::geom_line(linewidth = 1) +
       ggplot2::geom_point(size = 1) +
       ggplot2::labs(
         title = "Tulsa jail bookings by source",
