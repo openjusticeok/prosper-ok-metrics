@@ -2,8 +2,8 @@ check_jail_inputs <- function(raw_data = jail_raw_data) {
   pb_levels <- pointblank::action_levels(warn_at = 0.02, stop_at = 0.1)
   warning_only_levels <- pointblank::action_levels(warn_at = 0.02, stop_at = Inf)
 
-  scraped_bookings_agent <- pointblank::create_agent(
-    tbl = raw_data$scraped$bookings,
+  okpolicy_bookings_agent <- pointblank::create_agent(
+    tbl = raw_data$okpolicy$bookings,
     label = "Scraped Tulsa County jail bookings",
     actions = pb_levels
   ) |>
@@ -12,9 +12,9 @@ check_jail_inputs <- function(raw_data = jail_raw_data) {
     pointblank::col_vals_not_null(pointblank::vars(gender, race)) |>
     pointblank::interrogate()
 
-  db_bookings_agent <- pointblank::create_agent(
-    tbl = raw_data$ojodb$bookings,
-    label = "ojodb jail bookings",
+  asemio_bookings_agent <- pointblank::create_agent(
+    tbl = raw_data$asemio$bookings,
+    label = "asemio jail bookings",
     actions = pb_levels
   ) |>
     pointblank::col_exists(pointblank::vars(booking_date)) |>
@@ -45,8 +45,8 @@ check_jail_inputs <- function(raw_data = jail_raw_data) {
   tibble::lst(
     raw_data = raw_data,
     checks = dplyr::bind_rows(
-      summarize_agent(scraped_bookings_agent, "scraped_bookings"),
-      summarize_agent(db_bookings_agent, "ojodb_bookings"),
+      summarize_agent(okpolicy_bookings_agent, "okpolicy_bookings"),
+      summarize_agent(asemio_bookings_agent, "asemio_bookings"),
       summarize_agent(brek_agent, "brek_reference")
     )
   )

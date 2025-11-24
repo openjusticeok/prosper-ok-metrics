@@ -1,13 +1,19 @@
-ingest_scraped_jail_data <- function() {
+ingest_okpolicy_scraped_data <- function() {
   scraped_jail_data <- tulsaCountyJailScraper::scrape_data()
 
   list(
-    bookings = scraped_jail_data$bookings_tibble,
-    charges = scraped_jail_data$charges_tibble
+    bookings = scraped_jail_data$bookings_tibble |>
+      dplyr::mutate(
+        created_at = lubridate::today()
+      ),
+    charges = scraped_jail_data$charges_tibble |>
+      dplyr::mutate(
+        created_at = lubridate::today()
+      )
   )
 }
 
-ingest_ojodb_jail_data <- function(schema = "iic") {
+ingest_asemio_scraped_data <- function(schema = "iic") {
   list(
     bookings = ojodb::ojo_tbl("arrest", schema = schema) |>
       dplyr::collect(),
@@ -26,20 +32,20 @@ read_brek_jail_report_data <- function(path = here::here("data", "input", "brek_
     )
   }
 
-  brek_jail_data <- readr::read_csv(path, show_col_types = FALSE) |>
-    dplyr::mutate(
-      year = as.integer(.data$year),
-      metric_family = stringr::str_replace_all(.data$metric_family, "\\s+", "_")
-    )
+  brek_jail_data <- readr::read_csv(path, show_col_types = FALSE)
 
   return(brek_jail_data)
 }
 
 ingest_jail_raw_data <- function(schema = "iic",
-                                 brek_data_path = here::here("data", "input", "brek_jail_report_data.csv")) {
+                                 brek_data_path = here::here(
+                                   "data",
+                                   "input",
+                                   "brek_jail_report_data.csv"
+                                 )) {
   list(
-    scraped = ingest_scraped_jail_data(),
-    ojodb = ingest_ojodb_jail_data(schema = schema),
+    okpolicy = ingest_okpolicy_scraped_data(),
+    asemio = ingest_asemio_scraped_data(schema = schema),
     brek = read_brek_jail_report_data(brek_data_path)
   )
 }
