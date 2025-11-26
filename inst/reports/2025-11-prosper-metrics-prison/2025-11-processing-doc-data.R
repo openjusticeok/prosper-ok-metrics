@@ -51,10 +51,13 @@ community_centers <- c(
   "ENID COMMUNITY CORRECTIONS CENTER",
   "LAWTON COMMUNITY CORRECTIONS CENTER",
   "NORTHEAST OKLAHOMA COMMUNITY CORRECTIONS CENTER",
+  "OKLAHOMA CITY COMMUNITY CORRECTIONS CENTER", # added this
   "UNION CITY COMMUNITY CORRECTIONS CENTER"
 )
 
 halfway_house <- c("BRIDGEWAY HALFWAY HOUSE")
+
+interstate <- c("INTERSTATE COMPACT (OUT TO OTHER STATE) UNIT")
 
 clean_profile_data <- profile_data |>
   mutate(
@@ -79,7 +82,8 @@ clean_profile_data <- profile_data |>
     physical_custody = facility %in% toupper(c(assessment_and_reception,
                                                state_institutions,
                                                community_centers,
-                                               halfway_house)) |
+                                               halfway_house,
+                                               interstate)) |
       str_detect(facility, "(?i)jail|SHERIFFS OFFICE")
     )
 
@@ -136,7 +140,7 @@ doc_data_join_all <- sentence_data |>
              by = c("doc_num"))
 
 
-
+write_csv(doc_data_join_all, here("data", "output", "doc_data_join_all.csv"))
 
   # Sanity checks that the nest matches the counts
   # mutate(
