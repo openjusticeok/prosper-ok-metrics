@@ -7,6 +7,8 @@ library(purrr)
 library(here)
 library(lubridate)
 
+# Loading data in here after processing in the doc-sentencing repo
+# this uses the most recent relese from 10/22/2025.
 profile_data <- read_csv(here("data/input/doc/profile_data.csv"))
 offense_data <- read_csv(here("data/input/doc/offense_data.csv"))
 sentence_data <- read_csv(here("data/input/doc/sentence_data.csv"))
@@ -38,12 +40,11 @@ state_institutions <- c(
   "MACK ALFORD CORRECTIONAL CENTER",
   "OKLAHOMA STATE PENITENTIARY",
   "OKLAHOMA STATE REFORMATORY",
-  "RED ROCK CORRECTIONAL CENTER" # previously private lawton prison
+  "RED ROCK CORRECTIONAL CENTER" # previously LAWTON CORRECTIONAL AND REHABILITATION FACILITY
   )
 
-# This is now the Red Rock
-# uncomment this if working with data from before 09/2025
-#private_facilities <- c("LAWTON CORRECTIONAL AND REHABILITATION FACILITY")
+# IMPORTANT! THIS SHOULD NOT BE IN THE `facility` COLUMN AFTER 09/2025
+private_facilities <- c("LAWTON CORRECTIONAL AND REHABILITATION FACILITY")
 
 community_centers <- c(
   "CLARA WATERS COMMUNITY CORRECTIONS CENTER",
@@ -83,10 +84,12 @@ clean_profile_data <- profile_data |>
                                                state_institutions,
                                                community_centers,
                                                halfway_house,
+                                               private_facilities,
                                                interstate)) |
       str_detect(facility, "(?i)jail|SHERIFFS OFFICE")
     )
 
+# Creating flag to track people who have been in DOC custody more than once
 doc_repeat <- sentence_data |>
   mutate(js_date = lubridate::as_date(js_date)) |>
   group_by(doc_num) |>
@@ -94,10 +97,10 @@ doc_repeat <- sentence_data |>
     num_sentencing_dates = n_distinct(js_date, na.rm = TRUE),
     repeat_offender = num_sentencing_dates > 1)
 
-# We join all the datasets but the fields relevant to the metrics will be in
-# sentence data and profile data.
-# The nesting and generated variables are to identify the most recent
-# sentence for those who may have been in DOC custody more than once.
+##__________________________ BIG DATA JOIN HERE________________________________
+# Joining all the datasets but paying special attention to the sentence data
+# which contains the sentencing_county and `js_date` and profile data which
+# contains the person's `sex` which we are using in place of gender.
 doc_data_join_all <- sentence_data |>
   left_join(consecutive_data,
             by = "sentence_id") |>
@@ -115,7 +118,9 @@ doc_data_join_all <- sentence_data |>
          dp = incarcerated_term_in_years == "9999")|>
   group_by(doc_num) |>
   arrange(doc_num, sentencing_date, sentence_id, statute_code) |>
-  # We want the most recent sentence
+  # The nesting and generated variables are to identify the most recent
+  # sentence for those who may have been in DOC custody more than once.
+  # We obviously want the latest date and corresponding county.
   mutate(
     most_recent_sentencing_date = max(sentencing_date, na.rm = TRUE),
     most_recent_sentencing_county =
