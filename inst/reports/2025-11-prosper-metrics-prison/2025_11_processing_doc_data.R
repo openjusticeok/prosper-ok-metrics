@@ -14,9 +14,7 @@ offense_data <- read_csv(here("data/input/doc/offense_data.csv"))
 sentence_data <- read_csv(here("data/input/doc/sentence_data.csv"))
 consecutive_data <- read_csv(here("data/input/doc/consecutive_data.csv"))
 
-#_________________________ Facility categories__________________________________
-
-# Physical Custody according to weekly count reports
+#___________Facility categories based on DOC Weekly Count Reports_______________
 assessment_and_reception <- c(
   "LEXINGTON ASSESSMENT AND RECEPTION CENTER",
   "MABEL BASSETT ASSESSMENT & RECEPTION CENTER"
@@ -52,7 +50,7 @@ community_centers <- c(
   "ENID COMMUNITY CORRECTIONS CENTER",
   "LAWTON COMMUNITY CORRECTIONS CENTER",
   "NORTHEAST OKLAHOMA COMMUNITY CORRECTIONS CENTER",
-  "OKLAHOMA CITY COMMUNITY CORRECTIONS CENTER", # added this
+  "OKLAHOMA CITY COMMUNITY CORRECTIONS CENTER",
   "UNION CITY COMMUNITY CORRECTIONS CENTER"
 )
 
@@ -89,6 +87,8 @@ clean_profile_data <- profile_data |>
       str_detect(facility, "(?i)jail|SHERIFFS OFFICE")
     )
 
+##__________________________ BIG DATA JOIN HERE________________________________
+
 # Creating flag to track people who have been in DOC custody more than once
 doc_repeat <- sentence_data |>
   mutate(js_date = lubridate::as_date(js_date)) |>
@@ -97,7 +97,6 @@ doc_repeat <- sentence_data |>
     num_sentencing_dates = n_distinct(js_date, na.rm = TRUE),
     repeat_offender = num_sentencing_dates > 1)
 
-##__________________________ BIG DATA JOIN HERE________________________________
 # Joining all the datasets but paying special attention to the sentence data
 # which contains the sentencing_county and `js_date` and profile data which
 # contains the person's `sex` which we are using in place of gender.
@@ -146,9 +145,3 @@ doc_data_join_all <- sentence_data |>
 
 
 write_csv(doc_data_join_all, here("data", "output", "doc_data_join_all.csv"))
-
-  # Sanity checks that the nest matches the counts
-  # mutate(
-  #   n_rows_in_nest = map_int(offenses, nrow),
-  #   n_dates_in_nest = map_int(offenses, ~ n_distinct(.x$sentencing_date)))
-
