@@ -2,7 +2,7 @@ library(dplyr)
 library(stringr)
 library(here)
 
-# Get helper functions
+# Get helper functions and join DOC datasets
 source_files <- list.files(
   here("inst/reports/2025-11-prosper-metrics-prison"),
   pattern = "\\.R$",
@@ -11,8 +11,9 @@ source_files <- list.files(
 
 for (f in source_files) source(f)
 
-# Load data
-# Currently using the most recent release
+# Load data:
+# Currently using the most recent release and this "joined" data is created in
+# the 2025_11_processing_doc_data.R script.
 doc_data_20251022 <- read_csv(here("data/output/doc_data_join_all.csv"))
 
 ## _________________________Run checks__________________________________________
