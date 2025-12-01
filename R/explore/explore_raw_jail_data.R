@@ -243,7 +243,25 @@ scraped_charges_with_bookings_info |>
   count(hold_category, sort = TRUE) |>
   print(n = Inf)
 
-# Explore Asemio Data
+### Explore Asemio Data
+ # TODO: There has to be a better way...
+tar_load(jail_input_checks)
+raw <- jail_input_checks$ingested_data
+
+# Asemio Scraper Data Processing
+asemio_scraped_bookings <- raw$asemio$bookings |>
+  dplyr::rename(
+    jacket_number = dlm,
+    arresting_agency = arrested_by,
+    zip_code = postal_code
+  ) |>
+  dplyr::mutate(
+    source = "Asemio Scraper",
+    created_at_date = as.Date(created_at),
+    updated_at_date = as.Date(updated_at),
+    jacket_number = as.character(.data$jacket_number)
+  )
+
 # TODO: Plot scraping date-times (created_at) to see the frequency of scrapes
 # TODO: Analyze the average frequency (days) by month
 # TODO: Plot jail population over time on each scraping date
@@ -251,3 +269,60 @@ scraped_charges_with_bookings_info |>
 # TODO: Create a function to easily do the accurate booking numbers for any
 # scraped data using a default created_at variable.
 # TODO: Incorporate the analysis into a report for monitoring scraping accuracy over time
+
+## Scraping Trends
+# How often does create_at match updated_at?:
+# On the same day: 70.7%
+# On the same minute: 68.0%
+# Conclusion: Most scraped bookings are not updated.
+asemio_scraped_bookings |>
+  dplyr::summarise(
+    total_scrapes = dplyr::n(),
+    matching_dates = sum(.data$created_at_date == .data$updated_at_date),
+    matching_minute = sum(
+      lubridate::floor_date(.data$created_at, unit = "minute") ==
+        lubridate::floor_date(.data$updated_at, unit = "minute")
+    ),
+    pct_matching_date = matching_dates / total_scrapes,
+    pct_matching_minute = matching_minute / total_scrapes
+  )
+
+# What are statistics on the time difference between created_at and updated_at?
+# Heavily right-skewed by few scraped booking that were updates 4 years after creation
+# As shown above, most are the same day. 75pp was 4 days.
+# Conclusion: Most updates happen quickly, but a few take a long time.
+asemio_scraped_bookings |>
+  dplyr::mutate(
+    days_to_update = as.numeric(difftime(updated_at_date, created_at_date, units = "days"))
+  ) |>
+  dplyr::pull(days_to_update) |>
+  (\(.) {print(summary(.)); hist(.)} )()
+
+# Just among those that were updated, how long did it take?: 7 median, max 4
+# years, 75pp 30 days. Slightly less right-skewed but still a long tail.
+# Most updates happen within a month when they do happen.
+asemio_scraped_bookings |>
+  dplyr::filter(
+    created_at_date != updated_at_date
+  ) |>
+  dplyr::mutate(
+    days_to_update = as.numeric(difftime(updated_at_date, created_at_date, units = "days"))
+  ) |>
+  dplyr::pull(days_to_update) |>
+  (\(.) {print(summary(.)); hist(.)} )()
+
+# What were those that took a long time to update?
+asemio_scraped_bookings |>
+  dplyr::mutate(
+    days_to_update = as.numeric(difftime(updated_at_date, created_at_date, units = "days"))
+  ) |>
+  dplyr::filter(
+    days_to_update > 180
+  )
+
+asemio_scraped_bookings |>
+  dplyr::mutate(
+    days_days_to_scrape = as.numeric(difftime(created_at_date, booking_date, units = "days"))
+  ) |>
+  dplyr::pull(days_days_to_scrape) |>
+  (\(.) {print(summary(.)); hist(.)} )()
