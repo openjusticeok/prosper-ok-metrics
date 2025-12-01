@@ -36,6 +36,8 @@ date: last-modified
 description: |
     This is a status update report using data from the Tulsa County Jail. It was prepared and analyzed by the Oklahoma Policy Institute.
 embed-resources: false
+params:
+  public: false
 # abstract-title: Publication Note
 # abstract: 'DRAFT REPORT -- NOT FOR PUBLICATION'
 ---
@@ -62,31 +64,196 @@ library(nanoparquet)
 library(ggrepel)
 
 ojothemes::ojo_set_theme(theme = "okpi")
+
+analysis_path <- Sys.getenv("PROSPER_JAIL_ANALYSIS_RDS")
+figures_path <- Sys.getenv("PROSPER_JAIL_FIGURES_RDS")
+
+jail_analysis <- if (nzchar(analysis_path) && file.exists(analysis_path)) readRDS(analysis_path) else NULL
+jail_figures <- if (nzchar(figures_path) && file.exists(figures_path)) readRDS(figures_path) else NULL
+
+fmt_pct <- function(x) scales::percent(x, accuracy = 0.1)
+fmt_num <- function(x) scales::comma(x, accuracy = 1)
 ```
 
 # Overview
 
-This is an overview report to provide some basic numbers about the current
-population and recent bookings at the Oklahoma County Detention Center (OCDC).
 
-It includes aggregations for each in total and by gender:
+# Data Challenges in 2025
+In 2025, Tulsa County Jail (the David L. Moss Criminal Justice Center),
+migrated its Jail Management System to a new vendor, 365Labs Public Safety Platform,
+which impacted data availability and reporting capabilities for much of the year.
+The jail's internal reporting tools were not fully functional for some time after
+the migration, and prior web scrapers became non-fuctional after the new
+community data portal was launched.
 
-* Tulsa County Jail Bookings
-* Tulsa County Jail Releases
-* Tulsa County Jail comparison to Oklahoma County Jail
-* Average Daily Population at Tulsa County Jail
+Given these unique challenges, this report attempts to provide an update on key
+metrics for the jail population and bookings by using a variety of data sources to
+triangulate estimates where possible.
+
+Over the coming months, we will continue work with Tulsa County jail
+administrators to improve data access and reporting capabilities to ensure
+accurate and timely information is available moving forward. We will also be
+able to use that data to validate and refine the estimates presented in this report.
+
+
+```{r overview-metrics}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
+if (!is.null(jail_analysis)) {
+  jail_analysis$key_metrics |>
+    dplyr::mutate(
+      value = fmt_num(value),
+      yoy_change = dplyr::case_when(
+        is.na(yoy_change) ~ "—",
+        TRUE ~ fmt_pct(yoy_change)
+      )
+    ) |>
+    dplyr::rename(`Metric` = metric, `Value` = value, `YoY Change` = yoy_change) |>
+    gt::gt() |>
+    gtExtras::gt_theme_538()
+} else {
+  "Pipeline analysis has not been loaded yet."
+}
+```
 
 {{< pagebreak >}}
 
 # Jail Bookings
 
-```r
-
+```{r}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
+if (!is.null(jail_figures$booking_trend)) {
+  jail_figures$booking_trend
+}
 ```
 
-# Jail Releases
+```{r jail-bookings-table}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
+if (!is.null(jail_analysis)) {
+  latest <- jail_analysis$latest_month |>
+    dplyr::mutate(
+      `Latest Month` = format(booking_month, "%B %Y"),
+      Bookings = fmt_num(bookings)
+    ) |>
+    dplyr::select(Source = source, `Latest Month`, Bookings)
 
-# Tulsa County comparison to Oklahoma County
+  annual <- jail_analysis$booking_year_totals |>
+    dplyr::arrange(dplyr::desc(booking_year)) |>
+    dplyr::mutate(
+      `Year` = booking_year,
+      Bookings = fmt_num(total_bookings)
+    ) |>
+    dplyr::select(Source = source, Year, Bookings)
+
+  dplyr::bind_rows(
+    dplyr::mutate(latest, Table = "Latest Month"),
+    dplyr::mutate(annual, Table = "Year-to-date")
+  ) |>
+    gt::gt(rowname_col = "Source", groupname_col = "Table") |>
+    gtExtras::gt_theme_538()
+}
+```
+
+```{r jail-releases-heading, results='asis', echo=FALSE}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
+if (!params$public) {
+  cat("# Jail Releases\n\n")
+}
+```
+
+```{r jail-releases}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
+#| results: "hide"
+
+release_counts <- tibble::tibble()
+release_shares <- tibble::tibble()
+if (!is.null(jail_analysis)) {
+  release_counts <- jail_analysis$release_counts |>
+    dplyr::filter(group %in% c("All", "Male", "Female")) |>
+    dplyr::mutate(Value = fmt_num(value)) |>
+    dplyr::select(Disposition = category, Group = group, Value)
+
+  release_shares <- jail_analysis$release_shares |>
+    dplyr::mutate(Value = fmt_pct(value)) |>
+    dplyr::select(Disposition = category, Group = group, Value)
+
+  list(
+    release_counts = release_counts,
+    release_shares = release_shares
+  )
+}
+```
+
+```{r jail-release-counts}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
+
+if (nrow(release_counts) > 0) {
+  release_counts |>
+    gt::gt() |>
+    gtExtras::gt_theme_538()
+} else {
+  "Release counts are not available for this run."
+}
+```
+
+```{r jail-release-shares}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
+
+if (nrow(release_shares) > 0) {
+  release_shares |>
+    gt::gt() |>
+    gtExtras::gt_theme_538()
+} else {
+  "Release percentages are not available for this run."
+}
+```
+
+```{r jail-comparison-heading, results='asis', echo=FALSE}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
+if (!params$public) {
+  cat("# Tulsa County comparison to Oklahoma County\n\n")
+}
+```
+
+```{r jail-comparison}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
+
+if (!is.null(jail_analysis)) {
+  jail_analysis$brek_report |>
+    dplyr::filter(
+      metric_family %in% c("adp", "bookings"),
+      dimension == "Overall",
+      category == "Total",
+      county %in% c("Tulsa County", "Oklahoma County")
+    ) |>
+    dplyr::mutate(
+      Metric = dplyr::case_when(
+        metric_family == "adp" ~ "Average Daily Population",
+        TRUE ~ "Annual Bookings"
+      ),
+      Value = fmt_num(value),
+      `YoY Change` = fmt_pct(as.numeric(yoy_change))
+    ) |>
+    dplyr::select(Metric, County = county, Value, `YoY Change`) |>
+    gt::gt() |>
+    gtExtras::gt_theme_538()
+}
+```
 
 # Average Daily Population
 
+```{r jail-adp}
+#| include: !expr isFALSE(params$public)
+#| eval: !expr isFALSE(params$public)
+if (!is.null(jail_figures$adp_comparison)) {
+  jail_figures$adp_comparison
+}
+```

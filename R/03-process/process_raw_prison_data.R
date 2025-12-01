@@ -1,6 +1,3 @@
-process_prison_dataset <- function(input_checks) {
-  input_checks
-  tibble::tibble(
-    dataset = character()
-  )
+process_prison_data <- function(ingested_checks = prison_ingested_checks) {
+  ingested_checks
 }
