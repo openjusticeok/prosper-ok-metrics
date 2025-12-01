@@ -51,3 +51,6 @@ data/input/*
 
 # macOS system files
 .DS_Store
+
+# targets package files
+_targets/
