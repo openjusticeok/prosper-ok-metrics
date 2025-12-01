@@ -54,8 +54,6 @@ tar_source("R/render_report_prison.R")
 # Targets pipeline definition:
 list(
   # Jail pipeline
-  # TODO: feat(ingest): finalize ingestion of data to handle new jail data initiative source
-  # TODO: fix(ingest): update final ingestion function to match new data sources, and remove arguments from functions.
   tar_target(
     name = jail_ingested_data,
     command = ingest_jail_data()
