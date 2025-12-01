@@ -68,7 +68,7 @@ filter_doc_population <- function(data,
 #' @return A tibble containing the count of unique individuals (`n_people`),
 #'   optionally grouped by the supplied variables.
 #'
-#' @example
+#' @examples
 #' # Count by sex and race:
 #' summarise_population_count(data, c("sex", "race"))
 #'
