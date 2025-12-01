@@ -1,5 +1,5 @@
 # TODO: All of this is boilerplate. Replace with something actually meaninful
-verify_jail_outputs <- function(processed_data) {
+check_jail_processed <- function(processed_data = jail_processed_data) {
   pb_levels <- pointblank::action_levels(warn_at = 0.02, stop_at = 0.1)
 
   trend_agent <- pointblank::create_agent(
