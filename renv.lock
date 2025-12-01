@@ -7115,7 +7115,7 @@
     },
     "tulsaCountyJailScraper": {
       "Package": "tulsaCountyJailScraper",
-      "Version": "0.1.0",
+      "Version": "0.1.1",
       "Source": "GitHub",
       "Title": "Collect Public Data from the Tulsa County Jail",
       "Authors@R": "person(\"Brancen\", \"Gregory\", email = \"brancengregory@gmail.com\", role = \"cre\")",
@@ -7152,7 +7152,7 @@
       "RemoteUsername": "openjusticeok",
       "RemoteRepo": "tulsa-county-jail-scraper",
       "RemoteRef": "main",
-      "RemoteSha": "5c12825b405c826a1cdfd20441bd807443e570a5",
+      "RemoteSha": "0f3c0b76e8bb791a06b7daecf72f0a740c895bdf",
       "Remotes": "openjusticeok/ojodb, openjusticeok/ojoregex, openjusticeok/ojoregex"
     },
     "tzdb": {
