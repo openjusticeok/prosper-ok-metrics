@@ -15,6 +15,14 @@ summarise_missing <- function(data, field) {
 }
 
 
+#' Summarise the range of dates in a data frame
+#'
+#' Calculates the minimum and maximum dates, total number of rows, and the number of distinct people (by `doc_num`) in the provided data.
+#'
+#' @param data A data frame containing the data to summarise.
+#' @param date_field The column in `data` containing the date values to summarise (unquoted).
+#'
+#' @return A data frame with columns: `min_date`, `max_date`, `total`, and `n_people`.
 summarise_date_range <- function(data, date_field) {
   data |>
     summarise(
