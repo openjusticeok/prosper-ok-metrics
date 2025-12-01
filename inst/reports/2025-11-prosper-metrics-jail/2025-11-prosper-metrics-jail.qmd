@@ -77,6 +77,25 @@ fmt_num <- function(x) scales::comma(x, accuracy = 1)
 
 # Overview
 
+
+# Data Challenges in 2025
+In 2025, Tulsa County Jail (the David L. Moss Criminal Justice Center),
+migrated its Jail Management System to a new vendor, 365Labs Public Safety Platform,
+which impacted data availability and reporting capabilities for much of the year.
+The jail's internal reporting tools were not fully functional for some time after
+the migration, and prior web scrapers became non-fuctional after the new
+community data portal was launched.
+
+Given these unique challenges, this report attempts to provide an update on key
+metrics for the jail population and bookings by using a variety of data sources to
+triangulate estimates where possible.
+
+Over the coming months, we will continue work with Tulsa County jail
+administrators to improve data access and reporting capabilities to ensure
+accurate and timely information is available moving forward. We will also be
+able to use that data to validate and refine the estimates presented in this report.
+
+
 ```{r overview-metrics}
 #| include: !expr isFALSE(params$public)
 #| eval: !expr isFALSE(params$public)
