@@ -27,9 +27,9 @@
 #' # Individuals sentenced in Tulsa since Oct 2024, all forms of custody:
 #' data |>
 #' filter_doc_population(
-#' sentencing_county = "Tulsa",
-#' physical_custody_only = FALSE
-#' sentence_date = "2024-10-16")
+#'   sentencing_county = "Tulsa",
+#'   physical_custody_only = FALSE,
+#'   sentence_date = "2024-10-16")
 #'
 
 filter_doc_population <- function(data,
