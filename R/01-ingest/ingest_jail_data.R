@@ -41,10 +41,13 @@ read_brek_jail_report_data <- function(path = here::here("data", "input", "brek_
 }
 
 # Function to read Jail Data Initiative scraped data from a Google Drive folder
-read_jail_data_initiative_scraped_data <- function(drive_folder_url = "https://drive.google.com/drive/folders/1fsv2pAkRd6DoDgG77SoXA3-0wK5tUnmh",
-                                                   charges_filename = "charges.csv",
-                                                   people_filename = "people.csv",
-                                                   download_dir = tempdir()) {
+read_jail_data_initiative_scraped_data <- function(
+  drive_folder_url = "https://drive.google.com/drive/folders/1fsv2pAkRd6DoDgG77SoXA3-0wK5tUnmh",
+  charges_filename = "charges.csv",
+  people_filename = "people.csv",
+  download_dir = tempdir()
+) {
+  # Helper function to handle Google Drive errors, particularly authentication issues
   handle_drive_error <- function(err) {
     message <- conditionMessage(err)
     is_auth_issue <- grepl("unauthor|forbidden|auth", message, ignore.case = TRUE)
@@ -88,11 +91,14 @@ read_jail_data_initiative_scraped_data <- function(drive_folder_url = "https://d
     # Define local path for download
     local_path <- file.path(download_dir, target_name)
     # Ensure temporary file is deleted after reading
-    on.exit({
-      if (file.exists(local_path)) {
-        unlink(local_path)
-      }
-    }, add = TRUE)
+    on.exit(
+      {
+        if (file.exists(local_path)) {
+          unlink(local_path)
+        }
+      },
+      add = TRUE
+    )
 
     # Download the file, handling authentication errors
     tryCatch(
