@@ -1,8 +1,8 @@
 generate_jail_figures <- function(analysis_results = jail_analysis_results) {
-  bookings_monthly <- analysis_results$bookings_monthly
-  if (nrow(bookings_monthly) > 0) {
+  booking_month_totals <- analysis_results$booking_month_totals
+  if (nrow(booking_month_totals) > 0) {
     booking_trend_plot <- ggplot2::ggplot(
-      bookings_monthly,
+      booking_month_totals,
       ggplot2::aes(x = booking_month, y = bookings, color = source)
     ) +
       ggplot2::geom_line(linewidth = 1) +

@@ -3,7 +3,7 @@ check_jail_processed <- function(processed_data = jail_processed_data) {
   pb_levels <- pointblank::action_levels(warn_at = 0.02, stop_at = 0.1)
 
   trend_agent <- pointblank::create_agent(
-    tbl = processed_data$bookings_monthly,
+    tbl = processed_data$booking_totals,
     label = "Booking trend summaries",
     actions = pb_levels
   ) |>
@@ -29,7 +29,7 @@ check_jail_processed <- function(processed_data = jail_processed_data) {
   }
 
   dplyr::bind_rows(
-    summarize_agent(trend_agent, "bookings_monthly"),
+    summarize_agent(trend_agent, "booking_totals"),
     summarize_agent(release_agent, "release_counts")
   )
 }

@@ -427,9 +427,19 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       .by = c(source, created_at_date)
     ) |>
     dplyr::arrange(created_at_date)
-  bookings_monthly <- combined_bookings |>
+  booking_totals <- combined_bookings |>
     dplyr::count(source, booking_month, name = "bookings") |>
-    dplyr::arrange(booking_month)
+    dplyr::arrange(booking_month) |>
+    dplyr::bind_rows(
+      vera |>
+        dplyr::mutate(
+          source,
+          booking_month = quarter_date,
+          total_bookings_quarter = total_jail_adm,
+          total_bookings = total_jail_adm / 3,
+          .keep = "none"
+        )
+    )
 
   booking_demographics_gender <- combined_bookings |>
     tidyr::drop_na(gender) |>
@@ -443,7 +453,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
 
   list(
     booking_records = combined_bookings,
-    bookings_monthly = bookings_monthly,
+    booking_totals = booking_totals,
     booking_demographics = list(
       gender = booking_demographics_gender,
       race = booking_demographics_race
