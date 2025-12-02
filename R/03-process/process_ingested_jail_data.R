@@ -84,7 +84,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   # Process Vera Incarceration Trends Data
   vera <- ingested_data$vera |>
     dplyr::mutate(
-      source = "Vera: Incarceration Trends (BJS, U.S. Census)",
+      source = "Vera: Incarceration Trends",
       quarter_date = lubridate::ymd(paste0(.data$year, "-", .data$quarter * 3, "-01"))
     )
 
@@ -370,6 +370,33 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   # in time. Accouting for the booking/release times would need to be done to
   # get a more accurate picture of the jail population over time.
 
+  # Main total bookings calculation
+  # TODO: fix(process): Adjust booking totals to account for scraping gaps
+  # TODO: feat(process): Add gender, race, age demographics to booking totals
+  booking_totals <- combined_bookings |>
+    dplyr::count(source, booking_month, name = "bookings") |>
+    dplyr::bind_rows(
+      vera |>
+        dplyr::filter(!is.na(total_jail_adm)) |>
+        dplyr::filter(county_code == "US_OK_TULSA") |>
+        dplyr::mutate(
+          source,
+          booking_month = quarter_date,
+          bookings_quarter = total_jail_adm,
+          bookings = total_jail_adm / 3,
+          .keep = "none"
+        )
+    ) |>
+    dplyr::arrange(desc(booking_month))
+  booking_demographics_gender <- combined_bookings |>
+    tidyr::drop_na(gender) |>
+    dplyr::count(source, gender, name = "bookings")
+
+  booking_demographics_race <- combined_bookings |>
+    tidyr::drop_na(race) |>
+    dplyr::count(source, race, name = "bookings")
+
+
   # TODO:: I want to count the number of people booked per day, month, and year by
   # source. Not the number of rows in the bookings data since people may be in
   # the data multiple times per month.
@@ -399,6 +426,9 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       .by = c(source, booking_year)
     ) |>
     dplyr::arrange(booking_date)
+
+
+  # WARNING: Temporary exploration
   # TODO: For the same unique booking, is there more than one row, and if so
   # what differs between the rows? Is it just charges or other info as well?
   # TODO: Under what circumstances does the updated_at date change?
@@ -415,8 +445,16 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   asemio_scraped_bookings_with_inmate_info |>
     dplyr::filter(dplyr::n() > 1, .by = c("jacket_number", "booking_date", "created_at"))
 
+
+
   ## Jail Releases
+
+
+
+
   ## Jail Average Daily Population (ADP)
+
+
 
   ## Other derived metrics (not used in report)
   # TODO: feat(process): Scraping trends analysis
@@ -427,30 +465,12 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       .by = c(source, created_at_date)
     ) |>
     dplyr::arrange(created_at_date)
-  booking_totals <- combined_bookings |>
-    dplyr::count(source, booking_month, name = "bookings") |>
-    dplyr::arrange(booking_month) |>
-    dplyr::bind_rows(
-      vera |>
-        dplyr::mutate(
-          source,
-          booking_month = quarter_date,
-          total_bookings_quarter = total_jail_adm,
-          total_bookings = total_jail_adm / 3,
-          .keep = "none"
-        )
-    )
-
-  booking_demographics_gender <- combined_bookings |>
-    tidyr::drop_na(gender) |>
-    dplyr::count(source, gender, name = "bookings")
-
-  booking_demographics_race <- combined_bookings |>
-    tidyr::drop_na(race) |>
-    dplyr::count(source, race, name = "bookings")
-
   # TODO: feat(process): Analysis of top arresting_officers
 
+
+
+
+  ### Return processed data
   list(
     booking_records = combined_bookings,
     booking_totals = booking_totals,

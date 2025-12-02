@@ -10,7 +10,7 @@ analyze_jail_metrics <- function(processed_data = jail_processed_data) {
     dplyr::ungroup()
 
   booking_month_totals <- booking_totals |>
-    dplyr::distinct(booking_month, .keep_all = TRUE)
+    dplyr::distinct(source, booking_month, .keep_all = TRUE)
 
   booking_year_totals <- booking_records |>
     dplyr::summarise(
