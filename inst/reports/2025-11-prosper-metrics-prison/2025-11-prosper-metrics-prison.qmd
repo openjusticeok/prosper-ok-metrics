@@ -1,6 +1,6 @@
 ---
 title: |
-  ProsperOK Metrics Report<br>for Tulsa County Prison Population,<br> Q4 2025
+  ProsperOK Metrics Report<br>for Tulsa County's Prison Population,<br> Q4 2025
 subtitle: |
   November 2025 update on Tulsa County Prison Population and Sentences
 format:

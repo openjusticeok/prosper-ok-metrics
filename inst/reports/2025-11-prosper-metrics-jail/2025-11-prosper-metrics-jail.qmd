@@ -65,8 +65,8 @@ library(ggrepel)
 
 ojothemes::ojo_set_theme(theme = "okpi")
 
-analysis_path <- Sys.getenv("PROSPER_JAIL_ANALYSIS_RDS")
-figures_path <- Sys.getenv("PROSPER_JAIL_FIGURES_RDS")
+analysis_path <- here::here("data", "output", "jail_analysis_results.rds")
+figures_path <- here::here("data", "output", "jail_figures.rds")
 
 jail_analysis <- if (nzchar(analysis_path) && file.exists(analysis_path)) readRDS(analysis_path) else NULL
 jail_figures <- if (nzchar(figures_path) && file.exists(figures_path)) readRDS(figures_path) else NULL
@@ -75,26 +75,20 @@ fmt_pct <- function(x) scales::percent(x, accuracy = 0.1)
 fmt_num <- function(x) scales::comma(x, accuracy = 1)
 ```
 
-# Overview
+# Executive Summary
+Tulsa County Jail's average daily population and bookings trended downward
+in 2025 compared to 2024[, continuing a multi-year pattern of declines.]
 
-
-# Data Challenges in 2025
-In 2025, Tulsa County Jail (the David L. Moss Criminal Justice Center),
-migrated its Jail Management System to a new vendor, 365Labs Public Safety Platform,
-which impacted data availability and reporting capabilities for much of the year.
-The jail's internal reporting tools were not fully functional for some time after
-the migration, and prior web scrapers became non-fuctional after the new
-community data portal was launched.
-
-Given these unique challenges, this report attempts to provide an update on key
-metrics for the jail population and bookings by using a variety of data sources to
-triangulate estimates where possible.
-
-Over the coming months, we will continue work with Tulsa County jail
-administrators to improve data access and reporting capabilities to ensure
-accurate and timely information is available moving forward. We will also be
-able to use that data to validate and refine the estimates presented in this report.
-
+- The jail's average daily population (ADP) in 2025 is estimated to be
+`r fmt_num(jail_analysis$key_metrics$value[jail_analysis$key_metrics$metric == "Average Daily Population (Tulsa County)"])`,
+a
+`r fmt_pct(jail_analysis$key_metrics$yoy_change[jail_analysis$key_metrics$metric == "Average Daily Population (Tulsa County)"])`
+decrease from 2024.
+- Total bookings to the jail in 2025 are estimated to be
+`r fmt_num(jail_analysis$key_metrics$value[jail_analysis$key_metrics$metric == "Annual Bookings (Tulsa County)"])`,
+a
+`r fmt_pct(jail_analysis$key_metrics$yoy_change[jail_analysis$key_metrics$metric == "Annual Bookings (Tulsa County)"])`
+decrease from 2024.
 
 ```{r overview-metrics}
 #| include: !expr isFALSE(params$public)
@@ -115,6 +109,24 @@ if (!is.null(jail_analysis)) {
   "Pipeline analysis has not been loaded yet."
 }
 ```
+
+## Data limitations in 2025 mean estimates required triangulation from multiple sources
+In 2025, Tulsa County Jail (the David L. Moss Criminal Justice Center),
+migrated its Jail Management System to a new vendor, 365Labs Public Safety Platform,
+which impacted data availability and reporting capabilities for much of the year.
+The jail's internal reporting tools were not fully functional for some time after
+the migration, and prior web scrapers became non-fuctional after the new
+community data portal was launched.
+
+Given these unique challenges, this report attempts to provide an update on key
+metrics for the jail population and bookings by using a variety of data sources to
+triangulate estimates where possible.
+
+Over the coming months, we will continue work with Tulsa County jail
+administrators to improve data access and reporting capabilities to ensure
+accurate and timely information is available moving forward. We will also be
+able to use that data to validate and refine the estimates presented in this report.
+
 
 {{< pagebreak >}}
 
