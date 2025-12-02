@@ -8,13 +8,13 @@ generate_jail_figures <- function(analysis_results = jail_analysis_results) {
       ggplot2::geom_line(linewidth = 1) +
       ggplot2::geom_point(size = 1) +
       ggplot2::labs(
-        title = "Tulsa jail bookings by source",
+        title = "Tulsa monthly jail bookings by data source",
         x = "Month",
         y = "Bookings",
         color = "Source"
       ) +
       ggplot2::scale_color_brewer(palette = "Dark2") +
-      ojothemes::theme_ojo()
+      ojothemes::theme_okpi()
   } else {
     booking_trend_plot <- ggplot2::ggplot() +
       ggplot2::theme_void() +
@@ -37,7 +37,7 @@ generate_jail_figures <- function(analysis_results = jail_analysis_results) {
         y = "People"
       ) +
       ggplot2::scale_fill_brewer(palette = "Set2") +
-      ojothemes::theme_ojo() +
+      ojothemes::theme_okpi() +
       ggplot2::theme(legend.position = "none")
   } else {
     adp_plot <- ggplot2::ggplot() +
