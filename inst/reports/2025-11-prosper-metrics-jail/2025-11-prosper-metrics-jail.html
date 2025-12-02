@@ -112,12 +112,14 @@ background: #2f507f;
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#executive-summary" id="toc-executive-summary" class="nav-link active" data-scroll-target="#executive-summary"><span class="header-section-number">1</span> Executive Summary</a></li>
-  <li><a href="#data-limitations-in-2025-mean-estimates-required-triangulation-from-multiple-sources" id="toc-data-limitations-in-2025-mean-estimates-required-triangulation-from-multiple-sources" class="nav-link" data-scroll-target="#data-limitations-in-2025-mean-estimates-required-triangulation-from-multiple-sources"><span class="header-section-number">2</span> Data limitations in 2025 mean estimates required triangulation from multiple sources</a></li>
-  <li><a href="#jail-bookings" id="toc-jail-bookings" class="nav-link" data-scroll-target="#jail-bookings"><span class="header-section-number">3</span> Jail Bookings</a></li>
-  <li><a href="#jail-releases" id="toc-jail-releases" class="nav-link" data-scroll-target="#jail-releases"><span class="header-section-number">4</span> Jail Releases</a></li>
-  <li><a href="#tulsa-county-comparison-to-oklahoma-county" id="toc-tulsa-county-comparison-to-oklahoma-county" class="nav-link" data-scroll-target="#tulsa-county-comparison-to-oklahoma-county"><span class="header-section-number">5</span> Tulsa County comparison to Oklahoma County</a></li>
-  <li><a href="#average-daily-population" id="toc-average-daily-population" class="nav-link" data-scroll-target="#average-daily-population"><span class="header-section-number">6</span> Average Daily Population</a></li>
+  <li><a href="#executive-summary" id="toc-executive-summary" class="nav-link active" data-scroll-target="#executive-summary"><span class="header-section-number">1</span> Executive Summary</a>
+  <ul class="collapse">
+  <li><a href="#data-limitations-in-2025-mean-estimates-required-cross-validation-from-multiple-sources" id="toc-data-limitations-in-2025-mean-estimates-required-cross-validation-from-multiple-sources" class="nav-link" data-scroll-target="#data-limitations-in-2025-mean-estimates-required-cross-validation-from-multiple-sources"><span class="header-section-number">1.1</span> Data limitations in 2025 mean estimates required cross-validation from multiple sources</a></li>
+  </ul></li>
+  <li><a href="#jail-bookings" id="toc-jail-bookings" class="nav-link" data-scroll-target="#jail-bookings"><span class="header-section-number">2</span> Jail Bookings</a></li>
+  <li><a href="#jail-releases" id="toc-jail-releases" class="nav-link" data-scroll-target="#jail-releases"><span class="header-section-number">3</span> Jail Releases</a></li>
+  <li><a href="#tulsa-county-comparison-to-oklahoma-county-and-other-counties" id="toc-tulsa-county-comparison-to-oklahoma-county-and-other-counties" class="nav-link" data-scroll-target="#tulsa-county-comparison-to-oklahoma-county-and-other-counties"><span class="header-section-number">4</span> Tulsa County Comparison to Oklahoma County and other counties</a></li>
+  <li><a href="#average-daily-population" id="toc-average-daily-population" class="nav-link" data-scroll-target="#average-daily-population"><span class="header-section-number">5</span> Average Daily Population</a></li>
   </ul>
 </nav>
 </div>
@@ -130,51 +132,41 @@ background: #2f507f;
 <h1 data-number="1"><span class="header-section-number">1</span> Executive Summary</h1>
 <p>Tulsa County Jail’s average daily population and bookings trended downward in 2025 compared to 2024[, continuing a multi-year pattern of declines.]</p>
 <ul>
-<li><strong>The jail’s average daily population (ADP) in 2025 is estimated to be approximately 1,333, a -1.6% decrease from 2024.</strong></li>
-<li><strong>Total bookings to the jail in 2025 are estimated to be approximately 15,900 , a 4.6% decrease from 2024.</strong></li>
+<li><strong>The jail’s average daily population (ADP) in 2025 is estimated to be 1,333, a -1.6% decrease from 2024.</strong></li>
+<li><strong>Total bookings to the jail in 2025 are estimated to be 15,900, a 4.6% decrease from 2024.</strong></li>
 </ul>
-</section>
-<section id="data-limitations-in-2025-mean-estimates-required-triangulation-from-multiple-sources" class="level1" data-number="2">
-<h1 data-number="2"><span class="header-section-number">2</span> Data limitations in 2025 mean estimates required triangulation from multiple sources</h1>
-<p>In 2025, Tulsa County Jail (the David L. Moss Criminal Justice Center), migrated its Jail Management System to a new vendor, 365Labs Public Safety Platform, which impacted data availability and reporting capabilities for much of the year. The jail’s internal reporting tools were not fully functional for some time after the migration, and prior web scrapers became non-fuctional after the new community data portal was launched.</p>
-<p>Given these unique challenges, this report attempts to provide an update on key metrics for the jail population and bookings by using a variety of data sources to triangulate estimates where possible.</p>
-<p>Over the coming months, we will continue work with Tulsa County jail administrators to improve data access and reporting capabilities to ensure accurate and timely information is available moving forward. We will also be able to use that data to validate and refine the estimates presented in this report.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="nnxwutkfrv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>@import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Cairo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
-#nnxwutkfrv table {
-  font-family: Cairo, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+<div id="ipumboxyfz" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#ipumboxyfz table {
+  font-family: 'Roboto Mono', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#nnxwutkfrv thead, #nnxwutkfrv tbody, #nnxwutkfrv tfoot, #nnxwutkfrv tr, #nnxwutkfrv td, #nnxwutkfrv th {
+#ipumboxyfz thead, #ipumboxyfz tbody, #ipumboxyfz tfoot, #ipumboxyfz tr, #ipumboxyfz td, #ipumboxyfz th {
   border-style: none;
 }
 
-#nnxwutkfrv p {
+#ipumboxyfz p {
   margin: 0;
   padding: 0;
 }
 
-#nnxwutkfrv .gt_table {
+#ipumboxyfz .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
   margin-left: auto;
   margin-right: auto;
   color: #333333;
-  font-size: 16px;
-  font-weight: 400;
+  font-size: medium;
+  font-weight: normal;
   font-style: normal;
   background-color: #FFFFFF;
   width: auto;
   border-top-style: none;
-  border-top-width: 3px;
+  border-top-width: 2px;
   border-top-color: #A8A8A8;
   border-right-style: none;
   border-right-width: 2px;
@@ -187,14 +179,14 @@ background: #2f507f;
   border-left-color: #D3D3D3;
 }
 
-#nnxwutkfrv .gt_caption {
+#ipumboxyfz .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#nnxwutkfrv .gt_title {
+#ipumboxyfz .gt_title {
   color: #333333;
-  font-size: 125%;
+  font-size: medium;
   font-weight: initial;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -204,9 +196,9 @@ background: #2f507f;
   border-bottom-width: 0;
 }
 
-#nnxwutkfrv .gt_subtitle {
+#ipumboxyfz .gt_subtitle {
   color: #333333;
-  font-size: 85%;
+  font-size: small;
   font-weight: initial;
   padding-top: 3px;
   padding-bottom: 5px;
@@ -216,7 +208,7 @@ background: #2f507f;
   border-top-width: 0;
 }
 
-#nnxwutkfrv .gt_heading {
+#ipumboxyfz .gt_heading {
   background-color: #FFFFFF;
   text-align: left;
   border-bottom-color: #FFFFFF;
@@ -228,19 +220,19 @@ background: #2f507f;
   border-right-color: #D3D3D3;
 }
 
-#nnxwutkfrv .gt_bottom_border {
+#ipumboxyfz .gt_bottom_border {
   border-bottom-style: none;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#nnxwutkfrv .gt_col_headings {
+#ipumboxyfz .gt_col_headings {
   border-top-style: none;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
   border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #000000;
+  border-bottom-width: 3px;
+  border-bottom-color: #D3D3D3;
   border-left-style: none;
   border-left-width: 1px;
   border-left-color: #D3D3D3;
@@ -249,10 +241,10 @@ background: #2f507f;
   border-right-color: #D3D3D3;
 }
 
-#nnxwutkfrv .gt_col_heading {
+#ipumboxyfz .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
-  font-size: 100%;
+  font-size: medium;
   font-weight: normal;
   text-transform: inherit;
   border-left-style: none;
@@ -269,10 +261,10 @@ background: #2f507f;
   overflow-x: hidden;
 }
 
-#nnxwutkfrv .gt_column_spanner_outer {
+#ipumboxyfz .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
-  font-size: 100%;
+  font-size: medium;
   font-weight: normal;
   text-transform: inherit;
   padding-top: 0;
@@ -281,18 +273,18 @@ background: #2f507f;
   padding-right: 4px;
 }
 
-#nnxwutkfrv .gt_column_spanner_outer:first-child {
+#ipumboxyfz .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#nnxwutkfrv .gt_column_spanner_outer:last-child {
+#ipumboxyfz .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#nnxwutkfrv .gt_column_spanner {
+#ipumboxyfz .gt_column_spanner {
   border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #000000;
+  border-bottom-width: 3px;
+  border-bottom-color: #D3D3D3;
   vertical-align: bottom;
   padding-top: 5px;
   padding-bottom: 5px;
@@ -301,11 +293,11 @@ background: #2f507f;
   width: 100%;
 }
 
-#nnxwutkfrv .gt_spanner_row {
+#ipumboxyfz .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#nnxwutkfrv .gt_group_heading {
+#ipumboxyfz .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -315,12 +307,12 @@ background: #2f507f;
   font-size: 100%;
   font-weight: initial;
   text-transform: inherit;
-  border-top-style: none;
+  border-top-style: solid;
   border-top-width: 2px;
-  border-top-color: #000000;
+  border-top-color: #D3D3D3;
   border-bottom-style: solid;
-  border-bottom-width: 1px;
-  border-bottom-color: #FFFFFF;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
   border-left-style: none;
   border-left-width: 1px;
   border-left-color: #D3D3D3;
@@ -331,32 +323,32 @@ background: #2f507f;
   text-align: left;
 }
 
-#nnxwutkfrv .gt_empty_group_heading {
+#ipumboxyfz .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
   font-weight: initial;
-  border-top-style: none;
+  border-top-style: solid;
   border-top-width: 2px;
-  border-top-color: #000000;
+  border-top-color: #D3D3D3;
   border-bottom-style: solid;
-  border-bottom-width: 1px;
-  border-bottom-color: #FFFFFF;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
   vertical-align: middle;
 }
 
-#nnxwutkfrv .gt_from_md > :first-child {
+#ipumboxyfz .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#nnxwutkfrv .gt_from_md > :last-child {
+#ipumboxyfz .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#nnxwutkfrv .gt_row {
-  padding-top: 3px;
-  padding-bottom: 3px;
+#ipumboxyfz .gt_row {
+  padding-top: 7px;
+  padding-bottom: 7px;
   padding-left: 5px;
   padding-right: 5px;
   margin: 10px;
@@ -373,20 +365,20 @@ background: #2f507f;
   overflow-x: hidden;
 }
 
-#nnxwutkfrv .gt_stub {
+#ipumboxyfz .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
   font-weight: initial;
   text-transform: inherit;
   border-right-style: solid;
-  border-right-width: 0px;
-  border-right-color: #FFFFFF;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
   padding-left: 5px;
   padding-right: 5px;
 }
 
-#nnxwutkfrv .gt_stub_row_group {
+#ipumboxyfz .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -400,15 +392,15 @@ background: #2f507f;
   vertical-align: top;
 }
 
-#nnxwutkfrv .gt_row_group_first td {
+#ipumboxyfz .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#nnxwutkfrv .gt_row_group_first th {
+#ipumboxyfz .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#nnxwutkfrv .gt_summary_row {
+#ipumboxyfz .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -418,16 +410,16 @@ background: #2f507f;
   padding-right: 5px;
 }
 
-#nnxwutkfrv .gt_first_summary_row {
+#ipumboxyfz .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#nnxwutkfrv .gt_first_summary_row.thick {
+#ipumboxyfz .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#nnxwutkfrv .gt_last_summary_row {
+#ipumboxyfz .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -437,7 +429,7 @@ background: #2f507f;
   border-bottom-color: #D3D3D3;
 }
 
-#nnxwutkfrv .gt_grand_summary_row {
+#ipumboxyfz .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -447,7 +439,7 @@ background: #2f507f;
   padding-right: 5px;
 }
 
-#nnxwutkfrv .gt_first_grand_summary_row {
+#ipumboxyfz .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -457,7 +449,7 @@ background: #2f507f;
   border-top-color: #D3D3D3;
 }
 
-#nnxwutkfrv .gt_last_grand_summary_row_top {
+#ipumboxyfz .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -467,11 +459,11 @@ background: #2f507f;
   border-bottom-color: #D3D3D3;
 }
 
-#nnxwutkfrv .gt_striped {
+#ipumboxyfz .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#nnxwutkfrv .gt_table_body {
+#ipumboxyfz .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -480,7 +472,7 @@ background: #2f507f;
   border-bottom-color: #D3D3D3;
 }
 
-#nnxwutkfrv .gt_footnotes {
+#ipumboxyfz .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -494,7 +486,7 @@ background: #2f507f;
   border-right-color: #D3D3D3;
 }
 
-#nnxwutkfrv .gt_footnote {
+#ipumboxyfz .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -503,7 +495,7 @@ background: #2f507f;
   padding-right: 5px;
 }
 
-#nnxwutkfrv .gt_sourcenotes {
+#ipumboxyfz .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -517,131 +509,127 @@ background: #2f507f;
   border-right-color: #D3D3D3;
 }
 
-#nnxwutkfrv .gt_sourcenote {
-  font-size: 12px;
+#ipumboxyfz .gt_sourcenote {
+  font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
   padding-left: 5px;
   padding-right: 5px;
 }
 
-#nnxwutkfrv .gt_left {
+#ipumboxyfz .gt_left {
   text-align: left;
 }
 
-#nnxwutkfrv .gt_center {
+#ipumboxyfz .gt_center {
   text-align: center;
 }
 
-#nnxwutkfrv .gt_right {
+#ipumboxyfz .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#nnxwutkfrv .gt_font_normal {
+#ipumboxyfz .gt_font_normal {
   font-weight: normal;
 }
 
-#nnxwutkfrv .gt_font_bold {
+#ipumboxyfz .gt_font_bold {
   font-weight: bold;
 }
 
-#nnxwutkfrv .gt_font_italic {
+#ipumboxyfz .gt_font_italic {
   font-style: italic;
 }
 
-#nnxwutkfrv .gt_super {
+#ipumboxyfz .gt_super {
   font-size: 65%;
 }
 
-#nnxwutkfrv .gt_footnote_marks {
+#ipumboxyfz .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#nnxwutkfrv .gt_asterisk {
+#ipumboxyfz .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#nnxwutkfrv .gt_indent_1 {
+#ipumboxyfz .gt_indent_1 {
   text-indent: 5px;
 }
 
-#nnxwutkfrv .gt_indent_2 {
+#ipumboxyfz .gt_indent_2 {
   text-indent: 10px;
 }
 
-#nnxwutkfrv .gt_indent_3 {
+#ipumboxyfz .gt_indent_3 {
   text-indent: 15px;
 }
 
-#nnxwutkfrv .gt_indent_4 {
+#ipumboxyfz .gt_indent_4 {
   text-indent: 20px;
 }
 
-#nnxwutkfrv .gt_indent_5 {
+#ipumboxyfz .gt_indent_5 {
   text-indent: 25px;
 }
 
-#nnxwutkfrv .katex-display {
+#ipumboxyfz .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#nnxwutkfrv div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#ipumboxyfz div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
-}
-
-#nnxwutkfrv tbody tr:last-child {
-  border-bottom: 2px solid #ffffff00;
 }
 </style>
 
 <table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
 <tr class="gt_col_headings header">
-<th id="Metric" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black; font-family: Chivo; font-size: 14px; vertical-align: bottom; font-weight: 200; text-transform: uppercase" scope="col">Metric</th>
-<th id="Value" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black; font-family: Chivo; font-size: 14px; vertical-align: bottom; font-weight: 200; text-transform: uppercase" scope="col">Value</th>
-<th id="YoY-Change" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black; font-family: Chivo; font-size: 14px; vertical-align: bottom; font-weight: 200; text-transform: uppercase" scope="col">YoY Change</th>
+<th id="Metric" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" style="color: #333333; font-weight: bold; text-transform: uppercase" scope="col">Metric</th>
+<th id="Value" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" style="color: #333333; font-weight: bold; text-transform: uppercase" scope="col">Value</th>
+<th id="Yoy-Change" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" style="color: #333333; font-weight: bold; text-transform: uppercase" scope="col">Yoy Change</th>
 </tr>
 </thead>
 <tbody class="gt_table_body">
 <tr class="odd">
 <td class="gt_row gt_center" headers="Metric">Average Daily Population (Oklahoma County)</td>
 <td class="gt_row gt_right" headers="Value">1,404</td>
-<td class="gt_row gt_left" headers="YoY Change">-5.3%</td>
+<td class="gt_row gt_left" headers="Yoy Change">-5.3%</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_center" headers="Metric">Average Daily Population (Tulsa County)</td>
 <td class="gt_row gt_right" headers="Value">1,333</td>
-<td class="gt_row gt_left" headers="YoY Change">-1.6%</td>
+<td class="gt_row gt_left" headers="Yoy Change">-1.6%</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_center" headers="Metric">Annual Bookings (Oklahoma County)</td>
 <td class="gt_row gt_right" headers="Value">20,890</td>
-<td class="gt_row gt_left" headers="YoY Change">-7.3%</td>
+<td class="gt_row gt_left" headers="Yoy Change">-7.3%</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_center" headers="Metric">Annual Bookings (Tulsa County)</td>
 <td class="gt_row gt_right" headers="Value">15,900</td>
-<td class="gt_row gt_left" headers="YoY Change">4.6%</td>
+<td class="gt_row gt_left" headers="Yoy Change">4.6%</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_center" headers="Metric">Latest month bookings (Asemio Scraper)</td>
-<td class="gt_row gt_right" headers="Value">81</td>
-<td class="gt_row gt_left" headers="YoY Change">—</td>
+<td class="gt_row gt_right" headers="Value">77</td>
+<td class="gt_row gt_left" headers="Yoy Change">—</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_center" headers="Metric">Latest month bookings (Jail Data Initiative)</td>
 <td class="gt_row gt_right" headers="Value">785</td>
-<td class="gt_row gt_left" headers="YoY Change">—</td>
+<td class="gt_row gt_left" headers="Yoy Change">—</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_center" headers="Metric">Latest month bookings (OK Policy Scraper)</td>
 <td class="gt_row gt_right" headers="Value">74</td>
-<td class="gt_row gt_left" headers="YoY Change">—</td>
+<td class="gt_row gt_left" headers="Yoy Change">—</td>
 </tr>
 </tbody>
 </table>
@@ -649,10 +637,23 @@ background: #2f507f;
 </div>
 </div>
 </div>
+<section id="data-limitations-in-2025-mean-estimates-required-cross-validation-from-multiple-sources" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="data-limitations-in-2025-mean-estimates-required-cross-validation-from-multiple-sources"><span class="header-section-number">1.1</span> Data limitations in 2025 mean estimates required cross-validation from multiple sources</h2>
+<p>In 2025, Tulsa County Jail (the David L. Moss Criminal Justice Center), migrated its Jail Management System to a new vendor, 365Labs Public Safety Platform, which impacted data availability and reporting capabilities for much of the year. The jail’s internal reporting tools were not fully functional for some time after the migration, and prior web scrapers became non-fuctional after the new community data portal was launched.</p>
+<p>Given these unique challenges, this report attempts to provide an update on key metrics for the jail population and bookings by using a variety of acquired data sources to cross-validate estimates.</p>
+<p><strong>The data sources used are:</strong></p>
+<ul>
+<li><strong>OK Policy’s Scraper:</strong> Data in OK Policy’s database from a scraper developed by OK Policy. This scraper collected daily population data from the Tulsa County Jail’s newest public data portal after the new portal was launched.</li>
+<li><strong>Jail Data Initiative’s Scraper:</strong> Data acquired through a Data Use Agreement with the Jail Data Intiative (JDI). This data was collected via a web scraper that pulled daily population data from the Tulsa County Jail’s public data portal before the new portal and after a several month gap, after the new portal launched.</li>
+<li><strong>Asemio’s Scraper:</strong> Data in OK Policy’s database from a web scraper developed by Asemio. This scraper collected daily population data from the Tulsa County Jail’s public data portal prior to the migration, but was not functional after the new portal was launched.</li>
+<li><strong>Past Starling Analytics Report:</strong> Data from prior reports to GKFF by Starling Analytics which cite the source as Tulsa County’s JailNet system.</li>
+</ul>
+<p>Over the coming months, we will continue work with the Tulsa County jail administrator and their IT staff to improve data access and reporting capabilities to ensure accurate and timely information is available moving forward. We will also be able to use that data to validate and refine the estimates presented in this report.</p>
 <div style="page-break-after: always;"></div>
 </section>
-<section id="jail-bookings" class="level1" data-number="3">
-<h1 data-number="3"><span class="header-section-number">3</span> Jail Bookings</h1>
+</section>
+<section id="jail-bookings" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Jail Bookings</h1>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -664,40 +665,36 @@ background: #2f507f;
 </div>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="mbcplvqedb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>@import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Cairo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
-#mbcplvqedb table {
-  font-family: Cairo, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+<div id="jhssianmxt" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#jhssianmxt table {
+  font-family: 'Roboto Mono', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#mbcplvqedb thead, #mbcplvqedb tbody, #mbcplvqedb tfoot, #mbcplvqedb tr, #mbcplvqedb td, #mbcplvqedb th {
+#jhssianmxt thead, #jhssianmxt tbody, #jhssianmxt tfoot, #jhssianmxt tr, #jhssianmxt td, #jhssianmxt th {
   border-style: none;
 }
 
-#mbcplvqedb p {
+#jhssianmxt p {
   margin: 0;
   padding: 0;
 }
 
-#mbcplvqedb .gt_table {
+#jhssianmxt .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
   margin-left: auto;
   margin-right: auto;
   color: #333333;
-  font-size: 16px;
-  font-weight: 400;
+  font-size: medium;
+  font-weight: normal;
   font-style: normal;
   background-color: #FFFFFF;
   width: auto;
   border-top-style: none;
-  border-top-width: 3px;
+  border-top-width: 2px;
   border-top-color: #A8A8A8;
   border-right-style: none;
   border-right-width: 2px;
@@ -710,14 +707,14 @@ background: #2f507f;
   border-left-color: #D3D3D3;
 }
 
-#mbcplvqedb .gt_caption {
+#jhssianmxt .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#mbcplvqedb .gt_title {
+#jhssianmxt .gt_title {
   color: #333333;
-  font-size: 125%;
+  font-size: medium;
   font-weight: initial;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -727,9 +724,9 @@ background: #2f507f;
   border-bottom-width: 0;
 }
 
-#mbcplvqedb .gt_subtitle {
+#jhssianmxt .gt_subtitle {
   color: #333333;
-  font-size: 85%;
+  font-size: small;
   font-weight: initial;
   padding-top: 3px;
   padding-bottom: 5px;
@@ -739,7 +736,7 @@ background: #2f507f;
   border-top-width: 0;
 }
 
-#mbcplvqedb .gt_heading {
+#jhssianmxt .gt_heading {
   background-color: #FFFFFF;
   text-align: left;
   border-bottom-color: #FFFFFF;
@@ -751,19 +748,19 @@ background: #2f507f;
   border-right-color: #D3D3D3;
 }
 
-#mbcplvqedb .gt_bottom_border {
+#jhssianmxt .gt_bottom_border {
   border-bottom-style: none;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#mbcplvqedb .gt_col_headings {
+#jhssianmxt .gt_col_headings {
   border-top-style: none;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
   border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #000000;
+  border-bottom-width: 3px;
+  border-bottom-color: #D3D3D3;
   border-left-style: none;
   border-left-width: 1px;
   border-left-color: #D3D3D3;
@@ -772,10 +769,10 @@ background: #2f507f;
   border-right-color: #D3D3D3;
 }
 
-#mbcplvqedb .gt_col_heading {
+#jhssianmxt .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
-  font-size: 100%;
+  font-size: medium;
   font-weight: normal;
   text-transform: inherit;
   border-left-style: none;
@@ -792,10 +789,10 @@ background: #2f507f;
   overflow-x: hidden;
 }
 
-#mbcplvqedb .gt_column_spanner_outer {
+#jhssianmxt .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
-  font-size: 100%;
+  font-size: medium;
   font-weight: normal;
   text-transform: inherit;
   padding-top: 0;
@@ -804,18 +801,18 @@ background: #2f507f;
   padding-right: 4px;
 }
 
-#mbcplvqedb .gt_column_spanner_outer:first-child {
+#jhssianmxt .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#mbcplvqedb .gt_column_spanner_outer:last-child {
+#jhssianmxt .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#mbcplvqedb .gt_column_spanner {
+#jhssianmxt .gt_column_spanner {
   border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #000000;
+  border-bottom-width: 3px;
+  border-bottom-color: #D3D3D3;
   vertical-align: bottom;
   padding-top: 5px;
   padding-bottom: 5px;
@@ -824,11 +821,11 @@ background: #2f507f;
   width: 100%;
 }
 
-#mbcplvqedb .gt_spanner_row {
+#jhssianmxt .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#mbcplvqedb .gt_group_heading {
+#jhssianmxt .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -838,12 +835,12 @@ background: #2f507f;
   font-size: 100%;
   font-weight: initial;
   text-transform: inherit;
-  border-top-style: none;
+  border-top-style: solid;
   border-top-width: 2px;
-  border-top-color: #000000;
+  border-top-color: #D3D3D3;
   border-bottom-style: solid;
-  border-bottom-width: 1px;
-  border-bottom-color: #FFFFFF;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
   border-left-style: none;
   border-left-width: 1px;
   border-left-color: #D3D3D3;
@@ -854,32 +851,32 @@ background: #2f507f;
   text-align: left;
 }
 
-#mbcplvqedb .gt_empty_group_heading {
+#jhssianmxt .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
   font-weight: initial;
-  border-top-style: none;
+  border-top-style: solid;
   border-top-width: 2px;
-  border-top-color: #000000;
+  border-top-color: #D3D3D3;
   border-bottom-style: solid;
-  border-bottom-width: 1px;
-  border-bottom-color: #FFFFFF;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
   vertical-align: middle;
 }
 
-#mbcplvqedb .gt_from_md > :first-child {
+#jhssianmxt .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#mbcplvqedb .gt_from_md > :last-child {
+#jhssianmxt .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#mbcplvqedb .gt_row {
-  padding-top: 3px;
-  padding-bottom: 3px;
+#jhssianmxt .gt_row {
+  padding-top: 7px;
+  padding-bottom: 7px;
   padding-left: 5px;
   padding-right: 5px;
   margin: 10px;
@@ -896,20 +893,20 @@ background: #2f507f;
   overflow-x: hidden;
 }
 
-#mbcplvqedb .gt_stub {
+#jhssianmxt .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
   font-weight: initial;
   text-transform: inherit;
   border-right-style: solid;
-  border-right-width: 0px;
-  border-right-color: #FFFFFF;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
   padding-left: 5px;
   padding-right: 5px;
 }
 
-#mbcplvqedb .gt_stub_row_group {
+#jhssianmxt .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -923,15 +920,15 @@ background: #2f507f;
   vertical-align: top;
 }
 
-#mbcplvqedb .gt_row_group_first td {
+#jhssianmxt .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#mbcplvqedb .gt_row_group_first th {
+#jhssianmxt .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#mbcplvqedb .gt_summary_row {
+#jhssianmxt .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -941,16 +938,16 @@ background: #2f507f;
   padding-right: 5px;
 }
 
-#mbcplvqedb .gt_first_summary_row {
+#jhssianmxt .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#mbcplvqedb .gt_first_summary_row.thick {
+#jhssianmxt .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#mbcplvqedb .gt_last_summary_row {
+#jhssianmxt .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -960,7 +957,7 @@ background: #2f507f;
   border-bottom-color: #D3D3D3;
 }
 
-#mbcplvqedb .gt_grand_summary_row {
+#jhssianmxt .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -970,7 +967,7 @@ background: #2f507f;
   padding-right: 5px;
 }
 
-#mbcplvqedb .gt_first_grand_summary_row {
+#jhssianmxt .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -980,7 +977,7 @@ background: #2f507f;
   border-top-color: #D3D3D3;
 }
 
-#mbcplvqedb .gt_last_grand_summary_row_top {
+#jhssianmxt .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -990,11 +987,11 @@ background: #2f507f;
   border-bottom-color: #D3D3D3;
 }
 
-#mbcplvqedb .gt_striped {
+#jhssianmxt .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#mbcplvqedb .gt_table_body {
+#jhssianmxt .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1003,7 +1000,7 @@ background: #2f507f;
   border-bottom-color: #D3D3D3;
 }
 
-#mbcplvqedb .gt_footnotes {
+#jhssianmxt .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1017,7 +1014,7 @@ background: #2f507f;
   border-right-color: #D3D3D3;
 }
 
-#mbcplvqedb .gt_footnote {
+#jhssianmxt .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1026,7 +1023,7 @@ background: #2f507f;
   padding-right: 5px;
 }
 
-#mbcplvqedb .gt_sourcenotes {
+#jhssianmxt .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1040,307 +1037,247 @@ background: #2f507f;
   border-right-color: #D3D3D3;
 }
 
-#mbcplvqedb .gt_sourcenote {
-  font-size: 12px;
+#jhssianmxt .gt_sourcenote {
+  font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
   padding-left: 5px;
   padding-right: 5px;
 }
 
-#mbcplvqedb .gt_left {
+#jhssianmxt .gt_left {
   text-align: left;
 }
 
-#mbcplvqedb .gt_center {
+#jhssianmxt .gt_center {
   text-align: center;
 }
 
-#mbcplvqedb .gt_right {
+#jhssianmxt .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#mbcplvqedb .gt_font_normal {
+#jhssianmxt .gt_font_normal {
   font-weight: normal;
 }
 
-#mbcplvqedb .gt_font_bold {
+#jhssianmxt .gt_font_bold {
   font-weight: bold;
 }
 
-#mbcplvqedb .gt_font_italic {
+#jhssianmxt .gt_font_italic {
   font-style: italic;
 }
 
-#mbcplvqedb .gt_super {
+#jhssianmxt .gt_super {
   font-size: 65%;
 }
 
-#mbcplvqedb .gt_footnote_marks {
+#jhssianmxt .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#mbcplvqedb .gt_asterisk {
+#jhssianmxt .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#mbcplvqedb .gt_indent_1 {
+#jhssianmxt .gt_indent_1 {
   text-indent: 5px;
 }
 
-#mbcplvqedb .gt_indent_2 {
+#jhssianmxt .gt_indent_2 {
   text-indent: 10px;
 }
 
-#mbcplvqedb .gt_indent_3 {
+#jhssianmxt .gt_indent_3 {
   text-indent: 15px;
 }
 
-#mbcplvqedb .gt_indent_4 {
+#jhssianmxt .gt_indent_4 {
   text-indent: 20px;
 }
 
-#mbcplvqedb .gt_indent_5 {
+#jhssianmxt .gt_indent_5 {
   text-indent: 25px;
 }
 
-#mbcplvqedb .katex-display {
+#jhssianmxt .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#mbcplvqedb div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#jhssianmxt div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
-}
-
-#mbcplvqedb tbody tr:last-child {
-  border-bottom: 2px solid #ffffff00;
 }
 </style>
 
 <table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
 <tr class="gt_col_headings header">
-<th id="a::stub" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black; font-family: Chivo; font-size: 14px; vertical-align: bottom; font-weight: 200; text-transform: uppercase" scope="col"></th>
-<th id="Latest-Month" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black; font-family: Chivo; font-size: 14px; vertical-align: bottom; font-weight: 200; text-transform: uppercase" scope="col">Latest Month</th>
-<th id="Bookings" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black; font-family: Chivo; font-size: 14px; vertical-align: bottom; font-weight: 200; text-transform: uppercase" scope="col">Bookings</th>
-<th id="Year" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black; font-family: Chivo; font-size: 14px; vertical-align: bottom; font-weight: 200; text-transform: uppercase" scope="col">Year</th>
+<th id="Source" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" style="color: #333333; font-weight: bold; text-transform: uppercase" scope="col">Source</th>
+<th id="Year" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" style="color: #333333; font-weight: bold; text-transform: uppercase" scope="col">Year</th>
+<th id="Bookings" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" style="color: #333333; font-weight: bold; text-transform: uppercase" scope="col">Bookings</th>
 </tr>
 </thead>
 <tbody class="gt_table_body">
-<tr class="gt_group_heading_row odd">
-<td colspan="4" id="Latest Month" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Latest Month</td>
-</tr>
-<tr class="gt_row_group_first even">
-<td id="stub_1_1" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Asemio Scraper</td>
-<td class="gt_row gt_left" headers="Latest Month stub_1_1 Latest Month">February 2025</td>
-<td class="gt_row gt_right" headers="Latest Month stub_1_1 Bookings">81</td>
-<td class="gt_row gt_right" headers="Latest Month stub_1_1 Year">NA</td>
-</tr>
 <tr class="odd">
-<td id="stub_1_2" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Jail Data Initiative</td>
-<td class="gt_row gt_left" headers="Latest Month stub_1_2 Latest Month">November 2025</td>
-<td class="gt_row gt_right" headers="Latest Month stub_1_2 Bookings">785</td>
-<td class="gt_row gt_right" headers="Latest Month stub_1_2 Year">NA</td>
+<td class="gt_row gt_left" headers="Source">Jail Data Initiative</td>
+<td class="gt_row gt_right" headers="Year">2,025&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">4,666</td>
 </tr>
 <tr class="even">
-<td id="stub_1_3" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">OK Policy Scraper</td>
-<td class="gt_row gt_left" headers="Latest Month stub_1_3 Latest Month">December 2025</td>
-<td class="gt_row gt_right" headers="Latest Month stub_1_3 Bookings">74</td>
-<td class="gt_row gt_right" headers="Latest Month stub_1_3 Year">NA</td>
-</tr>
-<tr class="gt_group_heading_row odd">
-<td colspan="4" id="Year-to-date" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Year-to-date</td>
-</tr>
-<tr class="gt_row_group_first even">
-<td id="stub_1_4" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Jail Data Initiative</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_4 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_4 Bookings">4,666</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_4 Year">2025</td>
+<td class="gt_row gt_left" headers="Source">OK Policy Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,025&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">3,905</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_5" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">OK Policy Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_5 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_5 Bookings">3,905</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_5 Year">2025</td>
+<td class="gt_row gt_left" headers="Source">Asemio Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,025&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">1,151</td>
 </tr>
 <tr class="even">
-<td id="stub_1_6" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Asemio Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_6 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_6 Bookings">1,196</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_6 Year">2025</td>
+<td class="gt_row gt_left" headers="Source">Jail Data Initiative</td>
+<td class="gt_row gt_right" headers="Year">2,024&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">14,010</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_7" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Jail Data Initiative</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_7 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_7 Bookings">14,010</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_7 Year">2024</td>
+<td class="gt_row gt_left" headers="Source">OK Policy Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,024&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">679</td>
 </tr>
 <tr class="even">
-<td id="stub_1_8" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">OK Policy Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_8 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_8 Bookings">679</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_8 Year">2024</td>
+<td class="gt_row gt_left" headers="Source">Asemio Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,024&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">14,045</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_9" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Asemio Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_9 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_9 Bookings">48,335</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_9 Year">2024</td>
+<td class="gt_row gt_left" headers="Source">Jail Data Initiative</td>
+<td class="gt_row gt_right" headers="Year">2,023&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">12,841</td>
 </tr>
 <tr class="even">
-<td id="stub_1_10" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Jail Data Initiative</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_10 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_10 Bookings">12,841</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_10 Year">2023</td>
+<td class="gt_row gt_left" headers="Source">OK Policy Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,023&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">154</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_11" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">OK Policy Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_11 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_11 Bookings">154</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_11 Year">2023</td>
+<td class="gt_row gt_left" headers="Source">Asemio Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,023&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">12,038</td>
 </tr>
 <tr class="even">
-<td id="stub_1_12" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Asemio Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_12 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_12 Bookings">33,819</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_12 Year">2023</td>
+<td class="gt_row gt_left" headers="Source">Jail Data Initiative</td>
+<td class="gt_row gt_right" headers="Year">2,022&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">13,623</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_13" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Jail Data Initiative</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_13 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_13 Bookings">13,623</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_13 Year">2022</td>
+<td class="gt_row gt_left" headers="Source">OK Policy Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,022&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">34</td>
 </tr>
 <tr class="even">
-<td id="stub_1_14" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">OK Policy Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_14 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_14 Bookings">34</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_14 Year">2022</td>
+<td class="gt_row gt_left" headers="Source">Asemio Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,022&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">13,659</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_15" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Asemio Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_15 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_15 Bookings">63,327</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_15 Year">2022</td>
+<td class="gt_row gt_left" headers="Source">Jail Data Initiative</td>
+<td class="gt_row gt_right" headers="Year">2,021&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">13,936</td>
 </tr>
 <tr class="even">
-<td id="stub_1_16" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Jail Data Initiative</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_16 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_16 Bookings">13,936</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_16 Year">2021</td>
+<td class="gt_row gt_left" headers="Source">OK Policy Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,021&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">8</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_17" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">OK Policy Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_17 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_17 Bookings">8</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_17 Year">2021</td>
+<td class="gt_row gt_left" headers="Source">Asemio Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,021&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">6,337</td>
 </tr>
 <tr class="even">
-<td id="stub_1_18" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Asemio Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_18 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_18 Bookings">18,055</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_18 Year">2021</td>
+<td class="gt_row gt_left" headers="Source">Jail Data Initiative</td>
+<td class="gt_row gt_right" headers="Year">2,020&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">9,201</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_19" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Jail Data Initiative</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_19 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_19 Bookings">9,201</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_19 Year">2020</td>
+<td class="gt_row gt_left" headers="Source">OK Policy Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,020&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">5</td>
 </tr>
 <tr class="even">
-<td id="stub_1_20" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">OK Policy Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_20 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_20 Bookings">5</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_20 Year">2020</td>
+<td class="gt_row gt_left" headers="Source">Asemio Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,020&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">171</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_21" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Asemio Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_21 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_21 Bookings">2,162</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_21 Year">2020</td>
+<td class="gt_row gt_left" headers="Source">Jail Data Initiative</td>
+<td class="gt_row gt_right" headers="Year">2,019&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">324</td>
 </tr>
 <tr class="even">
-<td id="stub_1_22" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Jail Data Initiative</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_22 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_22 Bookings">324</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_22 Year">2019</td>
+<td class="gt_row gt_left" headers="Source">Asemio Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,019&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">39</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_23" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Asemio Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_23 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_23 Bookings">607</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_23 Year">2019</td>
+<td class="gt_row gt_left" headers="Source">Jail Data Initiative</td>
+<td class="gt_row gt_right" headers="Year">2,018&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">46</td>
 </tr>
 <tr class="even">
-<td id="stub_1_24" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Jail Data Initiative</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_24 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_24 Bookings">46</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_24 Year">2018</td>
+<td class="gt_row gt_left" headers="Source">OK Policy Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,018&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">1</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_25" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">OK Policy Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_25 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_25 Bookings">1</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_25 Year">2018</td>
+<td class="gt_row gt_left" headers="Source">Asemio Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,018&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">8</td>
 </tr>
 <tr class="even">
-<td id="stub_1_26" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Asemio Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_26 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_26 Bookings">438</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_26 Year">2018</td>
+<td class="gt_row gt_left" headers="Source">Jail Data Initiative</td>
+<td class="gt_row gt_right" headers="Year">2,017&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">28</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_27" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Jail Data Initiative</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_27 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_27 Bookings">28</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_27 Year">2017</td>
+<td class="gt_row gt_left" headers="Source">OK Policy Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,017&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">7</td>
 </tr>
 <tr class="even">
-<td id="stub_1_28" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">OK Policy Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_28 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_28 Bookings">7</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_28 Year">2017</td>
+<td class="gt_row gt_left" headers="Source">Asemio Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,017&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">3</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_29" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Asemio Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_29 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_29 Bookings">241</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_29 Year">2017</td>
+<td class="gt_row gt_left" headers="Source">Jail Data Initiative</td>
+<td class="gt_row gt_right" headers="Year">2,016&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">2</td>
 </tr>
 <tr class="even">
-<td id="stub_1_30" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Jail Data Initiative</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_30 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_30 Bookings">2</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_30 Year">2016</td>
+<td class="gt_row gt_left" headers="Source">Jail Data Initiative</td>
+<td class="gt_row gt_right" headers="Year">2,013&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">7</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_31" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Jail Data Initiative</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_31 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_31 Bookings">7</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_31 Year">2013</td>
+<td class="gt_row gt_left" headers="Source">OK Policy Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,013&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">4</td>
 </tr>
 <tr class="even">
-<td id="stub_1_32" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">OK Policy Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_32 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_32 Bookings">4</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_32 Year">2013</td>
+<td class="gt_row gt_left" headers="Source">Asemio Scraper</td>
+<td class="gt_row gt_right" headers="Year">2,013&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">1</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_33" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Asemio Scraper</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_33 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_33 Bookings">95</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_33 Year">2013</td>
-</tr>
-<tr class="even">
-<td id="stub_1_34" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Jail Data Initiative</td>
-<td class="gt_row gt_left" headers="Year-to-date stub_1_34 Latest Month">NA</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_34 Bookings">1</td>
-<td class="gt_row gt_right" headers="Year-to-date stub_1_34 Year">2011</td>
+<td class="gt_row gt_left" headers="Source">Jail Data Initiative</td>
+<td class="gt_row gt_right" headers="Year">2,011&nbsp;</td>
+<td class="gt_row gt_right" headers="Bookings">1</td>
 </tr>
 </tbody>
 </table>
@@ -1349,45 +1286,41 @@ background: #2f507f;
 </div>
 </div>
 </section>
-<section id="jail-releases" class="level1 cell" data-layout-align="center" data-number="4">
-<h1 data-number="4"><span class="header-section-number">4</span> Jail Releases</h1>
+<section id="jail-releases" class="level1 cell" data-layout-align="center" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Jail Releases</h1>
 </section>
+<p>Release data is unavailable due to a lack of information about where individuals were released to (e.g., to street, another facility, etc.).</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "Release counts are not available for this run."</code></pre>
+<pre><code># Test</code></pre>
 </div>
 </div>
-<div class="cell" data-layout-align="center">
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "Release percentages are not available for this run."</code></pre>
-</div>
-</div>
-<section id="tulsa-county-comparison-to-oklahoma-county" class="level1 cell" data-layout-align="center" data-number="5">
-<h1 data-number="5"><span class="header-section-number">5</span> Tulsa County comparison to Oklahoma County</h1>
+<section id="tulsa-county-comparison-to-oklahoma-county-and-other-counties" class="level1 cell" data-layout-align="center" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Tulsa County Comparison to Oklahoma County and other counties</h1>
 </section>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="hmdlgawtbc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="slsaucsawd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>@import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Cairo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
-#hmdlgawtbc table {
+#slsaucsawd table {
   font-family: Cairo, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#hmdlgawtbc thead, #hmdlgawtbc tbody, #hmdlgawtbc tfoot, #hmdlgawtbc tr, #hmdlgawtbc td, #hmdlgawtbc th {
+#slsaucsawd thead, #slsaucsawd tbody, #slsaucsawd tfoot, #slsaucsawd tr, #slsaucsawd td, #slsaucsawd th {
   border-style: none;
 }
 
-#hmdlgawtbc p {
+#slsaucsawd p {
   margin: 0;
   padding: 0;
 }
 
-#hmdlgawtbc .gt_table {
+#slsaucsawd .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1413,12 +1346,12 @@ background: #2f507f;
   border-left-color: #D3D3D3;
 }
 
-#hmdlgawtbc .gt_caption {
+#slsaucsawd .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#hmdlgawtbc .gt_title {
+#slsaucsawd .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1430,7 +1363,7 @@ background: #2f507f;
   border-bottom-width: 0;
 }
 
-#hmdlgawtbc .gt_subtitle {
+#slsaucsawd .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1442,7 +1375,7 @@ background: #2f507f;
   border-top-width: 0;
 }
 
-#hmdlgawtbc .gt_heading {
+#slsaucsawd .gt_heading {
   background-color: #FFFFFF;
   text-align: left;
   border-bottom-color: #FFFFFF;
@@ -1454,13 +1387,13 @@ background: #2f507f;
   border-right-color: #D3D3D3;
 }
 
-#hmdlgawtbc .gt_bottom_border {
+#slsaucsawd .gt_bottom_border {
   border-bottom-style: none;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#hmdlgawtbc .gt_col_headings {
+#slsaucsawd .gt_col_headings {
   border-top-style: none;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1475,7 +1408,7 @@ background: #2f507f;
   border-right-color: #D3D3D3;
 }
 
-#hmdlgawtbc .gt_col_heading {
+#slsaucsawd .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1495,7 +1428,7 @@ background: #2f507f;
   overflow-x: hidden;
 }
 
-#hmdlgawtbc .gt_column_spanner_outer {
+#slsaucsawd .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1507,15 +1440,15 @@ background: #2f507f;
   padding-right: 4px;
 }
 
-#hmdlgawtbc .gt_column_spanner_outer:first-child {
+#slsaucsawd .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#hmdlgawtbc .gt_column_spanner_outer:last-child {
+#slsaucsawd .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#hmdlgawtbc .gt_column_spanner {
+#slsaucsawd .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #000000;
@@ -1527,11 +1460,11 @@ background: #2f507f;
   width: 100%;
 }
 
-#hmdlgawtbc .gt_spanner_row {
+#slsaucsawd .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#hmdlgawtbc .gt_group_heading {
+#slsaucsawd .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1557,7 +1490,7 @@ background: #2f507f;
   text-align: left;
 }
 
-#hmdlgawtbc .gt_empty_group_heading {
+#slsaucsawd .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1572,15 +1505,15 @@ background: #2f507f;
   vertical-align: middle;
 }
 
-#hmdlgawtbc .gt_from_md > :first-child {
+#slsaucsawd .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#hmdlgawtbc .gt_from_md > :last-child {
+#slsaucsawd .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#hmdlgawtbc .gt_row {
+#slsaucsawd .gt_row {
   padding-top: 3px;
   padding-bottom: 3px;
   padding-left: 5px;
@@ -1599,7 +1532,7 @@ background: #2f507f;
   overflow-x: hidden;
 }
 
-#hmdlgawtbc .gt_stub {
+#slsaucsawd .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1612,7 +1545,7 @@ background: #2f507f;
   padding-right: 5px;
 }
 
-#hmdlgawtbc .gt_stub_row_group {
+#slsaucsawd .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1626,15 +1559,15 @@ background: #2f507f;
   vertical-align: top;
 }
 
-#hmdlgawtbc .gt_row_group_first td {
+#slsaucsawd .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#hmdlgawtbc .gt_row_group_first th {
+#slsaucsawd .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#hmdlgawtbc .gt_summary_row {
+#slsaucsawd .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1644,16 +1577,16 @@ background: #2f507f;
   padding-right: 5px;
 }
 
-#hmdlgawtbc .gt_first_summary_row {
+#slsaucsawd .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#hmdlgawtbc .gt_first_summary_row.thick {
+#slsaucsawd .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#hmdlgawtbc .gt_last_summary_row {
+#slsaucsawd .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1663,7 +1596,7 @@ background: #2f507f;
   border-bottom-color: #D3D3D3;
 }
 
-#hmdlgawtbc .gt_grand_summary_row {
+#slsaucsawd .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1673,7 +1606,7 @@ background: #2f507f;
   padding-right: 5px;
 }
 
-#hmdlgawtbc .gt_first_grand_summary_row {
+#slsaucsawd .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1683,7 +1616,7 @@ background: #2f507f;
   border-top-color: #D3D3D3;
 }
 
-#hmdlgawtbc .gt_last_grand_summary_row_top {
+#slsaucsawd .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1693,11 +1626,11 @@ background: #2f507f;
   border-bottom-color: #D3D3D3;
 }
 
-#hmdlgawtbc .gt_striped {
+#slsaucsawd .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#hmdlgawtbc .gt_table_body {
+#slsaucsawd .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1706,7 +1639,7 @@ background: #2f507f;
   border-bottom-color: #D3D3D3;
 }
 
-#hmdlgawtbc .gt_footnotes {
+#slsaucsawd .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1720,7 +1653,7 @@ background: #2f507f;
   border-right-color: #D3D3D3;
 }
 
-#hmdlgawtbc .gt_footnote {
+#slsaucsawd .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1729,7 +1662,7 @@ background: #2f507f;
   padding-right: 5px;
 }
 
-#hmdlgawtbc .gt_sourcenotes {
+#slsaucsawd .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1743,7 +1676,7 @@ background: #2f507f;
   border-right-color: #D3D3D3;
 }
 
-#hmdlgawtbc .gt_sourcenote {
+#slsaucsawd .gt_sourcenote {
   font-size: 12px;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1751,76 +1684,76 @@ background: #2f507f;
   padding-right: 5px;
 }
 
-#hmdlgawtbc .gt_left {
+#slsaucsawd .gt_left {
   text-align: left;
 }
 
-#hmdlgawtbc .gt_center {
+#slsaucsawd .gt_center {
   text-align: center;
 }
 
-#hmdlgawtbc .gt_right {
+#slsaucsawd .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#hmdlgawtbc .gt_font_normal {
+#slsaucsawd .gt_font_normal {
   font-weight: normal;
 }
 
-#hmdlgawtbc .gt_font_bold {
+#slsaucsawd .gt_font_bold {
   font-weight: bold;
 }
 
-#hmdlgawtbc .gt_font_italic {
+#slsaucsawd .gt_font_italic {
   font-style: italic;
 }
 
-#hmdlgawtbc .gt_super {
+#slsaucsawd .gt_super {
   font-size: 65%;
 }
 
-#hmdlgawtbc .gt_footnote_marks {
+#slsaucsawd .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#hmdlgawtbc .gt_asterisk {
+#slsaucsawd .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#hmdlgawtbc .gt_indent_1 {
+#slsaucsawd .gt_indent_1 {
   text-indent: 5px;
 }
 
-#hmdlgawtbc .gt_indent_2 {
+#slsaucsawd .gt_indent_2 {
   text-indent: 10px;
 }
 
-#hmdlgawtbc .gt_indent_3 {
+#slsaucsawd .gt_indent_3 {
   text-indent: 15px;
 }
 
-#hmdlgawtbc .gt_indent_4 {
+#slsaucsawd .gt_indent_4 {
   text-indent: 20px;
 }
 
-#hmdlgawtbc .gt_indent_5 {
+#slsaucsawd .gt_indent_5 {
   text-indent: 25px;
 }
 
-#hmdlgawtbc .katex-display {
+#slsaucsawd .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#hmdlgawtbc div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#slsaucsawd div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 
-#hmdlgawtbc tbody tr:last-child {
+#slsaucsawd tbody tr:last-child {
   border-bottom: 2px solid #ffffff00;
 }
 </style>
@@ -1865,8 +1798,8 @@ background: #2f507f;
 </div>
 </div>
 </div>
-<section id="average-daily-population" class="level1" data-number="6">
-<h1 data-number="6"><span class="header-section-number">6</span> Average Daily Population</h1>
+<section id="average-daily-population" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Average Daily Population</h1>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
