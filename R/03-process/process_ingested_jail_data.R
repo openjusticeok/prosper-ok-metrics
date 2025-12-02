@@ -1,4 +1,8 @@
 ### Helper functions
+# The helper functions below enforce consistent schemas, fill in missing
+# columns, and coerce date/time fields from the Jail Data Initiative CSVs.
+# E.g., parsing date times, normalizing names, etc.
+# Only do this if it improves readability and confidence in uniform processing
 standardize_sex_gender <- function(data, sex_gender_col = "gender", clean_col_name = "sex_gender_standardized") {
   data |>
     dplyr::mutate(
@@ -36,31 +40,28 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   ### Normalize, clean, and parse ingested data
   # We clean here instead of downstream so that future joins can treat JDI rows
   # the same as Asemio or OK Policy scrapes.
-  # TODO: feat(process): Normalize column names
-  # TODO: feat(process): Standardize race columns as needed
-  # TODO: feat(process): Standardize gender columns as needed
-  # TODO: feat(process): Coalesce columns when multiple columns exist for same data
-  # TODO: feat(process): Summarize and generate derived columns as needed
-  # TODO: chore(process): refactor processing functions to use helper functions where appropriate
+
+  # To do now:
+  # TODO: feat(process): Summarize and generate derived columns in merged data as needed
+  # This is based on what we need from the analysis.
+
+  # For after the report is done:
   # TODO: chore(process): Move code to explore if interesting but not needed in processing
   # TODO: feat(process): Determine timezone of each data source
   # TODO: Pull out some helper functions for repeated processing tasks
-  # The helper functions below enforce consistent schemas, fill in missing
-  # columns, and coerce date/time fields from the Jail Data Initiative CSVs.
-  # E.g., parsing date times, normalizing names, etc.
-  # Only do this if it improves readability and confidence in uniform processing
+  # TODO: feat(process): Coalesce columns when multiple columns exist for same data
 
   # Process Jail Data Initiative Scraped Data
   jail_data_initiative_bookings_with_inmate_info <- ingested_data$jail_data_initiative$people |>
     janitor::clean_names() |>
     dplyr::rename(
-      full_name = "name"
+      full_name = "name",
       birth_date = "dob",
       jacket_number_old = "dlm",
     ) |>
     dplyr::mutate(sex_gender = dplyr::coalesce(.data$gender, .data$sex)) |>
     standardize_sex_gender(sex_gender_col = "sex_gender") |>
-    standardize_race_ethnicity(race_ethnicity_col  = "race") |>
+    standardize_race_ethnicity(race_ethnicity_col = "race") |>
     dplyr::mutate(
       source = "Jail Data Initiative",
       # Direct PII
@@ -149,7 +150,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       surname = last_name,
     ) |>
     standardize_sex_gender(sex_gender_col = "gender") |>
-    standardize_race_ethnicity(race_ethnicity_col  = "race") |>
+    standardize_race_ethnicity(race_ethnicity_col = "race") |>
     dplyr::mutate(
       source = "Asemio Scraper",
       # Direct PII
@@ -185,7 +186,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       updated_at_datetime = updated_at
     ) |>
     standardize_sex_gender(sex_gender_col = "gender") |>
-    standardize_race_ethnicity(race_ethnicity_col  = "race") |>
+    standardize_race_ethnicity(race_ethnicity_col = "race") |>
     dplyr::mutate(
       source = "OK Policy Scraper",
       # Direct PII
@@ -359,9 +360,6 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
     asemio_scraped_bookings_with_inmate_info
   )
 
-  # if (!is.null(jail_data_initiative_people)) {
-  #   booking_sources <- append(booking_sources, list(jail_data_initiative_people))
-  # }
 
   combined_bookings <- dplyr::bind_rows(booking_sources) |>
     dplyr::mutate(
@@ -492,7 +490,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       race = booking_demographics_race
     ),
     jail_data_initiative = list(
-      people = jail_data_initiative_people,
+      people = jail_data_initiative_bookings_with_inmate_info,
       charges = jail_data_initiative_charges
     ),
     brek_report = ingested_data$brek,
