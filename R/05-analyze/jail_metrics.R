@@ -1,9 +1,9 @@
 analyze_jail_metrics <- function(processed_data = jail_processed_data) {
-  booking_trends <- processed_data$booking_trends
+  bookings_monthly <- processed_data$bookings_monthly
   booking_records <- processed_data$booking_records
   brek_report <- processed_data$brek_report
 
-  latest_month_bookings <- booking_trends |>
+  latest_month_bookings <- bookings_monthly |>
     dplyr::group_by(source) |>
     dplyr::slice_max(order_by = booking_month, n = 1, with_ties = FALSE) |>
     dplyr::ungroup()
@@ -47,7 +47,7 @@ analyze_jail_metrics <- function(processed_data = jail_processed_data) {
   )
 
   list(
-    booking_trends = booking_trends,
+    bookings_monthly = bookings_monthly,
     booking_year_totals = booking_year_totals,
     latest_month = latest_month_bookings,
     release_counts = processed_data$release_counts,

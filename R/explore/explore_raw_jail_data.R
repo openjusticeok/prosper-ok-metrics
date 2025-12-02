@@ -335,3 +335,47 @@ asemio_scraped_bookings |>
     print(summary(.))
     hist(.)
   })()
+
+## Explore asemio scrape duplicates to construct custom booking id
+# WARNING: Not part of processing. Exploration of duplicates only.
+asemio_scraped_bookings_with_inmate_info |>
+  dplyr::mutate(
+    duplicate_count = dplyr::n(),
+    .by = c("jacket_number", "booking_date")
+  ) |>
+  dplyr::filter(
+    duplicate_count > 1
+  ) |>
+  dplyr::select(duplicate_count, booking_id, jacket_number, full_name, booking_date, created_at, updated_at) |>
+  dplyr::arrange(desc(duplicate_count), booking_date, jacket_number, created_at)
+asemio_scraped_bookings_with_inmate_info |>
+  dplyr::mutate(
+    duplicate_count = dplyr::n(),
+    .by = c("jacket_number", "booking_date", "created_at")
+  ) |>
+  dplyr::filter(
+    duplicate_count > 1
+  ) |>
+  dplyr::select(duplicate_count, booking_id, jacket_number, full_name, booking_date, created_at, updated_at) |>
+  dplyr::arrange(desc(duplicate_count), booking_date, jacket_number, created_at)
+
+asemio_scraped_bookings_with_inmate_info |>
+  dplyr::mutate(
+    duplicate_count = dplyr::n(),
+    .by = c("booking_id", "jacket_number", "booking_date", "created_at")
+  ) |>
+  dplyr::filter(
+    duplicate_count > 1
+  ) |>
+  dplyr::select(duplicate_count, booking_id, jacket_number, full_name, booking_date, created_at, updated_at) |>
+  dplyr::arrange(desc(duplicate_count), booking_date, jacket_number, created_at)
+
+# For these unique bookings, lets only keep them when booking_date == created_at_date
+# Cuts 17k rows.
+asemio_scraped_bookings_with_inmate_info |>
+  dplyr::distinct(custom_booking_id, .keep_all = TRUE) |>
+  dplyr::select(booking_id, jacket_number, full_name, booking_date, created_at, updated_at, created_at_date) |>
+  dplyr::arrange(booking_date, jacket_number, created_at) |>
+  dplyr::filter(
+    booking_date == created_at_date
+  )
