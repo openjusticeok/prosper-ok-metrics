@@ -244,7 +244,7 @@ scraped_charges_with_bookings_info |>
   print(n = Inf)
 
 ### Explore Asemio Data
- # TODO: There has to be a better way...
+# TODO: There has to be a better way...
 tar_load(jail_input_checks)
 raw <- jail_input_checks$ingested_data
 
@@ -296,7 +296,10 @@ asemio_scraped_bookings |>
     days_to_update = as.numeric(difftime(updated_at_date, created_at_date, units = "days"))
   ) |>
   dplyr::pull(days_to_update) |>
-  (\(.) {print(summary(.)); hist(.)} )()
+  (\(.) {
+    print(summary(.))
+    hist(.)
+  })()
 
 # Just among those that were updated, how long did it take?: 7 median, max 4
 # years, 75pp 30 days. Slightly less right-skewed but still a long tail.
@@ -309,7 +312,10 @@ asemio_scraped_bookings |>
     days_to_update = as.numeric(difftime(updated_at_date, created_at_date, units = "days"))
   ) |>
   dplyr::pull(days_to_update) |>
-  (\(.) {print(summary(.)); hist(.)} )()
+  (\(.) {
+    print(summary(.))
+    hist(.)
+  })()
 
 # What were those that took a long time to update?
 asemio_scraped_bookings |>
@@ -325,4 +331,7 @@ asemio_scraped_bookings |>
     days_days_to_scrape = as.numeric(difftime(created_at_date, booking_date, units = "days"))
   ) |>
   dplyr::pull(days_days_to_scrape) |>
-  (\(.) {print(summary(.)); hist(.)} )()
+  (\(.) {
+    print(summary(.))
+    hist(.)
+  })()
