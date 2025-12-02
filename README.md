@@ -1,19 +1,19 @@
 # Metrics
 
 ## November 2025
-Aggregations: Total and by gender
 ### Jail
+Aggregations: Total, by Gender, by Race
+Geographies: Tulsa County, Oklahoma County, All Other Counties
 - Jail Bookings
 - Jail Releases
-- Tulsa County comparison to Oklahoma County
-- Average Daily Population
+- Average Daily Population (ADP)
 
 ### Prison
-- Prison Sentences
-- Prison Releases
-- Population by Gender
-- Oklahoma County comparison to Tulsa County vs all other counties
-
+Aggregations: Total, by Gender, by Race
+Geographies (Sentencing County): Tulsa County, Oklahoma County, All Other Counties
+* Prison Sentences
+* Prison Releases
+* Prison Population
 
 # Older Metrics / Details
 
