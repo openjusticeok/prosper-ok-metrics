@@ -349,6 +349,7 @@ ingest_jail_data_initiative_scraped_data <- function() {
 
 # Function to ingest Vera Institute incarceration trends data
 # Source: https://github.com/vera-institute/incarceration-trends
+# Data access terms: https://github.com/vera-institute/incarceration-trends/blob/main/License.pdf
 ingest_vera_incerceration_trends_data <- function() {
   # Get current commit info from GitHub API
   commit_info <- httr2::request("https://api.github.com/repos/vera-institute/incarceration-trends/commits") |>
