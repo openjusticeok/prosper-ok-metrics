@@ -32,6 +32,36 @@ standardize_race_ethnicity <- function(data, race_ethnicity_col = "race", clean_
     )
 }
 
+categorize_hold_charge <- function(charge_description) {
+  dplyr::case_when(
+    stringr::str_detect(charge_description, "ELECTRONIC MONITOR") ~ "Conditional Release Hold",
+    stringr::str_detect(charge_description, "MUSCOGEE|MUSKOGEE|CHEROKEE|TRIBAL") ~ "Tribal Hold",
+    stringr::str_detect(charge_description, "U\\.S\\. MARSHAL|US MARSHAL|US MARSHALL|FORM-41|DETainer") ~ "Federal Hold (Non-Immigration)",
+    stringr::str_detect(charge_description, "\\bATF\\b|\\bFBI\\b|\\bDEA\\b|FEDERAL AGENCY") ~ "Federal Hold (Non-Immigration)",
+    stringr::str_detect(charge_description, "HOLD/ICE") ~ "Immigration Hold",
+    stringr::str_detect(charge_description, "CITY OF TULSA") ~ "Oklahoma Municipal Hold",
+    stringr::str_detect(charge_description, "COUNTY|CO\\.") & stringr::str_detect(charge_description, "OK\\b|OKLAHOMA|\\(OK\\)") ~ "Hold for Another Oklahoma County",
+    stringr::str_detect(charge_description, "ANOTHER OK COUNTY|OTHER COUNTY, OK") ~ "Hold for Another Oklahoma County",
+    stringr::str_detect(charge_description, "RETURN TO DOC|ALLEN GAMBLE") ~ "State of Oklahoma Hold",
+    stringr::str_detect(charge_description, "^HOLD/DOC\\b") ~ "State of Oklahoma Hold",
+    stringr::str_detect(charge_description, "ANOTHER STATE") ~ "Hold for Another State's Jurisdiction/Agency",
+    stringr::str_detect(charge_description, "COUNTY|CO\\.") & stringr::str_detect(charge_description, "TX|TEXAS|MO|MISSOURI|OHIO|AR\\b|ARKANSAS|UTAH") ~ "Hold for Another State's Jurisdiction/Agency",
+    stringr::str_detect(charge_description, "DEPARTMENT OF CORRECTIONS P&P") ~ "Hold for Another State's Jurisdiction/Agency",
+    stringr::str_detect(charge_description, "PROBATION AND PAROLE|PAROLE BOARD") ~ "Probation/Parole Hold",
+    stringr::str_detect(charge_description, "FUGITIVE FROM JUSTICE") ~ "Court-Ordered Hold",
+    stringr::str_detect(charge_description, "OTHER AGENCY") ~ "Administrative/Operational Hold",
+    TRUE ~ NA_character_
+  )
+}
+
+clean_hold_charge_description <- function(charge_description, hold_category) {
+  dplyr::if_else(
+    !is.na(hold_category),
+    hold_category,
+    charge_description
+  )
+}
+
 
 ### Main processing function
 process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
@@ -273,88 +303,8 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   # Hold Categories
   okpolicy_scraped_charges_with_bookings_info <- okpolicy_scraped_charges_with_bookings_info |>
     dplyr::mutate(
-      hold_category = dplyr::case_when(
-        # Conditional Release Hold,
-        # Reason for Hold: Specific conditions (e.g., electronic monitoring) must be met before release.
-        # Release Condition: Compliance with set conditions required for release.
-        stringr::str_detect(charge_description, "ELECTRONIC MONITOR") ~ "Conditional Release Hold",
-
-        # Tribal Hold
-        # Reason for Hold: A tribal authority has placed a hold.
-        # Release Condition: Release controlled by tribal authority, not jail.
-        stringr::str_detect(charge_description, "MUSCOGEE|MUSKOGEE|CHEROKEE|TRIBAL") ~ "Tribal Hold",
-
-        # Federal Hold (Non-Immigration)
-        # Reason for Hold: Federal (non-immigration) authority has placed a hold.
-        # Release Condition: Federal (non-immigration) authority dictates release/transfer.
-        stringr::str_detect(charge_description, "U\\.S\\. MARSHAL|US MARSHAL|US MARSHALL|FORM-41|DETainer") ~ "Federal Hold (Non-Immigration)",
-        stringr::str_detect(charge_description, "\\bATF\\b|\\bFBI\\b|\\bDEA\\b|FEDERAL AGENCY") ~ "Federal Hold (Non-Immigration)",
-
-        # Immigration Hold
-        # Reason for Hold: Immigration authorities have placed a hold.
-        # Release Condition: Federal authority dictates release/transfer.
-        stringr::str_detect(charge_description, "HOLD/ICE") ~ "Immigration Hold",
-
-        # Oklahoma Municipal Hold
-        # Reason for Hold: An Oklahoma municipal authority has placed a hold.
-        # Release Condition: Release depends on transfer or action by the municipal authority.
-        stringr::str_detect(charge_description, "CITY OF TULSA") ~ "Oklahoma Municipal Hold",
-
-        # Hold for Another Oklahoma County
-        # Reason for Hold: Another Oklahoma county authority has placed a hold.
-        # Release Condition: Release depends on transfer or action by the other county.
-        stringr::str_detect(charge_description, "COUNTY|CO\\.") & stringr::str_detect(charge_description, "OK\\b|OKLAHOMA|\\(OK\\)") ~ "Hold for Another Oklahoma County",
-        stringr::str_detect(charge_description, "ANOTHER OK COUNTY|OTHER COUNTY, OK") ~ "Hold for Another Oklahoma County",
-
-        # State of Oklahoma Hold
-        # Reason for Hold: An Oklahoma state authority has placed a hold.
-        # Release Condition: Release depends on transfer or action by the state authority.
-        stringr::str_detect(charge_description, "RETURN TO DOC|ALLEN GAMBLE") ~ "State of Oklahoma Hold",
-        stringr::str_detect(charge_description, "^HOLD/DOC\\b") ~ "State of Oklahoma Hold",
-
-        # Hold for Another State's Jurisdiction/Agency
-        # Reason for Hold: Another state's authority has placed a hold.
-        # Release Condition: Release depends on transfer or action by the other state.
-        stringr::str_detect(charge_description, "ANOTHER STATE") ~ "Hold for Another State's Jurisdiction/Agency",
-        stringr::str_detect(charge_description, "COUNTY|CO\\.") & stringr::str_detect(charge_description, "TX|TEXAS|MO|MISSOURI|OHIO|AR\\b|ARKANSAS|UTAH") ~ "Hold for Another State's Jurisdiction/Agency",
-        stringr::str_detect(charge_description, "DEPARTMENT OF CORRECTIONS P&P") ~ "Hold for Another State's Jurisdiction/Agency",
-
-        # Probation/Parole Hold
-        # Reason for Hold: Supervising authority has placed a hold.
-        # Release Condition: Release controlled by supervising officer/agency, not jail.
-        stringr::str_detect(charge_description, "PROBATION AND PAROLE|PAROLE BOARD") ~ "Probation/Parole Hold",
-
-        # Court-Ordered Hold
-        # Reason for Hold: The court has explicitly ordered that the individual not be released.
-        # Release Condition: Tied to judicial action; cannot release until court is satisfied.
-        stringr::str_detect(charge_description, "FUGITIVE FROM JUSTICE") ~ "Court-Ordered Hold",
-
-        # Administrative/Operational Hold
-        # Reason for Hold: Internal jail policies or procedures prevent immediate release.
-        # Release Condition: Internal review or process must be completed before release.
-        stringr::str_detect(charge_description, "OTHER AGENCY") ~ "Administrative/Operational Hold",
-
-        # Financial Hold
-        # Reason for Hold: Release is contingent on payment of financial obligations.
-        # Release Condition: Payment or resolution of financial obligations needed for release.
-
-        # Protective/Safety Hold
-        # Reason for Hold: Concerns about the individual's safety or well-being.
-        # Release Condition: Safety measures or evaluations must be addressed before release.
-
-        # Medical Hold
-        # Reason for Hold: Medical issues prevent safe release.
-        # Release Condition: Medical clearance required prior to release.
-
-        TRUE ~ NA_character_
-      )
-    ) |>
-    dplyr::mutate(
-      charge_description_clean = dplyr::if_else(
-        !is.na(hold_category),
-        hold_category,
-        charge_description
-      )
+      hold_category = categorize_hold_charge(charge_description),
+      charge_description_clean = clean_hold_charge_description(charge_description, hold_category)
     )
 
   # TODO: Broader Hold Categories
