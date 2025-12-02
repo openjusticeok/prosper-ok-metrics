@@ -133,6 +133,12 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
     ) |>
     dplyr::mutate(
       source = "Asemio Scraper",
+      # WARNING: Very little verification, needs comprehensive checks and reasoning
+      # booking_id excluded because it is not unique it seems
+      custom_booking_id = paste(
+        .data$jacket_number, .data$booking_date,
+        sep = "-"
+      ),
       time = hms::as_hms(lubridate::parse_date_time(time, orders = c("IM p"))),
       booking_time = hms::as_hms(lubridate::parse_date_time(booking_time, orders = c("IM p"))),
       release_time = hms::as_hms(lubridate::parse_date_time(release_time, orders = c("IM p"))),
@@ -242,12 +248,15 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   ### Joining data
   # Join inmate info to bookings for Asemio data
   asemio_scraped_bookings_with_inmate_info <- asemio_scraped_bookings |>
+    # NOTE: I've decided to keep this here, though it procludes scraping trends
+    # because it's not necessary for this report.
+    arrange(desc(updated_at)) |> # Want the most recent update to be kept
+    distinct(custom_booking_id, .keep_all = TRUE) |>
     dplyr::left_join(
       asemio_scraped_inmates,
       by = "jacket_number",
       suffix = c("", "_inmate")
     )
-
   # Join booking info to charges for OK Policy data
   # This is needed to filter bookings with certain hold charges
   okpolicy_scraped_charges_with_bookings_info <- okpolicy_scraped_bookings_with_inmate_info |>
@@ -448,18 +457,6 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
     dplyr::filter(dplyr::n() > 1, .by = c("jacket_number", "booking_date", "created_at"))
 
 
-  # WARNING: Tests, not part of processing
-  test <- asemio_scraped_bookings_with_inmate_info |>
-    dplyr::filter(
-      dplyr::n() > 1,
-      .by = c("jacket_number", "booking_date", "created_at")
-    ) |>
-    dplyr::select(source, booking_date)
-  asemio_scraped_bookings_with_inmate_info |>
-    dplyr::select(!tidyselect::where(~ lubridate::is.POSIXct(.x) || lubridate::is.Date(.x))) |>
-    dplyr::select(source, id)
-
-
   scraping_trends <- combined_bookings |>
     dplyr::count(source, created_at_date, updated_at_date, name = "n_bookings_updated") |>
     dplyr::mutate(
@@ -468,7 +465,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
     ) |>
     dplyr::arrange(created_at_date)
 
-  booking_trends <- combined_bookings |>
+  bookings_monthly <- combined_bookings |>
     dplyr::count(source, booking_month, name = "bookings") |>
     dplyr::arrange(booking_month)
 
@@ -484,7 +481,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
 
   list(
     booking_records = combined_bookings,
-    booking_trends = booking_trends,
+    bookings_monthly = bookings_monthly,
     booking_demographics = list(
       gender = booking_demographics_gender,
       race = booking_demographics_race
