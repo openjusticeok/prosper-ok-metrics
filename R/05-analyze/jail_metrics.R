@@ -1,29 +1,16 @@
 analyze_jail_metrics <- function(processed_data = jail_processed_data) {
-  bookings_monthly <- processed_data$bookings_monthly
+  booking_totals <- processed_data$booking_totals
   booking_records <- processed_data$booking_records
   brek_report <- processed_data$brek_report
   vera <- processed_data$vera
 
-  latest_month_bookings <- bookings_monthly |>
+  latest_month_bookings <- booking_totals |>
     dplyr::group_by(source) |>
     dplyr::slice_max(order_by = booking_month, n = 1, with_ties = FALSE) |>
     dplyr::ungroup()
 
-  booking_month_totals <- booking_records |>
-    dplyr::summarise(
-      total_bookings = dplyr::n(),
-      .by = c(source, booking_month)
-    ) |>
-    dplyr::bind_rows(
-      vera |>
-        dplyr::mutate(
-          source,
-          booking_month = quarter_date,
-          total_bookings_quarter = total_jail_adm,
-          total_bookings = total_jail_adm / 3,
-          .keep = "none"
-        )
-    )
+  booking_month_totals <- booking_totals |>
+    dplyr::distinct(booking_month, .keep_all = TRUE)
 
   booking_year_totals <- booking_records |>
     dplyr::summarise(
@@ -64,7 +51,8 @@ analyze_jail_metrics <- function(processed_data = jail_processed_data) {
   )
 
   list(
-    bookings_monthly = bookings_monthly,
+    booking_records = booking_records,
+    booking_month_totals = booking_month_totals,
     booking_year_totals = booking_year_totals,
     latest_month = latest_month_bookings,
     release_counts = processed_data$release_counts,
