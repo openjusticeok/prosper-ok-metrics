@@ -82,7 +82,11 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   # TODO: feat(process): Coalesce columns when multiple columns exist for same data
 
   # Process Vera Incarceration Trends Data
-  vera <- ingested_data$vera
+  vera <- ingested_data$vera |>
+    dplyr::mutate(
+      source = "Vera: Incarceration Trends (BJS, U.S. Census)",
+      quarter_date = lubridate::ymd(paste0(.data$year, "-", .data$quarter * 3, "-01"))
+    )
 
   # Process Jail Data Initiative Scraped Data
   jail_data_initiative_bookings_with_inmate_info <- ingested_data$jail_data_initiative$people |>
