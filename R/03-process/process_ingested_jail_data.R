@@ -81,6 +81,9 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   # TODO: Pull out some helper functions for repeated processing tasks
   # TODO: feat(process): Coalesce columns when multiple columns exist for same data
 
+  # Process Vera Incarceration Trends Data
+  vera <- ingested_data$vera
+
   # Process Jail Data Initiative Scraped Data
   jail_data_initiative_bookings_with_inmate_info <- ingested_data$jail_data_initiative$people |>
     janitor::clean_names() |>
@@ -93,7 +96,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
     standardize_sex_gender(sex_gender_col = "sex_gender") |>
     standardize_race_ethnicity(race_ethnicity_col = "race") |>
     dplyr::mutate(
-      source = "Jail Data Initiative",
+      source = "Jail Data Initiative Scraper",
       # Direct PII
       # Indirect PII
       age = as.integer(.data$age),
@@ -280,8 +283,8 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   asemio_scraped_bookings_with_inmate_info <- asemio_scraped_bookings |>
     # NOTE: I've decided to keep this here, though it procludes scraping trends
     # because it's not necessary for this report.
-    arrange(desc(updated_at)) |> # Want the most recent update to be kept
-    distinct(custom_booking_id, .keep_all = TRUE) |>
+    dplyr::arrange(desc(updated_at)) |> # Want the most recent update to be kept
+    dplyr::distinct(custom_booking_id, .keep_all = TRUE) |>
     dplyr::left_join(
       asemio_scraped_inmates,
       by = "jacket_number",
@@ -332,6 +335,9 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       created_at_inmate_year = lubridate::year(created_at_inmate)
     )
 
+  ### Generate derived metrics: Jail Bookings, Jail Releases, Jail Average Daily Population (ADP)
+
+  ## Jail Bookings
   # A note on number of bookings per day with scraped data:
   # Booking date in scraped data cannot be used to determine the number of
   # bookings per day. People booked before the first day of scraping
@@ -389,7 +395,6 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       .by = c(source, booking_year)
     ) |>
     dplyr::arrange(booking_date)
-
   # TODO: For the same unique booking, is there more than one row, and if so
   # what differs between the rows? Is it just charges or other info as well?
   # TODO: Under what circumstances does the updated_at date change?
@@ -406,7 +411,11 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   asemio_scraped_bookings_with_inmate_info |>
     dplyr::filter(dplyr::n() > 1, .by = c("jacket_number", "booking_date", "created_at"))
 
+  ## Jail Releases
+  ## Jail Average Daily Population (ADP)
 
+  ## Other derived metrics (not used in report)
+  # TODO: feat(process): Scraping trends analysis
   scraping_trends <- combined_bookings |>
     dplyr::count(source, created_at_date, updated_at_date, name = "n_bookings_updated") |>
     dplyr::mutate(
@@ -414,7 +423,6 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       .by = c(source, created_at_date)
     ) |>
     dplyr::arrange(created_at_date)
-
   bookings_monthly <- combined_bookings |>
     dplyr::count(source, booking_month, name = "bookings") |>
     dplyr::arrange(booking_month)
@@ -427,7 +435,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
     tidyr::drop_na(race) |>
     dplyr::count(source, race, name = "bookings")
 
-  # TODO: Analysis of top arresting_officers
+  # TODO: feat(process): Analysis of top arresting_officers
 
   list(
     booking_records = combined_bookings,
@@ -436,6 +444,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       gender = booking_demographics_gender,
       race = booking_demographics_race
     ),
+    vera = vera,
     jail_data_initiative = list(
       people = jail_data_initiative_bookings_with_inmate_info,
       charges = jail_data_initiative_charges
