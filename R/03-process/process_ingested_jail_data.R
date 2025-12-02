@@ -1,31 +1,32 @@
 ### Helper functions
-standardize_sex_gender <- function(data, col = "gender") {
-  values <- data[[col]]
-
-  dplyr::case_when(
-    stringr::str_detect(values, "(?i)^f(emale)?$") ~ "Female",
-    stringr::str_detect(values, "(?i)^m(ale)?$") ~ "Male",
-    TRUE ~ "Other/Unknown Gender"
-  )
+standardize_sex_gender <- function(data, sex_gender_col = "gender", clean_col_name = "sex_gender_standardized") {
+  data |>
+    dplyr::mutate(
+      {{ clean_col_name }} := dplyr::case_when(
+        stringr::str_detect(.data[[sex_gender_col]], "(?i)^f(emale)?$") ~ "Female",
+        stringr::str_detect(.data[[sex_gender_col]], "(?i)^m(ale)?$") ~ "Male",
+        TRUE ~ "Other/Unknown Gender"
+      )
+    )
 }
 
-standardize_race_ethnicity <- function(data, col = "race") {
-  values <- data[[col]]
-
-  # WARNING: Recodes for A, H, I, N, O, P, and U are guessed based on
-  # other data sources. They have not been corroborated by jail staff.
-  dplyr::case_when(
-    stringr::str_detect(values, "(?i)^i$|^n$") ~ "American Indian or Alaska Native",
-    stringr::str_detect(values, "(?i)^a$|^p$") ~ "Asian American and Pacific Islander",
-    stringr::str_detect(values, "(?i)^b$") ~ "Black",
-    stringr::str_detect(values, "(?i)^h$") ~ "Hispanic/Latino",
-    stringr::str_detect(values, "(?i)^w$") ~ "White",
-    stringr::str_detect(values, "(?i)^o$") ~ "Other Race/Ethnicity",
-    stringr::str_detect(values, "(?i)^u$") ~ "Unknown Race/Ethnicity",
-    TRUE ~ "Unknown Race/Ethnicity"
-  )
+standardize_race_ethnicity <- function(data, race_ethnicity_col = "race", clean_col_name = "race_ethnicity_standardized") {
+  data |>
+    dplyr::mutate(
+      {{ clean_col_name }} := dplyr::case_when(
+        # WARNING: Recodes for A, H, I, N, O, P, and U are guessed based on
+        # other data sources. They have not been corroborated by jail staff.
+        stringr::str_detect(.data[[race_ethnicity_col]], "(?i)^i$|^n$") ~ "American Indian or Alaska Native",
+        stringr::str_detect(.data[[race_ethnicity_col]], "(?i)^a$|^p$") ~ "Asian American and Pacific Islander",
+        stringr::str_detect(.data[[race_ethnicity_col]], "(?i)^b$") ~ "Black",
+        stringr::str_detect(.data[[race_ethnicity_col]], "(?i)^h$") ~ "Hispanic/Latino",
+        stringr::str_detect(.data[[race_ethnicity_col]], "(?i)^w$") ~ "White",
+        stringr::str_detect(.data[[race_ethnicity_col]], "(?i)^o$") ~ "Other Race/Ethnicity",
+        stringr::str_detect(.data[[race_ethnicity_col]], "(?i)^u$") ~ "Unknown Race/Ethnicity",
+        TRUE ~ "Unknown Race/Ethnicity"
+      )
+    )
 }
-
 
 
 ### Main processing function
@@ -36,12 +37,9 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   # We clean here instead of downstream so that future joins can treat JDI rows
   # the same as Asemio or OK Policy scrapes.
   # TODO: feat(process): Normalize column names
-  # TODO: feat(process): Parse date columns as needed (dates, times, datetimes)
-    # TODO: fix(process) convert Period types to time types
-    # NOTE: It's easier when I make the datetime and derive date and time from that
   # TODO: feat(process): Standardize race columns as needed
   # TODO: feat(process): Standardize gender columns as needed
-  # TODO: feat(process): Bind data from multiple sources as needed
+  # TODO: feat(process): Coalesce columns when multiple columns exist for same data
   # TODO: feat(process): Summarize and generate derived columns as needed
   # TODO: chore(process): refactor processing functions to use helper functions where appropriate
   # TODO: chore(process): Move code to explore if interesting but not needed in processing
@@ -56,9 +54,13 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   jail_data_initiative_bookings_with_inmate_info <- ingested_data$jail_data_initiative$people |>
     janitor::clean_names() |>
     dplyr::rename(
+      full_name = "name"
       birth_date = "dob",
       jacket_number_old = "dlm",
     ) |>
+    dplyr::mutate(sex_gender = dplyr::coalesce(.data$gender, .data$sex)) |>
+    standardize_sex_gender(sex_gender_col = "sex_gender") |>
+    standardize_race_ethnicity(race_ethnicity_col  = "race") |>
     dplyr::mutate(
       source = "Jail Data Initiative",
       # Direct PII
@@ -146,6 +148,8 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       given_name = first_name,
       surname = last_name,
     ) |>
+    standardize_sex_gender(sex_gender_col = "gender") |>
+    standardize_race_ethnicity(race_ethnicity_col  = "race") |>
     dplyr::mutate(
       source = "Asemio Scraper",
       # Direct PII
@@ -153,9 +157,6 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       # TODO: Decide how to normalize asemio & okpolicy full name columns
       # Asemio data has no middle name, so just concatenate given_name and surname
       full_name = paste(.data$given_name, .data$surname),
-      # Indirect PII
-      sex_gender_standardized = standardize_sex_gender(data = ., col = "gender"),
-      race_ethnicity_standardized = standardize_race_ethnicity(data = ., col = "race"),
       # Other Dates
       created_at_date = as.Date(created_at),
       updated_at_date = as.Date(updated_at)
@@ -183,13 +184,13 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       created_at_date = created_at,
       updated_at_datetime = updated_at
     ) |>
+    standardize_sex_gender(sex_gender_col = "gender") |>
+    standardize_race_ethnicity(race_ethnicity_col  = "race") |>
     dplyr::mutate(
       source = "OK Policy Scraper",
       # Direct PII
       full_name = paste(.data$given_name, .data$middle_name, .data$surname),
       # Indirect PII
-      gender = stringr::str_to_title(.data$gender),
-      race = stringr::str_to_title(.data$race),
       birth_date = lubridate::mdy(.data$birth_date),
       # Other Dates
       booking_datetime = lubridate::ymd_hms(
@@ -211,7 +212,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   jail_data_initiative_bookings_with_inmate_info |>
     dplyr::count(race, race_ethnicity_standardized)
   jail_data_initiative_bookings_with_inmate_info |>
-    dplyr::count(sex, sex_gender_standardized)
+    dplyr::count(sex, gender, sex_gender_standardized)
 
   okpolicy_scraped_charges <- ingested_data$okpolicy$charges |>
     dplyr::rename(
@@ -235,7 +236,6 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       updated_at_date = as.Date(updated_at_datetime),
       updated_at_time = hms::as_hms(updated_at_datetime),
     )
-
 
 
   ### Joining data
