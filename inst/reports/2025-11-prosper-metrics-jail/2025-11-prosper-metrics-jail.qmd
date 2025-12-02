@@ -102,7 +102,7 @@ if (!is.null(jail_analysis)) {
         TRUE ~ fmt_pct(yoy_change)
       )
     ) |>
-    dplyr::rename(`Metric` = metric, `Value` = value, `YoY Change` = yoy_change) |>
+    dplyr::rename(`Metric` = metric, `Value` = value, `Yoy Change` = yoy_change) |>
     ojothemes::gt_ojo()
 } else {
   "Pipeline analysis has not been loaded yet."
@@ -221,19 +221,20 @@ if (nrow(release_counts) > 0) {
   release_counts |>
     ojothemes::gt_ojo()
 } else {
-  cat("Release data is unavailable due to a lack of information about where individuals were released to (e.g., to street, another facility, etc.).")
+  invisible()
 }
 ```
+Release data is unavailable due to a lack of information about where individuals
+were released to (e.g., to street, another facility, etc.).
 
 ```{r jail-release-shares}
 #| include: !expr isFALSE(params$public)
 #| eval: !expr isFALSE(params$public)
-
 if (nrow(release_shares) > 0) {
   release_shares |>
     ojothemes::gt_ojo()
 } else {
-  cat("Release data is unavailable due to a lack of information about where individuals were released to (e.g., to street, another facility, etc.).")
+  cat("# Test\n\n")
 }
 ```
 
@@ -241,7 +242,7 @@ if (nrow(release_shares) > 0) {
 #| include: !expr isFALSE(params$public)
 #| eval: !expr isFALSE(params$public)
 if (!params$public) {
-  cat("# Tulsa County comparison to Oklahoma County\n\n")
+  cat("# Tulsa County Comparison to Oklahoma County and other counties\n\n")
 }
 ```
 
