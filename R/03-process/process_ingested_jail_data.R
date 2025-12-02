@@ -1,4 +1,4 @@
-process_jail_data <- function(ingested_checks = jail_ingested_checks) {
+process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   ingested_data <- ingested_checks$ingested_data
 
   # TODO: Pull out some helper functions for repeated processing tasks

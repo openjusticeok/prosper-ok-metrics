@@ -40,8 +40,8 @@ tar_source("R/01-ingest/ingest_jail_data.R")
 tar_source("R/01-ingest/ingest_prison_data.R")
 tar_source("R/02-check-ingested/check_jail_ingested_data.R")
 tar_source("R/02-check-ingested/check_prison_ingested_data.R")
-tar_source("R/03-process/process_raw_jail_data.R")
-tar_source("R/03-process/process_raw_prison_data.R")
+tar_source("R/03-process/process_ingested_jail_data.R")
+tar_source("R/03-process/process_ingested_prison_data.R")
 tar_source("R/04-check-processed/check_processed_jail_data.R")
 tar_source("R/04-check-processed/check_processed_prison_data.R")
 tar_source("R/05-analyze/jail_metrics.R")
@@ -74,7 +74,7 @@ list(
   # TODO: chore(process): Move code to explore if interesting but not needed in processing
   tar_target(
     name = jail_processed_data,
-    command = process_jail_data(jail_ingested_checks)
+    command = process_ingested_jail_data(jail_ingested_checks)
   ),
   # TODO: feat(check): Implement real output checks for jail data
   # Can wait until after today.
@@ -134,7 +134,7 @@ list(
   # TODO: chore(process): Move code to explore if interesting but not needed in processing
   tar_target(
     name = prison_processed_data,
-    command = process_prison_data(prison_ingested_checks)
+    command = process_ingested_prison_data(prison_ingested_checks)
   ),
   # TODO: feat(check): Implement real output checks for prison data
   # Can wait until after today.
