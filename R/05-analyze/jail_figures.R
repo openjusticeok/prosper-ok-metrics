@@ -30,9 +30,13 @@ generate_jail_figures <- function(analysis_results = jail_analysis_results) {
       ggplot2::aes(x = county, y = value, fill = county)
     ) +
       ggplot2::geom_col(width = 0.6) +
-      ggplot2::geom_text(ggplot2::aes(label = scales::comma(value)), vjust = -0.25, size = 3.2) +
+      ggplot2::geom_text(
+        ggplot2::aes(label = scales::comma(value), fontface = "bold"),
+        vjust = -0.25,
+        size = 8,
+      ) +
       ggplot2::labs(
-        title = "Average daily population (BREK, 2024)",
+        title = "Average daily population (Starling Analytics, 2024)",
         x = NULL,
         y = "People"
       ) +
