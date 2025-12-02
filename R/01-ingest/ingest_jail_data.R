@@ -241,7 +241,7 @@ ingest_brek_jail_report_data <- function(path = here::here("data", "input", "bre
 }
 
 # Function to read Jail Data Initiative scraped data from a Google Drive folder
-read_jail_data_initiative_scraped_data <- function(
+ingest_jail_data_initiative_scraped_data <- function(
   drive_folder_url = "https://drive.google.com/drive/folders/1fsv2pAkRd6DoDgG77SoXA3-0wK5tUnmh",
   charges_filename = "charges.csv",
   people_filename = "people.csv",
@@ -324,31 +324,50 @@ read_jail_data_initiative_scraped_data <- function(
   )
 }
 
-# Target function to ingest all raw jail data sources
-ingest_jail_data <- function(
-  read_jail_data_initiative = read_jail_data_initiative_scraped_data,
-  ingest_okpolicy = ingest_okpolicy_scraped_data,
-  ingest_asemio = ingest_asemio_scraped_data,
-  read_brek_jail_report = ingest_brek_jail_report_data
-) {
-  total_sources <- 4
+# Function to ingest Vera Institute incarceration trends data
+# Source: https://github.com/vera-institute/incarceration-trends
+ingest_vera_incerceration_trends_data <- function() {
+  commit_info <- httr2::request("https://api.github.com/repos/vera-institute/incarceration-trends/commits") |>
+    httr2::req_url_query(path = "incarceration_trends_county.csv", sha = "main") |>
+    httr2::req_perform() |>
+    httr2::resp_body_json()
 
-  jail_data_initiative <- read_jail_data_initiative()
+  readr::read_csv(
+    "https://raw.githubusercontent.com/vera-institute/incarceration-trends/main/incarceration_trends_county.csv",
+    show_col_types = FALSE
+  ) |>
+    filter(state_code == "US_OK") |>
+    dplyr::mutate(
+      updated_at      = commit_info[[1]]$commit$committer$date |> lubridate::ymd_hms(),
+      updated_at_date = as.Date(updated_at),
+      updated_commit  = commit_info[[1]]$sha
+    )
+}
+
+# Target function to ingest all raw jail data sources
+ingest_jail_data <- function() {
+  total_sources <- 5
+
+  jail_data_initiative <- ingest_jail_data_initiative_scraped_data()
   message(sprintf("(1/%d) jail_data_initiative ingestion complete", total_sources))
 
-  okpolicy <- ingest_okpolicy()
+  okpolicy <- ingest_okpolicy_scraped_data()
   message(sprintf("(2/%d) okpolicy ingestion complete", total_sources))
 
-  asemio <- ingest_asemio()
+  asemio <- ingest_asemio_scraped_data()
   message(sprintf("(3/%d) asemio ingestion complete", total_sources))
 
-  brek <- read_brek_jail_report()
+  brek <- ingest_brek_jail_report_data()
   message(sprintf("(4/%d) brek ingestion complete", total_sources))
+
+  vera <- ingest_vera_incerceration_trends_data()
+  message(sprintf("(5/%d) vera ingestion complete", total_sources))
 
   list(
     jail_data_initiative = jail_data_initiative,
     okpolicy = okpolicy,
     asemio = asemio,
-    brek = brek
+    brek = brek,
+    vera = vera
   )
 }
