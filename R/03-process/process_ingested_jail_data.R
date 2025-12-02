@@ -1,34 +1,96 @@
 process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   ingested_data <- ingested_checks$ingested_data
 
+  ### Normalize, clean, and parse ingested data
+  # We clean here instead of downstream so that future joins can treat JDI rows
+  # the same as Asemio or OK Policy scrapes.
+  # TODO: feat(process): Normalize column names
+  # TODO: feat(process): Parse date columns as needed
+  # TODO: feat(process): Clean race columns as needed
+  # TODO: feat(process): Clean gender columns as needed
+  # TODO: feat(process): Bind data from multiple sources as needed
+  # TODO: feat(process): Summarize and generate derived columns as needed
+  # TODO: chore(process): refactor processing functions to use helper functions where appropriate
+  # TODO: chore(process): Move code to explore if interesting but not needed in processing
+  # TODO: feat(process): Determine timezone of each data source
   # TODO: Pull out some helper functions for repeated processing tasks
-  # E.g., parsing date times, normalizing names, etc.
-  # Only do this if it improves readability and confidence in uniform processing
+    # The helper functions below enforce consistent schemas, fill in missing
+    # columns, and coerce date/time fields from the Jail Data Initiative CSVs.
+    # E.g., parsing date times, normalizing names, etc.
+    # Only do this if it improves readability and confidence in uniform processing
 
-  #' Normalize Jail Data Initiative inputs before merging with other sources
-  #'
-  #' The helper functions below enforce consistent schemas, fill in missing
-  #' columns, and coerce date/time fields from the Jail Data Initiative CSVs.
-  #'
-  #' We clean here instead of downstream so that future joins can treat JDI rows
-  #' the same as Asemio or OK Policy scrapes.
-
-  #' Parsing defensively (e.g., tolerating missing columns, parsing timestamps
-  #' with quiet lubridate calls) prevents the entire pipeline from crashing when
-  #' the shared Drive exports tweak column sets or formats. That lets analysts
-  #' drop in the latest CSVs without code edits while keeping downstream
-  #' pointblank checks meaningful.
+  # Jail Data Initiative Data Processing
   jail_data_initiative_people <- ingested_data$jail_data_initiative$people |>
     janitor::clean_names() |>
+    dplyr::rename(
+      birth_date = "dob",
+      jacket_number_old = "dlm",
+    ) |>
     dplyr::mutate(
       source = "Jail Data Initiative",
-      age = as.integer(.data$age)
+      arrest_booking_date = lubridate::mdy(.data$arrest_booking_date),
+      # TODO: Confirm time zone by comparing to other known timezone
+      arrest_booking_time = lubridate::hm(.data$arrest_booking_time),
+      arrest_booking_datetime = as.POSIXct(
+        .data$arrest_booking_date + .data$arrest_booking_time,
+        tz = "America/Chicago"
+      ),
+      arrest_date = lubridate::ymd(.data$arrest_date),
+      arrest_time = lubridate::hm(.data$arrest_time),
+      arrest_datetime = as.POSIXct(
+        .data$arrest_date + .data$arrest_time,
+        tz = "America/Chicago"
+      ),
+      birth_date = lubridate::ymd(.data$birth_date),
+      booking_date = lubridate::ymd(.data$booking_date),
+      booking_time = lubridate::hm(.data$booking_time),
+      released_date = lubridate::ymd(.data$released_date),
+      released_time = lubridate::hm(.data$released_time),
+      released_datetime = as.POSIXct(
+        .data$released_date + .data$released_time,
+        tz = "America/Chicago"
+      ),
+      release_date = lubridate::ymd(.data$release_date),
+      release_time = lubridate::hm(.data$release_time),
+      release_datetime = as.POSIXct(
+        .data$release_date + .data$release_time,
+        tz = "America/Chicago"
+      ),
+      meta_first_seen = lubridate::ymd_hms(.data$meta_first_seen, tz = "America/Chicago"),
+      meta_last_seen = lubridate::ymd_hms(.data$meta_last_seen, tz = "America/Chicago"),
+      meta_scrape_date = lubridate::ymd(.data$meta_scrape_date, quiet = TRUE), # Loud because of NAs
+      age = as.integer(.data$age),
+      age_standardized = as.double(.data$age_standardized)
+    ) |>
+    dplyr::mutate(
+      jacket_number_type = dplyr::case_when(
+        is.na(.data$jacket_number) & !is.na(.data$jacket_number_old) ~ "old",
+        !is.na(.data$jacket_number) ~ "new",
+        TRUE ~ NA_character_
+      )
     )
+
   jail_data_initiative_charges <- ingested_data$jail_data_initiative$charges |>
     janitor::clean_names() |>
     dplyr::mutate(
-      source = "Jail Data Initiative"
-    )
+      source = "Jail Data Initiative",
+      case_type = stringr::str_extract(.data$case_number, "^([A-Z]+)-\\d+-\\d+", group = 1),
+      # TODO: case_year is very inconsistent and contains likely errors
+      case_year = stringr::str_extract(.data$case_number, "^[A-Z]+-(\\d+)-\\d+", group = 1),
+      # TODO: If case_year is unreliable, case_number_id is likely unreliable as
+      # well, but potentially even harder to notice errors (needs matching with OSCN data)
+      case_number = stringr::str_extract(.data$case_number, "^[A-Z]+-\\d+-(\\d+)", group = 1),
+      court_date = lubridate::ymd(.data$court_date),
+      bond_amount = as.double(.data$bond_amount),
+      bail_amount = as.double(.data$bail_amount),
+      bail_set_date = lubridate::ymd(.data$bail_set_date),
+      bail_set_time = lubridate::hm(.data$bail_set_time),
+      # TODO: Confirm time zone by comparing to other known timezone
+      bail_set_datetime = as.POSIXct(
+        .data$bail_set_date + .data$bail_set_time,
+        tz = "America/Chicago"
+      )
+    ) |>
 
   # Asemio Scraper Data Processing
   asemio_scraped_bookings <- ingested_data$asemio$bookings |>
