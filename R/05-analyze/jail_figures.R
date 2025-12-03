@@ -14,7 +14,8 @@ generate_jail_figures <- function(analysis_results = jail_analysis_results) {
         color = "Source"
       ) +
       ggplot2::scale_color_brewer(palette = "Dark2") +
-      ojothemes::theme_okpi()
+      ojothemes::theme_okpi() +
+      ggplot2::guides(color = ggplot2::guide_legend(ncol = 3))
   } else {
     booking_trend_plot <- ggplot2::ggplot() +
       ggplot2::theme_void() +
