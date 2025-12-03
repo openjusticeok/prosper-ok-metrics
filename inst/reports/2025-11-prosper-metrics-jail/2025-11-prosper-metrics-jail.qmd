@@ -37,7 +37,7 @@ description: |
     This is a status update report using data from the Tulsa County Jail. It was prepared and analyzed by the Oklahoma Policy Institute.
 embed-resources: false
 params:
-  public: false
+  audience: "internal"
 # abstract-title: Publication Note
 # abstract: 'DRAFT REPORT -- NOT FOR PUBLICATION'
 ---
@@ -91,19 +91,10 @@ a
 decrease from 2024.**
 
 ```{r overview-metrics}
-#| include: !expr isFALSE(params$public)
-#| eval: !expr isFALSE(params$public)
-if (!is.null(jail_analysis)) {
-  jail_analysis$key_metrics |>
-    dplyr::mutate(
-      value = fmt_num(value),
-      yoy_change = dplyr::case_when(
-        is.na(yoy_change) ~ "—",
-        TRUE ~ fmt_pct(yoy_change)
-      )
-    ) |>
-    dplyr::rename(`Metric` = metric, `Value` = value, `Yoy Change` = yoy_change) |>
-    ojothemes::gt_ojo()
+#| include: params$audience == "internal"
+#| eval: params$audience == "internal"
+if (!is.null(jail_figures$overview_metrics_table)) {
+  jail_figures$overview_metrics_table
 } else {
   "Pipeline analysis has not been loaded yet."
 }
@@ -147,136 +138,98 @@ able to use that data to validate and refine the estimates presented in this rep
 # Jail Bookings
 
 ```{r}
-#| include: !expr isFALSE(params$public)
-#| eval: !expr isFALSE(params$public)
+#| include: params$audience == "internal"
+#| eval: params$audience == "internal"
 if (!is.null(jail_figures$booking_trend)) {
   jail_figures$booking_trend
 }
 ```
 
 ```{r jail-bookings-table}
-#| include: !expr isFALSE(params$public)
-#| eval: !expr isFALSE(params$public)
-if (!is.null(jail_analysis)) {
-  latest <- jail_analysis$latest_month |>
-    dplyr::mutate(
-      `Latest Month` = format(booking_month, "%B %Y"),
-      Bookings = fmt_num(bookings)
-    ) |>
-    dplyr::select(Source = source, `Latest Month`, Bookings)
+#| include: params$audience == "internal"
+#| eval: params$audience == "internal"
+if (!is.null(jail_figures$booking_latest_table)) {
+  jail_figures$booking_latest_table
+}
 
-  annual <- jail_analysis$booking_year_totals |>
-    dplyr::arrange(dplyr::desc(booking_year)) |>
-    dplyr::mutate(
-      `Year` = booking_year,
-      Bookings = fmt_num(total_bookings)
-    ) |>
-    dplyr::select(Source = source, Year, Bookings)
-
-  latest |>
-    ojothemes::gt_ojo()
-
-  annual |>
-    ojothemes::gt_ojo()
+if (!is.null(jail_figures$booking_annual_table)) {
+  jail_figures$booking_annual_table
 }
 ```
 
 ```{r jail-releases-heading, results='asis', echo=FALSE}
-#| include: !expr isFALSE(params$public)
-#| eval: !expr isFALSE(params$public)
-if (!params$public) {
+#| include: params$audience == "internal"
+#| eval: params$audience == "internal"
+if (identical(params$audience, "internal")) {
   cat("# Jail Releases\n\n")
 }
 ```
 
-```{r jail-releases}
-#| include: !expr isFALSE(params$public)
-#| eval: !expr isFALSE(params$public)
-#| results: "hide"
-
-release_counts <- tibble::tibble()
-release_shares <- tibble::tibble()
-if (!is.null(jail_analysis)) {
-  release_counts <- jail_analysis$release_counts |>
-    dplyr::filter(group %in% c("All", "Male", "Female")) |>
-    dplyr::mutate(Value = fmt_num(value)) |>
-    dplyr::select(Disposition = category, Group = group, Value)
-
-  release_shares <- jail_analysis$release_shares |>
-    dplyr::mutate(Value = fmt_pct(value)) |>
-    dplyr::select(Disposition = category, Group = group, Value)
-
-  list(
-    release_counts = release_counts,
-    release_shares = release_shares
-  )
-}
-```
-
 ```{r jail-release-counts}
-#| include: !expr isFALSE(params$public)
-#| eval: !expr isFALSE(params$public)
+#| include: params$audience == "internal"
+#| eval: params$audience == "internal"
 
-if (nrow(release_counts) > 0) {
-  release_counts |>
-    ojothemes::gt_ojo()
+if (!is.null(jail_figures$release_counts_table)) {
+  jail_figures$release_counts_table
 } else {
   invisible()
 }
 ```
+
+```{r jail-release-counts-plot}
+#| include: params$audience == "internal"
+#| eval: params$audience == "internal"
+
+if (!is.null(jail_figures$release_counts)) {
+  jail_figures$release_counts
+}
+```
+
 Release data is unavailable due to a lack of information about where individuals
 were released to (e.g., to street, another facility, etc.).
 
 ```{r jail-release-shares}
-#| include: !expr isFALSE(params$public)
-#| eval: !expr isFALSE(params$public)
-if (nrow(release_shares) > 0) {
-  release_shares |>
-    ojothemes::gt_ojo()
+#| include: params$audience == "internal"
+#| eval: params$audience == "internal"
+
+if (!is.null(jail_figures$release_shares_table)) {
+  jail_figures$release_shares_table
 } else {
   cat("# Test\n\n")
 }
 ```
 
+```{r jail-release-share-plot}
+#| include: params$audience == "internal"
+#| eval: params$audience == "internal"
+
+if (!is.null(jail_figures$release_share)) {
+  jail_figures$release_share
+}
+```
+
 ```{r jail-comparison-heading, results='asis', echo=FALSE}
-#| include: !expr isFALSE(params$public)
-#| eval: !expr isFALSE(params$public)
-if (!params$public) {
+#| include: params$audience == "internal"
+#| eval: params$audience == "internal"
+if (identical(params$audience, "internal")) {
   cat("# Tulsa County Comparison to Oklahoma County and other counties\n\n")
 }
 ```
 
 ```{r jail-comparison}
-#| include: !expr isFALSE(params$public)
-#| eval: !expr isFALSE(params$public)
+#| include: params$audience == "internal"
+#| eval: params$audience == "internal"
 
-if (!is.null(jail_analysis)) {
-  jail_analysis$brek_report |>
-    dplyr::filter(
-      metric_family %in% c("adp", "bookings"),
-      dimension == "Overall",
-      category == "Total",
-      county %in% c("Tulsa County", "Oklahoma County")
-    ) |>
-    dplyr::mutate(
-      Metric = dplyr::case_when(
-        metric_family == "adp" ~ "Average Daily Population",
-        TRUE ~ "Annual Bookings"
-      ),
-      Value = fmt_num(value),
-      `YoY Change` = fmt_pct(as.numeric(yoy_change))
-    ) |>
-    dplyr::select(Metric, County = county, Value, `YoY Change`) |>
-    gt::gt() |>
-    gtExtras::gt_theme_538()
+if (!is.null(jail_figures$county_comparison_table)) {
+  jail_figures$county_comparison_table
 }
 ```
 
 # Average Daily Population
 
 ```{r jail-adp}
-#| include: !expr isFALSE(params$public)
-#| eval: !expr isFALSE(params$public)
+#| include: params$audience == "internal"
+#| eval: params$audience == "internal"
 if (!is.null(jail_figures$adp_comparison)) {
   jail_figures$adp_comparison
 }
