@@ -12,7 +12,7 @@ analyze_jail_metrics <- function(processed_data = jail_processed_data) {
     dplyr::slice_max(order_by = booking_month, n = 1, with_ties = FALSE) |>
     dplyr::ungroup()
 
-  booking_month_totals <- booking_totals |>
+  bookings_multiproducer_mixmethod_month_total <- booking_totals |>
     dplyr::distinct(source, booking_month, .keep_all = TRUE)
 
   booking_year_totals <- booking_records |>
@@ -75,7 +75,7 @@ analyze_jail_metrics <- function(processed_data = jail_processed_data) {
   ### Return list as the targets object
   list(
     booking_records = booking_records,
-    booking_month_totals = booking_month_totals,
+    bookings_multiproducer_mixmethod_month_total = bookings_multiproducer_mixmethod_month_total,
     booking_year_totals = booking_year_totals,
     latest_month = latest_month_bookings,
     release_counts = processed_data$release_counts,
