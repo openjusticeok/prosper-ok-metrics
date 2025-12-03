@@ -1,12 +1,12 @@
 generate_jail_figures <- function(analysis_results = jail_analysis_results) {
   fmt_pct <- function(x) scales::percent(x, accuracy = 0.1)
   fmt_num <- function(x) scales::comma(x, accuracy = 1)
-  has_rows <- function(x) !is.null(x) && nrow(x) > 0
+  has_rows_and_not_null <- function(x) !is.null(x) && nrow(x) > 0
 
   # TODO: feat(jail-figures): Add dashed lines for scraped data.
   # TODO: feat(jail-processing): Add data source type (scraped, administrative, etc.)
   booking_month_totals <- analysis_results$booking_month_totals
-  if (has_rows(booking_month_totals)) {
+  if (has_rows_and_not_null(booking_month_totals)) {
     booking_trend_plot <- ggplot2::ggplot(
       booking_month_totals,
       ggplot2::aes(x = booking_month, y = bookings, color = source)
@@ -31,7 +31,7 @@ generate_jail_figures <- function(analysis_results = jail_analysis_results) {
   adp_overall <- analysis_results$adp_summary |>
     dplyr::filter(dimension == "Overall", category == "Total")
 
-  if (has_rows(adp_overall)) {
+  if (has_rows_and_not_null(adp_overall)) {
     adp_plot <- ggplot2::ggplot(
       adp_overall,
       ggplot2::aes(x = county, y = value, fill = county)
@@ -60,7 +60,7 @@ generate_jail_figures <- function(analysis_results = jail_analysis_results) {
   release_share_plot <- NULL
 
   release_counts_data <- analysis_results$release_counts
-  if (has_rows(release_counts_data) &&
+  if (has_rows_and_not_null(release_counts_data) &&
     all(c("group", "category", "value") %in% colnames(release_counts_data))) {
     release_counts_plot <- release_counts_data |>
       dplyr::filter(.data$group %in% c("All", "Male", "Female")) |>
@@ -84,7 +84,7 @@ generate_jail_figures <- function(analysis_results = jail_analysis_results) {
   }
 
   release_share_data <- analysis_results$release_shares
-  if (has_rows(release_share_data) &&
+  if (has_rows_and_not_null(release_share_data) &&
     all(c("group", "category", "value") %in% colnames(release_share_data))) {
     release_share_plot <- release_share_data |>
       dplyr::filter(.data$group %in% c("All", "Male", "Female")) |>
@@ -108,7 +108,7 @@ generate_jail_figures <- function(analysis_results = jail_analysis_results) {
   }
 
   overview_metrics_table <- NULL
-  if (has_rows(analysis_results$key_metrics)) {
+  if (has_rows_and_not_null(analysis_results$key_metrics)) {
     overview_metrics_table <- analysis_results$key_metrics |>
       dplyr::mutate(
         value = fmt_num(value),
@@ -122,7 +122,7 @@ generate_jail_figures <- function(analysis_results = jail_analysis_results) {
   }
 
   booking_latest_table <- NULL
-  if (has_rows(analysis_results$latest_month)) {
+  if (has_rows_and_not_null(analysis_results$latest_month)) {
     booking_latest_table <- analysis_results$latest_month |>
       dplyr::mutate(
         `Latest Month` = format(booking_month, "%B %Y"),
@@ -133,7 +133,7 @@ generate_jail_figures <- function(analysis_results = jail_analysis_results) {
   }
 
   booking_annual_table <- NULL
-  if (has_rows(analysis_results$booking_year_totals)) {
+  if (has_rows_and_not_null(analysis_results$booking_year_totals)) {
     booking_annual_table <- analysis_results$booking_year_totals |>
       dplyr::arrange(dplyr::desc(booking_year)) |>
       dplyr::mutate(
@@ -145,7 +145,7 @@ generate_jail_figures <- function(analysis_results = jail_analysis_results) {
   }
 
   release_counts_table <- NULL
-  if (has_rows(analysis_results$release_counts)) {
+  if (has_rows_and_not_null(analysis_results$release_counts)) {
     release_counts_table <- analysis_results$release_counts |>
       dplyr::filter(group %in% c("All", "Male", "Female")) |>
       dplyr::mutate(Value = fmt_num(value)) |>
@@ -154,7 +154,7 @@ generate_jail_figures <- function(analysis_results = jail_analysis_results) {
   }
 
   release_shares_table <- NULL
-  if (has_rows(analysis_results$release_shares)) {
+  if (has_rows_and_not_null(analysis_results$release_shares)) {
     release_shares_table <- analysis_results$release_shares |>
       dplyr::mutate(Value = fmt_pct(value)) |>
       dplyr::select(Disposition = category, Group = group, Value) |>
@@ -162,7 +162,7 @@ generate_jail_figures <- function(analysis_results = jail_analysis_results) {
   }
 
   county_comparison_table <- NULL
-  if (has_rows(analysis_results$brek_report)) {
+  if (has_rows_and_not_null(analysis_results$brek_report)) {
     county_comparison_table <- analysis_results$brek_report |>
       dplyr::filter(
         metric_family %in% c("adp", "bookings"),
