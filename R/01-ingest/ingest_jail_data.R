@@ -145,6 +145,7 @@ ingest_brek_jail_report_data <- function() {
             county == "tulsa_county" ~ yoy_change_tulsa,
             TRUE ~ NA_real_
           ),
+
           county = dplyr::case_when(
             county == "oklahoma_county" ~ "Oklahoma County",
             county == "tulsa_county" ~ "Tulsa County",
@@ -250,7 +251,25 @@ ingest_brek_jail_report_data <- function() {
       release_disposition_shares,
       avg_length_of_stay,
       rebooking_rates
-    )
+    ) |>
+      dplyr::mutate(
+        # value is 2024, yoy is change from 2023 to 2024
+        # dividing the value by (1 + yoy) gives the 2023 value
+        # because: value_2024 = value_2023 * (1 + yoy_change)
+        value_2023 = value / (1 + yoy_change)
+      ) |>
+      # Pivot longer to add rows for 2023 values
+      tidyr::pivot_longer(
+        cols = c(value, value_2023),
+        names_to = "value_origin",
+        values_to = "value"
+      ) |>
+      dplyr::filter(!is.na(yoy_change)) |>
+      dplyr::mutate(
+        year = dplyr::if_else(value_origin == "value_2023", 2023L, year),
+        year_date = as.Date(paste0(year, "-01-01"))
+      ) |>
+      dplyr::select(-value_origin)
 
     dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
     readr::write_csv(brek_reference, path)
@@ -349,6 +368,7 @@ ingest_jail_data_initiative_scraped_data <- function() {
 
 # Function to ingest Vera Institute incarceration trends data
 # Source: https://github.com/vera-institute/incarceration-trends
+# Codebook: https://github.com/vera-institute/incarceration-trends/blob/main/Incarceration%20Trends%20Codebook%2005-2025.pdf
 # Data access terms: https://github.com/vera-institute/incarceration-trends/blob/main/License.pdf
 ingest_vera_incerceration_trends_data <- function() {
   # Get current commit info from GitHub API

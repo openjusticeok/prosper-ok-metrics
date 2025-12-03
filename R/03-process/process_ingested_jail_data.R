@@ -71,10 +71,6 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   # We clean here instead of downstream so that future joins can treat JDI rows
   # the same as Asemio or OK Policy scrapes.
 
-  # To do now:
-  # TODO: feat(process): Summarize and generate derived columns in merged data as needed
-  # This is based on what we need from the analysis.
-
   # For after the report is done:
   # TODO: chore(process): Move code to explore if interesting but not needed in processing
   # TODO: feat(process): Determine timezone of each data source
@@ -87,6 +83,8 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       source = "Vera: Incarceration Trends",
       quarter_date = lubridate::ymd(paste0(.data$year, "-", .data$quarter * 3, "-01"))
     )
+
+  brek <- ingested_data$brek
 
   # Process Jail Data Initiative Scraped Data
   jail_data_initiative_bookings_with_inmate_info <- ingested_data$jail_data_initiative$people |>
@@ -379,11 +377,27 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       vera |>
         dplyr::filter(!is.na(total_jail_adm)) |>
         dplyr::filter(county_code == "US_OK_TULSA") |>
+        dplyr::filter(year >= 1999) |>
         dplyr::mutate(
           source,
           booking_month = quarter_date,
-          bookings_quarter = total_jail_adm,
-          bookings = total_jail_adm / 3,
+          # total_jail_adm is an estimate of total admissions in the past year
+          # for a county.
+          # Source: pg.10 of Vera Incarceration Trends codebook
+          bookings_past_year = total_jail_adm,
+          bookings = total_jail_adm / 12,
+          .keep = "none"
+        ),
+      brek |>
+        dplyr::filter(
+          metric == "Annual Bookings",
+          category == "Total",
+          county == "Tulsa County"
+        ) |>
+        dplyr::mutate(
+          source = "Starling Analytics (JailNet)",
+          bookings = value / 12,
+          booking_month = year_date,
           .keep = "none"
         )
     ) |>
@@ -446,14 +460,10 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
     dplyr::filter(dplyr::n() > 1, .by = c("jacket_number", "booking_date", "created_at"))
 
 
-
   ## Jail Releases
 
 
-
-
   ## Jail Average Daily Population (ADP)
-
 
 
   ## Other derived metrics (not used in report)
@@ -466,8 +476,6 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
     ) |>
     dplyr::arrange(created_at_date)
   # TODO: feat(process): Analysis of top arresting_officers
-
-
 
 
   ### Return processed data
