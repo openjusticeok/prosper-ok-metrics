@@ -84,3 +84,106 @@ render_report <- function(
 
   unname(outputs)
 }
+
+# Shared placeholder helpers for targets scaffolding.
+.placeholder_time_series <- function() {
+  tibble::tibble(
+    Time = seq(as.Date("2025-01-01"), by = "1 month", length.out = 7),
+    `Good Stuff` = c(10, 14, 12, 18, 16, 22, 27)
+  )
+}
+
+placeholder_ggplot <- function() {
+  data <- .placeholder_time_series()
+
+  ggplot2::ggplot(data, ggplot2::aes(x = Time, y = `Good Stuff`)) +
+    ggplot2::geom_line(color = "#972421", linewidth = 1) +
+    ggplot2::geom_point(color = "#972421", size = 2) +
+    ggplot2::labs(
+      title = "Placeholder",
+      subtitle = "A very scientific graph.",
+      x = "Time",
+      y = "Good Stuff"
+    ) +
+    ojothemes::theme_okpi()
+}
+
+placeholder_list <- function() {
+  list()
+}
+
+placeholder_tibble <- function() {
+  tibble::tibble()
+}
+
+placeholder_gt <- function() {
+  data <- .placeholder_time_series()
+  gt::gt(data)
+}
+
+placeholder_highchart <- function() {
+  data <- .placeholder_time_series()
+
+  highcharter::highchart() |>
+    highcharter::hc_add_series(
+      data = data,
+      type = "line",
+      highcharter::hcaes(x = Time, y = `Good Stuff`),
+      name = "Good Stuff"
+    ) |>
+    highcharter::hc_title(text = "Placeholder") |>
+    highcharter::hc_subtitle(text = "A very scientific graph.") |>
+    highcharter::hc_xAxis(title = list(text = "Time")) |>
+    highcharter::hc_yAxis(title = list(text = "Good Stuff"))
+}
+
+.placeholder_ok_counties <- function() {
+  counties <- withr::with_options(
+    list(tigris_use_cache = TRUE, tigris_class = "sf"),
+    tigris::counties(state = "OK", cb = TRUE, year = 2022)
+  )
+
+  counties <- dplyr::arrange(counties, .data$GEOID)
+
+  withr::with_seed(7, {
+    counties$good <- stats::runif(nrow(counties))
+  })
+
+  sf::st_transform(counties, 4326)
+}
+
+placeholder_highchart_map <- function() {
+  counties <- .placeholder_ok_counties()
+  county_values <- sf::st_drop_geometry(counties)
+
+  geojson_path <- tempfile(fileext = ".geojson")
+  on.exit(unlink(geojson_path), add = TRUE)
+
+  sf::st_write(
+    counties[, c("GEOID", "NAME", "good")],
+    geojson_path,
+    driver = "GeoJSON",
+    quiet = TRUE
+  )
+
+  geojson <- jsonlite::fromJSON(geojson_path, simplifyVector = FALSE)
+
+  highcharter::highchart(type = "map") |>
+    highcharter::hc_add_series_map(
+      map = geojson,
+      df = county_values,
+      value = "good",
+      joinBy = c("GEOID", "GEOID"),
+      name = "Good"
+    ) |>
+    highcharter::hc_title(text = "Placeholder") |>
+    highcharter::hc_subtitle(text = "A very scientific map.")
+}
+
+placeholder_number <- function() {
+  999999999
+}
+
+placeholder_string <- function() {
+  "[PLACEHOLDER]"
+}
