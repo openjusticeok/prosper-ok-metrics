@@ -12,7 +12,16 @@ pipeline_report_path <- function(report) {
   .pipeline_report_paths[[report]]
 }
 
-render_report <- function(report, analysis_results, figure_outputs, execute = TRUE, input = pipeline_report_path(report)) {
+render_report <- function(
+  report,
+  analysis_results,
+  figure_outputs,
+  execute = TRUE,
+  input = pipeline_report_path(report),
+  audiences = "internal"
+) {
+  audiences <- unique(match.arg(audiences, c("internal", "external"), several.ok = TRUE))
+
   data_dir <- here::here("data", "output")
   fs::dir_create(data_dir, recurse = TRUE)
 
@@ -32,9 +41,19 @@ render_report <- function(report, analysis_results, figure_outputs, execute = TR
 
   file_stem <- sub("\\.qmd$", "", basename(input))
   output_dir <- dirname(input)
-  variant_specs <- list(
-    list(public = FALSE, output_file = paste0(file_stem, ".html")),
-    list(public = TRUE, output_file = paste0(file_stem, "-public.html"))
+  # Default to internal-only rendering for faster local iteration; request
+  # "external" explicitly when needed.
+  variant_specs <- lapply(
+    audiences,
+    function(audience) {
+      output_file <- if (identical(audience, "internal")) {
+        paste0(file_stem, ".html")
+      } else {
+        paste0(file_stem, "-external.html")
+      }
+
+      list(audience = audience, output_file = output_file)
+    }
   )
 
   outputs <- withr::with_envvar(
@@ -43,7 +62,7 @@ render_report <- function(report, analysis_results, figure_outputs, execute = TR
       quarto::quarto_render(
         input = input,
         execute = execute,
-        execute_params = list(public = spec$public),
+        execute_params = list(audience = spec$audience),
         output_file = spec$output_file,
         quiet = FALSE # Always set to FALSE for easier debugging
       )
@@ -52,9 +71,9 @@ render_report <- function(report, analysis_results, figure_outputs, execute = TR
 
       if (!fs::file_exists(output_path)) {
         stop(sprintf(
-          "Quarto did not produce an HTML output for '%s' (public = %s). Expected file at '%s'.",
+          "Quarto did not produce an HTML output for '%s' (audience = %s). Expected file at '%s'.",
           report,
-          spec$public,
+          spec$audience,
           output_path
         ), call. = FALSE)
       }

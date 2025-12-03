@@ -37,7 +37,7 @@ description: |
     This is a status update report using data from the Tulsa County Prison. It was prepared and analyzed by the Oklahoma Policy Institute.
 embed-resources: false
 params:
-  public: false
+  audience: "internal"
 # abstract-title: Publication Note
 # abstract: 'DRAFT REPORT -- NOT FOR PUBLICATION'
 ---
