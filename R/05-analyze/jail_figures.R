@@ -1,4 +1,6 @@
 generate_jail_figures <- function(analysis_results = jail_analysis_results) {
+  # TODO: feat(jail-figures): Add dashed lines for scraped data.
+  # TODO: feat(jail-processing): Add data source type (scraped, administrative, etc.)
   booking_month_totals <- analysis_results$booking_month_totals
   if (nrow(booking_month_totals) > 0) {
     booking_trend_plot <- ggplot2::ggplot(

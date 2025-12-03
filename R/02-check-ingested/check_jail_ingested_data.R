@@ -1,3 +1,4 @@
+# TODO: This is all a placeholder for now until we have real checks to implement
 # Function to check the integrity of raw jail data inputs using pointblank
 check_jail_ingested <- function(ingested_data = jail_ingested_data) {
   pb_levels <- pointblank::action_levels(warn_at = 0.02, stop_at = 0.1)
