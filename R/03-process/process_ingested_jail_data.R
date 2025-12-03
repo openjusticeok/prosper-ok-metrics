@@ -77,16 +77,20 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   # TODO: Pull out some helper functions for repeated processing tasks
   # TODO: feat(process): Coalesce columns when multiple columns exist for same data
 
-  # Process Vera Incarceration Trends Data
+  ## Process Vera Incarceration Trends Data
   vera <- ingested_data$vera |>
     dplyr::mutate(
       source = "Vera: Incarceration Trends",
       quarter_date = lubridate::ymd(paste0(.data$year, "-", .data$quarter * 3, "-01"))
     )
 
+
+  ## Process Starling Analytics (JailNet) Data
   brek <- ingested_data$brek
 
-  # Process Jail Data Initiative Scraped Data
+
+  ## Process Jail Data Initiative (JDI) Scraped Data
+  # JDI Bookings with Inmate Info
   jail_data_initiative_bookings_with_inmate_info <- ingested_data$jail_data_initiative$people |>
     janitor::clean_names() |>
     dplyr::rename(
@@ -137,6 +141,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       meta_scrape_date = lubridate::ymd(.data$meta_scrape_date, quiet = TRUE) # Loud because of NAs
     )
 
+  # JDI Charges
   jail_data_initiative_charges <- ingested_data$jail_data_initiative$charges |>
     janitor::clean_names() |>
     dplyr::mutate(
@@ -159,7 +164,9 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       )
     )
 
-  # Process Asemio Scraper Data
+
+  ## Process Asemio Scraper Data
+  # Asemio Bookings
   asemio_scraped_bookings <- ingested_data$asemio$bookings |>
     dplyr::rename(
       jacket_number = dlm,
@@ -184,6 +191,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       jacket_number = as.character(.data$jacket_number)
     )
 
+  # Asemio Inmate Information
   asemio_scraped_inmates <- ingested_data$asemio$inmates |>
     dplyr::rename(
       jacket_number = dlm,
@@ -204,7 +212,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       updated_at_date = as.Date(updated_at)
     )
 
-
+  # Asemio Charges
   asemio_scraped_charges <- ingested_data$asemio$charges |>
     dplyr::mutate(
       source = "Asemio Scraper",
@@ -220,7 +228,8 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
     )
 
 
-  # Process OK Policy Scraper Data
+  ## Process OK Policy Scraper Data
+  # OK Policy Bookings with Inmate Info
   okpolicy_scraped_bookings_with_inmate_info <- ingested_data$okpolicy$bookings |>
     dplyr::rename(
       created_at_date = created_at,
@@ -247,15 +256,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       updated_at_time = hms::as_hms(updated_at_datetime)
     )
 
-  asemio_scraped_inmates |>
-    dplyr::count(race, race_ethnicity_standardized)
-  asemio_scraped_inmates |>
-    dplyr::count(gender, sex_gender_standardized)
-  jail_data_initiative_bookings_with_inmate_info |>
-    dplyr::count(race, race_ethnicity_standardized)
-  jail_data_initiative_bookings_with_inmate_info |>
-    dplyr::count(sex, gender, sex_gender_standardized)
-
+  # OK Policy Charges
   okpolicy_scraped_charges <- ingested_data$okpolicy$charges |>
     dplyr::rename(
       charge = statute_title,
@@ -280,6 +281,25 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
     )
 
 
+  ## TODO: Remaining data cleaning and processing tasks
+  # Move above where it belongs when done.
+
+  # TODO: feat(jail-process): Filter out hold charges unless for City of Tulsa or Electronic Monitoring Required
+  # TODO: fix(jail-process): Finer replacement with what the charge actually is rather than
+  # the hold category. I.e., Merging typos rather than "Tribal Hold"
+  # Hold Categories
+  okpolicy_scraped_charges <- okpolicy_scraped_charges |>
+    dplyr::mutate(
+      hold_category = categorize_hold_charge(charge_description),
+      charge_description_clean = clean_hold_charge_description(charge_description, hold_category)
+    )
+
+  # TODO: feat(jail-process): Add broader Hold Categories
+  # Oklahoma Jurisdiction/Agency Hold
+  # Reason for Hold: Another local Oklahoma agency is preventing release until they take custody.
+  # Release Condition: Release depends on transfer or action by the other agency.
+
+
   ### Joining data
   # Join inmate info to bookings for Asemio data
   asemio_scraped_bookings_with_inmate_info <- asemio_scraped_bookings |>
@@ -302,22 +322,9 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
     )
 
 
-  ### Filter out hold charges unless for City of Tulsa or Electronic Monitoring Required
-  # TODO: Finer replacement with what the charge actually is rather than
-  # the hold category. I.e., Merging typos rather than "Tribal Hold"
-  # Hold Categories
-  okpolicy_scraped_charges_with_bookings_info <- okpolicy_scraped_charges_with_bookings_info |>
-    dplyr::mutate(
-      hold_category = categorize_hold_charge(charge_description),
-      charge_description_clean = clean_hold_charge_description(charge_description, hold_category)
-    )
-
-  # TODO: Broader Hold Categories
-  # Oklahoma Jurisdiction/Agency Hold
-  # Reason for Hold: Another local Oklahoma agency is preventing release until they take custody.
-  # Release Condition: Release depends on transfer or action by the other agency.
-
-  # Combine bookings data from both sources
+  ### Combine individual processed bookings records from each data source
+  # Each should include inmate info already where available
+  # NOTE: Right now they are all scraped data but could include other sources later
   booking_sources <- list(
     jail_data_initiative_bookings_with_inmate_info,
     okpolicy_scraped_charges_with_bookings_info,
@@ -325,7 +332,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   )
 
 
-  combined_bookings <- dplyr::bind_rows(booking_sources) |>
+  combined_processed_bookings <- dplyr::bind_rows(booking_sources) |>
     dplyr::mutate(
       booking_month = lubridate::floor_date(booking_date, "month"),
       booking_year = lubridate::year(booking_date),
@@ -337,10 +344,12 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       created_at_inmate_year = lubridate::year(created_at_inmate)
     )
 
+
   ### Generate derived metrics: Jail Bookings, Jail Releases, Jail Average Daily Population (ADP)
 
   ## Jail Bookings
-  # A note on number of bookings per day with scraped data:
+  # Methodology notes for bookings:
+  # NOTE: Number of bookings per day with scraped data:
   # Booking date in scraped data cannot be used to determine the number of
   # bookings per day. People booked before the first day of scraping
   # will appear on the first day of scraping, but not all of them. So the
@@ -349,19 +358,19 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   # forward, but still not accurate for past dates. However, for any days that
   # scraping did not occur, the number of bookings will be undercounted since
   # they may have been released before the next scraping date.
-
+  #
   # We should utilize the "created_at" field from the scraped data to
   # determine when the data was actually scraped. This will help identify
   # the dates scraping occurred to determine which date ranges have accurate
   # booking counts. Number of daily, monthly, and yearly bookings can only be
   # accurately determined for dates where scraping occurred daily without gaps
   # throughout the entire date range.
-
+  #
   # The new scrapes alleviates this partially since it shows recent releases as
   # well, but it still introduces some uncertainty since the behavior of what
   # appears on the recent releases is not fully known.
 
-  # A note on jail population per day with scraped data:
+  # NOTE: Jail population per day with scraped data:
   # The jail population is tricky because people can be booked and released
   # within the same day. So just counting the number of bookings per day
   # does not give an accurate picture of the average population at a given point
@@ -369,10 +378,16 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   # get a more accurate picture of the jail population over time.
 
   # Main total bookings calculation
-  # TODO: fix(process): Adjust booking totals to account for scraping gaps
+  # Goal is to get as accurate an estimate as possible.
+  # For that reason we differentiate using the methodology above between
+  # bookings counted on days where scraping occurred and those where it did not.
+  # TODO: feat(process): Add booking_totals vs scraped_booking_totals to account for scraping gaps
   # TODO: feat(process): Add gender, race, age demographics to booking totals
-  booking_totals <- combined_bookings |>
+  # TODO: feat(process): Add est_booking_totals to account for undercounting due to scraping gaps
+  # TODO: Later, feat(process): Add hold charge categories to booking totals
+  booking_totals <- combined_processed_bookings |>
     dplyr::count(source, booking_month, name = "bookings") |>
+    # Combining data from sources which are already aggregated
     dplyr::bind_rows(
       vera |>
         dplyr::filter(!is.na(total_jail_adm)) |>
@@ -402,21 +417,9 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
         )
     ) |>
     dplyr::arrange(desc(booking_month))
-  booking_demographics_gender <- combined_bookings |>
-    tidyr::drop_na(gender) |>
-    dplyr::count(source, gender, name = "bookings")
 
-  booking_demographics_race <- combined_bookings |>
-    tidyr::drop_na(race) |>
-    dplyr::count(source, race, name = "bookings")
-
-
-  # TODO:: I want to count the number of people booked per day, month, and year by
-  # source. Not the number of rows in the bookings data since people may be in
-  # the data multiple times per month.
-  # Each source needs to be counted by source, booking_date, and booking_id
-  booking_counts_by_date <- combined_bookings |>
-    # dplyr::distinct(jacket_number, booking_date, source, .keep_all = TRUE) |>
+  # NOTE: This logic needs to be merged into the above as part of one of the TODOs
+  booking_counts_by_date <- combined_processed_bookings |>
     # The accurate counts are only for dates where scraping occurred
     dplyr::mutate(
       scraped_on_day_of_booking = dplyr::if_else(
@@ -442,24 +445,6 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
     dplyr::arrange(booking_date)
 
 
-  # WARNING: Temporary exploration
-  # TODO: For the same unique booking, is there more than one row, and if so
-  # what differs between the rows? Is it just charges or other info as well?
-  # TODO: Under what circumstances does the updated_at date change?
-  # ID is unique
-  asemio_scraped_bookings_with_inmate_info |>
-    dplyr::filter(dplyr::n() > 1, .by = c("id"))
-  # Jacket number + booking date has 133k duplicates
-  asemio_scraped_bookings_with_inmate_info |>
-    dplyr::filter(dplyr::n() > 1, .by = c("jacket_number", "booking_date"))
-  # Jacket number + booking date + created at date has 105k duplicates
-  asemio_scraped_bookings_with_inmate_info |>
-    dplyr::filter(dplyr::n() > 1, .by = c("jacket_number", "booking_date", "created_at_date"))
-  # Jacket number + booking date + created at (date time) has 3,667 duplicates
-  asemio_scraped_bookings_with_inmate_info |>
-    dplyr::filter(dplyr::n() > 1, .by = c("jacket_number", "booking_date", "created_at"))
-
-
   ## Jail Releases
 
 
@@ -468,7 +453,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
 
   ## Other derived metrics (not used in report)
   # TODO: feat(process): Scraping trends analysis
-  scraping_trends <- combined_bookings |>
+  scraping_trends <- combined_processed_bookings |>
     dplyr::count(source, created_at_date, updated_at_date, name = "n_bookings_updated") |>
     dplyr::mutate(
       n_bookings_created = sum(.data$n_bookings_updated[.data$created_at_date == .data$updated_at_date], na.rm = TRUE),
@@ -478,9 +463,11 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   # TODO: feat(process): Analysis of top arresting_officers
 
 
+
+
   ### Return processed data
   list(
-    booking_records = combined_bookings,
+    booking_records = combined_processed_bookings,
     booking_totals = booking_totals,
     booking_demographics = list(
       gender = booking_demographics_gender,

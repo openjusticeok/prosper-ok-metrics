@@ -225,7 +225,6 @@ asemio_scraped_bookings |>
   })()
 
 ## Explore asemio scrape duplicates to construct custom booking id
-# WARNING: Not part of processing. Exploration of duplicates only.
 asemio_scraped_bookings_with_inmate_info |>
   dplyr::mutate(
     duplicate_count = dplyr::n(),
@@ -267,3 +266,30 @@ asemio_scraped_bookings_with_inmate_info |>
   dplyr::filter(
     booking_date == created_at_date
   )
+# NOTE: This may be redundant with above, just copied it here quickly.
+# TODO: For the same unique booking, is there more than one row, and if so
+# what differs between the rows? Is it just charges or other info as well?
+# TODO: Under what circumstances does the updated_at date change?
+# ID is unique
+asemio_scraped_bookings_with_inmate_info |>
+  dplyr::filter(dplyr::n() > 1, .by = c("id"))
+# Jacket number + booking date has 133k duplicates
+asemio_scraped_bookings_with_inmate_info |>
+  dplyr::filter(dplyr::n() > 1, .by = c("jacket_number", "booking_date"))
+# Jacket number + booking date + created at date has 105k duplicates
+asemio_scraped_bookings_with_inmate_info |>
+  dplyr::filter(dplyr::n() > 1, .by = c("jacket_number", "booking_date", "created_at_date"))
+# Jacket number + booking date + created at (date time) has 3,667 duplicates
+asemio_scraped_bookings_with_inmate_info |>
+  dplyr::filter(dplyr::n() > 1, .by = c("jacket_number", "booking_date", "created_at"))
+
+
+## Explore demographics standardization
+asemio_scraped_inmates |>
+  dplyr::count(race, race_ethnicity_standardized)
+asemio_scraped_inmates |>
+  dplyr::count(gender, sex_gender_standardized)
+jail_data_initiative_bookings_with_inmate_info |>
+  dplyr::count(race, race_ethnicity_standardized)
+jail_data_initiative_bookings_with_inmate_info |>
+  dplyr::count(sex, gender, sex_gender_standardized)

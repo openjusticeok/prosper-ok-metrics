@@ -4,6 +4,9 @@ analyze_jail_metrics <- function(processed_data = jail_processed_data) {
   brek_report <- processed_data$brek_report
   vera <- processed_data$vera
 
+  ### Jail Bookings
+  ## Public Jail Bookings Metrics
+  # TODO: fix(analyze): Consider removing as it's not used in the report
   latest_month_bookings <- booking_totals |>
     dplyr::group_by(source) |>
     dplyr::slice_max(order_by = booking_month, n = 1, with_ties = FALSE) |>
@@ -18,6 +21,7 @@ analyze_jail_metrics <- function(processed_data = jail_processed_data) {
       .by = c(source, booking_year)
     )
 
+  # TODO: fix(analyze): Replace with actual 2025 data we want to report
   tulsa_brek_overall <- brek_report |>
     dplyr::filter(
       metric_family %in% c("adp", "bookings"),
@@ -27,6 +31,7 @@ analyze_jail_metrics <- function(processed_data = jail_processed_data) {
     )
 
   key_metrics <- dplyr::bind_rows(
+    # TODO: Same as TODO above
     tulsa_brek_overall |>
       dplyr::mutate(
         metric = dplyr::case_when(
@@ -50,6 +55,24 @@ analyze_jail_metrics <- function(processed_data = jail_processed_data) {
       dplyr::select(metric, value, yoy_change)
   )
 
+
+  ## Private Jail Bookings Metrics
+
+
+
+
+  ### Jail Releases
+
+
+
+
+  ### Jail Average Daily Population (ADP)
+
+
+
+
+
+  ### Return list as the targets object
   list(
     booking_records = booking_records,
     booking_month_totals = booking_month_totals,
