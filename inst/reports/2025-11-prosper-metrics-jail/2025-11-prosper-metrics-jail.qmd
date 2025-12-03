@@ -126,8 +126,8 @@ cross-validate estimates.
 - **OK Policy's Scraper:** Data in OK Policy's database from a scraper developed by OK Policy.
   This scraper collected daily population data from the Tulsa County Jail's newest public data portal
   after the new portal was launched.
-- **Jail Data Initiative's Scraper:** Data acquired through a Data Use Agreement
-  with the Jail Data Intiative (JDI). This data was collected via a web scraper
+- **Jail Data Initiative's Scraper:** Data was acquired through a data sharing agreement
+  with the Jail Data Intiative (JDI). JDI's data was collected via a web scraper
   that pulled daily population data from the Tulsa County Jail's public data portal
   before the new portal and after a several month gap, after the new portal launched.
 - **Asemio's Scraper:** Data in OK Policy's database from a web scraper developed by Asemio. This scraper
