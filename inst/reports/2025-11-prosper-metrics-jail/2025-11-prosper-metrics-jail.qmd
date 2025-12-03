@@ -91,8 +91,8 @@ a
 decrease from 2024.**
 
 ```{r overview-metrics}
-#| include: params$audience == "internal"
-#| eval: params$audience == "internal"
+#| include: params$audience %in% c("internal")
+#| eval: params$audience %in% c("internal")
 if (!is.null(jail_figures$overview_metrics_table)) {
   jail_figures$overview_metrics_table
 } else {
@@ -137,17 +137,17 @@ able to use that data to validate and refine the estimates presented in this rep
 
 # Jail Bookings
 
-```{r}
-#| include: params$audience == "internal"
-#| eval: params$audience == "internal"
+```{r }
+#| include: params$audience %in% c("internal")
+#| eval: params$audience %in% c("internal")
 if (!is.null(jail_figures$booking_trend)) {
   jail_figures$booking_trend
 }
 ```
 
 ```{r jail-bookings-table}
-#| include: params$audience == "internal"
-#| eval: params$audience == "internal"
+#| include: params$audience %in% c("internal")
+#| eval: params$audience %in% c("internal")
 if (!is.null(jail_figures$booking_latest_table)) {
   jail_figures$booking_latest_table
 }
@@ -158,16 +158,16 @@ if (!is.null(jail_figures$booking_annual_table)) {
 ```
 
 ```{r jail-releases-heading, results='asis', echo=FALSE}
-#| include: params$audience == "internal"
-#| eval: params$audience == "internal"
+#| include: params$audience %in% c("internal")
+#| eval: params$audience %in% c("internal")
 if (identical(params$audience, "internal")) {
   cat("# Jail Releases\n\n")
 }
 ```
 
 ```{r jail-release-counts}
-#| include: params$audience == "internal"
-#| eval: params$audience == "internal"
+#| include: params$audience %in% c("internal")
+#| eval: params$audience %in% c("internal")
 
 if (!is.null(jail_figures$release_counts_table)) {
   jail_figures$release_counts_table
@@ -177,8 +177,8 @@ if (!is.null(jail_figures$release_counts_table)) {
 ```
 
 ```{r jail-release-counts-plot}
-#| include: params$audience == "internal"
-#| eval: params$audience == "internal"
+#| include: params$audience %in% c("internal")
+#| eval: params$audience %in% c("internal")
 
 if (!is.null(jail_figures$release_counts)) {
   jail_figures$release_counts
@@ -189,8 +189,8 @@ Release data is unavailable due to a lack of information about where individuals
 were released to (e.g., to street, another facility, etc.).
 
 ```{r jail-release-shares}
-#| include: params$audience == "internal"
-#| eval: params$audience == "internal"
+#| include: params$audience %in% c("internal")
+#| eval: params$audience %in% c("internal")
 
 if (!is.null(jail_figures$release_shares_table)) {
   jail_figures$release_shares_table
@@ -200,8 +200,8 @@ if (!is.null(jail_figures$release_shares_table)) {
 ```
 
 ```{r jail-release-share-plot}
-#| include: params$audience == "internal"
-#| eval: params$audience == "internal"
+#| include: params$audience %in% c("internal")
+#| eval: params$audience %in% c("internal")
 
 if (!is.null(jail_figures$release_share)) {
   jail_figures$release_share
@@ -209,16 +209,16 @@ if (!is.null(jail_figures$release_share)) {
 ```
 
 ```{r jail-comparison-heading, results='asis', echo=FALSE}
-#| include: params$audience == "internal"
-#| eval: params$audience == "internal"
+#| include: params$audience %in% c("internal")
+#| eval: params$audience %in% c("internal")
 if (identical(params$audience, "internal")) {
   cat("# Tulsa County Comparison to Oklahoma County and other counties\n\n")
 }
 ```
 
 ```{r jail-comparison}
-#| include: params$audience == "internal"
-#| eval: params$audience == "internal"
+#| include: params$audience %in% c("internal")
+#| eval: params$audience %in% c("internal")
 
 if (!is.null(jail_figures$county_comparison_table)) {
   jail_figures$county_comparison_table
@@ -228,8 +228,8 @@ if (!is.null(jail_figures$county_comparison_table)) {
 # Average Daily Population
 
 ```{r jail-adp}
-#| include: params$audience == "internal"
-#| eval: params$audience == "internal"
+#| include: params$audience %in% c("internal")
+#| eval: params$audience %in% c("internal")
 if (!is.null(jail_figures$adp_comparison)) {
   jail_figures$adp_comparison
 }
