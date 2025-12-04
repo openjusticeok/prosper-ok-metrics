@@ -1,0 +1,11 @@
+Package: prosperOkMetrics
+Title: Metrics and Reporting for Prosper OK
+Version: 0.1.0
+Authors@R:
+    person("Anthony", "Flores", , "anthonyfloresokc@gmail.com", role = c("aut", "cre"))
+Description: A package to support data analysis and reporting for Prosper
+    OK's criminal justice initiatives in Oklahoma.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
