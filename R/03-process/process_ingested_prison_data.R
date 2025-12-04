@@ -1,10 +1,11 @@
 process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
+  doc_ingested_data <- ingested_data$doc
 
-  available_extracts <- ingested_data$available_extracts
-  profile_data <- ingested_data$profile_data
-  offense_data <- ingested_data$offense_data
-  sentence_data <- ingested_data$sentence_data
-  consecutive_data <- ingested_data$consecutive_data
+  available_extracts <- doc_ingested_data$available_extracts
+  profile_data <- doc_ingested_data$profile_data
+  offense_data <- doc_ingested_data$offense_data
+  sentence_data <- doc_ingested_data$sentence_data
+  consecutive_data <- doc_ingested_data$consecutive_data
 
   assessment_and_reception <- c(
     "LEXINGTON ASSESSMENT AND RECEPTION CENTER",

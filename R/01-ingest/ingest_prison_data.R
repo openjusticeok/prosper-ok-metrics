@@ -272,17 +272,8 @@ ingest_doc_data <- function(
 #'
 #' @inheritParams ingest_doc_data
 #' @return List of DOC ingest outputs identical to [ingest_doc_data()].
-ingest_prison_data <- function(
-  drive_folder_url = c(
-    "https://drive.google.com/drive/folders/1rYwFUKikr8iJys3StLppcxjy9Zs8EdAa",
-    "https://drive.google.com/drive/folders/1mnaw1XjSAMTrzXWdatDS7m597sZk51xM"
-  ),
-  extract_dates = NULL,
-  download_dir = tempdir()
-) {
-  ingest_doc_data(
-    drive_folder_url = drive_folder_url,
-    extract_dates = extract_dates,
-    download_dir = download_dir
+ingest_prison_data <- function() {
+  list(
+    doc = ingest_doc_data()
   )
 }

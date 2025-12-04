@@ -1,10 +1,13 @@
 check_prison_ingested <- function(ingested_data = prison_ingested_data) {
+
+  doc_ingested_data <- ingested_data$doc
+
   # WARNING: These are just placeholder checks. Real checks needed.
   pb_levels <- pointblank::action_levels(warn_at = 0.02, stop_at = 0.1)
   warn_only <- pointblank::action_levels(warn_at = 0.02, stop_at = Inf)
 
   profile_agent <- pointblank::create_agent(
-    tbl = ingested_data$profile_data,
+    tbl = doc_ingested_data$profile_data,
     label = "DOC profile data",
     actions = pb_levels
   ) |>
@@ -13,7 +16,7 @@ check_prison_ingested <- function(ingested_data = prison_ingested_data) {
     pointblank::interrogate()
 
   sentence_agent <- pointblank::create_agent(
-    tbl = ingested_data$sentence_data,
+    tbl = doc_ingested_data$sentence_data,
     label = "DOC sentence data",
     actions = pb_levels
   ) |>
@@ -22,7 +25,7 @@ check_prison_ingested <- function(ingested_data = prison_ingested_data) {
     pointblank::interrogate()
 
   offense_agent <- pointblank::create_agent(
-    tbl = ingested_data$offense_data,
+    tbl = doc_ingested_data$offense_data,
     label = "DOC offense data",
     actions = pb_levels
   ) |>
