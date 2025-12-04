@@ -39,7 +39,6 @@ check_prison_ingested <- function(ingested_data = prison_ingested_data) {
   }
 
   tibble::lst(
-    ingested_data = ingested_data,
     checks = dplyr::bind_rows(
       summarize_agent(profile_agent, "profile_data"),
       summarize_agent(sentence_agent, "sentence_data"),

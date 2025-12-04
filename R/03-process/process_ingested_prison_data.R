@@ -1,5 +1,5 @@
-process_ingested_prison_data <- function(ingested_checks = prison_ingested_checks) {
-  ingested_data <- ingested_checks$ingested_data
+process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
+  ingested_data <- ingested_data$prison_ingested_data
 
   profile_data <- ingested_data$profile_data
   offense_data <- ingested_data$offense_data
