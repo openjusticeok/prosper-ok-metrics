@@ -1,4 +1,4 @@
-generate_jail_figures <- function(analysis_results = jail_analysis_results) {
+visualize_jail_figures <- function(analysis_results = jail_analysis_results) {
   ### Helper functions
   fmt_pct <- function(x) scales::percent(x, accuracy = 0.1)
   fmt_num <- function(x) scales::comma(x, accuracy = 1)
