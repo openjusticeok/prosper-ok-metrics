@@ -84,11 +84,11 @@ audience_show <- function(levels) audience %in% levels
 # Load in the prison metrics data
 # to be used in line for the narrative section
 # TODO: feat(report): Filter/pull to only the INDIVIDUAL metrics used in this report
-sentences_doc_admin_2025_total_tulsa  <- prison_metrics$sentences_doc_admin_year_total_by_county
-releases_vera_admin_2024_total_tulsa  <- prison_metrics$releases_vera_admin_year_total_by_county
-population_doc_admin_2025_yoy_by_gender_tulsa <- prison_metrics$population_doc_admin_yoy_by_gender_county
-population_doc_admin_2025_by_gender_tulsa <- prison_metrics$population_doc_admin_year_by_gender_county
-population_doc_admin_2024_by_gender_tulsa <- prison_metrics$population_doc_admin_year_by_gender_county
+sentences_doc_admin_2025_total_tulsa  <- prison_analysis$sentences_doc_admin_year_total_by_county
+releases_vera_admin_2024_total_tulsa  <- prison_analysis$releases_vera_admin_year_total_by_county
+population_doc_admin_2025_yoy_by_gender_tulsa <- prison_analysis$population_doc_admin_yoy_by_gender_county
+population_doc_admin_2025_by_gender_tulsa <- prison_analysis$population_doc_admin_year_by_gender_county
+population_doc_admin_2024_by_gender_tulsa <- prison_analysis$population_doc_admin_year_by_gender_county
 # Repeat if we need Oklahoma/other county data in the narrative
 ```
 

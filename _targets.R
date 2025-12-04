@@ -76,7 +76,7 @@ list(
   ),
   tar_target(
     name = jail_analysis_results,
-    command = analyze_processsed_jail_data(jail_processed_data)
+    command = analyze_processed_jail_data(jail_processed_data)
   ),
   tar_target(
     name = jail_figures,
@@ -114,7 +114,7 @@ list(
   ),
   tar_target(
     name = prison_analysis_results,
-    command = analyze_processsed_prison_data(prison_processed_data)
+    command = analyze_processed_prison_data(prison_processed_data)
   ),
   tar_target(
     name = prison_figures,
