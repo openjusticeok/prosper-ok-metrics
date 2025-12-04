@@ -15,6 +15,17 @@ Geographies (Sentencing County): Tulsa County, Oklahoma County, All Other Counti
 * Prison Releases
 * Prison Population
 
+## Running the targets pipeline
+
+Use a cross-platform `future` plan so macOS, Ubuntu, and Arch analysts get parallel builds without extra setup:
+
+```r
+library(future)
+workers <- max(1, future::availableCores() - 1)  # leave one core free
+plan(multisession, workers = workers)
+targets::tar_make_future()
+```
+
 # Older Metrics / Details
 
 These can be found in `/inst/older-metrics`
