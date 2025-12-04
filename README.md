@@ -3,7 +3,7 @@
 ## November 2025
 ### Jail
 Aggregations: Total, by Gender, by Race
-Geographies: Tulsa County, Oklahoma County, All Other Counties
+Geographies: Tulsa County, Oklahoma County
 - Jail Bookings
 - Jail Releases
 - Average Daily Population (ADP)
