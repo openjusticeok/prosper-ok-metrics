@@ -2,26 +2,22 @@ generate_jail_figures <- function(analysis_results = jail_analysis_results) {
   ### Helper functions
   fmt_pct <- function(x) scales::percent(x, accuracy = 0.1)
   fmt_num <- function(x) scales::comma(x, accuracy = 1)
-  has_rows_and_not_null <- function(x) !is.null(x) && nrow(x) > 0
 
 
 
 
   ### Executive Summary
   ## Overview Metrics Table
-  table_metrics_executive_summary <- NULL
-  if (has_rows_and_not_null(analysis_results$metrics_executive_summary)) {
-    table_metrics_executive_summary <- analysis_results$metrics_executive_summary |>
-      dplyr::mutate(
-        value = fmt_num(value),
-        yoy_change = dplyr::case_when(
-          is.na(yoy_change) ~ "—",
-          TRUE ~ fmt_pct(yoy_change)
-        )
-      ) |>
-      dplyr::rename(`Metric` = metric, `Value` = value, `Yoy Change` = yoy_change) |>
-      ojothemes::gt_ojo()
-  }
+  table_metrics_executive_summary <- analysis_results$metrics_executive_summary |>
+    dplyr::mutate(
+      value = fmt_num(value),
+      yoy_change = dplyr::case_when(
+        is.na(yoy_change) ~ "—",
+        TRUE ~ fmt_pct(yoy_change)
+      )
+    ) |>
+    dplyr::rename(`Metric` = metric, `Value` = value, `Yoy Change` = yoy_change) |>
+    ojothemes::gt_ojo()
 
 
 
@@ -42,9 +38,7 @@ generate_jail_figures <- function(analysis_results = jail_analysis_results) {
   # TODO: feat(jail-processing): Add data source type (scraped, administrative, etc.)
   bookings_multiproducer_mixmethod_month_total <-
     analysis_results$bookings_multiproducer_mixmethod_month_total
-  if (!has_rows_and_not_null(bookings_multiproducer_mixmethod_month_total)) {
-    bookings_multiproducer_mixmethod_month_total <- placeholder_tibble()
-  }
+  bookings_multiproducer_mixmethod_month_total <- placeholder_tibble()
 
   plot_bookings_multiproducer_mixmethod_month_total <- ggplot2::ggplot(
     bookings_multiproducer_mixmethod_month_total,
