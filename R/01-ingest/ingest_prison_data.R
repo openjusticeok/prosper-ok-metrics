@@ -272,8 +272,9 @@ ingest_doc_data <- function(
 #'
 #' @inheritParams ingest_doc_data
 #' @return List of DOC ingest outputs identical to [ingest_doc_data()].
-ingest_prison_data <- function() {
+ingest_prison_data <- function(vera_data) {
   list(
-    doc = ingest_doc_data()
+    doc = ingest_doc_data(),
+    vera = vera_data
   )
 }
