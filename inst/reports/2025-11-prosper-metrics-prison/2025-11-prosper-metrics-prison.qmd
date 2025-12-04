@@ -69,8 +69,27 @@ library(nanoparquet)
 library(ggrepel)
 
 ojothemes::ojo_set_theme(theme = "okpi")
-prison_metrics$sentences_admin_yoy_total_by_county
-prison_metrics$population_doc_admin_year_total_by_county_by_gender
+
+analysis_path <- here::here("data", "output", "prison_analysis_results.rds")
+figures_path <- here::here("data", "output", "prison_figures.rds")
+
+prison_analysis <- readRDS(analysis_path)
+prison_figures <- readRDS(figures_path)
+
+fmt_pct <- function(x) scales::percent(x, accuracy = 0.1)
+fmt_num <- function(x) scales::comma(x, accuracy = 1)
+audience <- match.arg(params$audience, c("internal", "external", "public"))
+audience_show <- function(levels) audience %in% levels
+
+# Load in the prison metrics data
+# to be used in line for the narrative section
+# TODO: feat(report): Filter/pull to only the INDIVIDUAL metrics used in this report
+sentences_doc_admin_2025_total_tulsa  <- prison_metrics$sentences_doc_admin_year_total_by_county
+releases_vera_admin_2024_total_tulsa  <- prison_metrics$releases_vera_admin_year_total_by_county
+population_doc_admin_2025_yoy_by_gender_tulsa <- prison_metrics$population_doc_admin_yoy_by_gender_county
+population_doc_admin_2025_by_gender_tulsa <- prison_metrics$population_doc_admin_year_by_gender_county
+population_doc_admin_2024_by_gender_tulsa <- prison_metrics$population_doc_admin_year_by_gender_county
+# Repeat if we need Oklahoma/other county data in the narrative
 ```
 
 # Overview
