@@ -30,7 +30,7 @@ analyze_jail_metrics <- function(processed_data = jail_processed_data) {
       county %in% c("Tulsa County", "Oklahoma County")
     )
 
-  key_metrics <- dplyr::bind_rows(
+  metrics_executive_summary <- dplyr::bind_rows(
     # TODO: Same as TODO above
     tulsa_brek_overall |>
       dplyr::mutate(
@@ -56,7 +56,7 @@ analyze_jail_metrics <- function(processed_data = jail_processed_data) {
   )
 
 
-  ## Private Jail Bookings Metrics
+  ## External Jail Bookings Metrics
 
 
 
@@ -74,14 +74,18 @@ analyze_jail_metrics <- function(processed_data = jail_processed_data) {
 
   ### Return list as the targets object
   list(
-    booking_records = booking_records,
+    # Executive Summary
+    metrics_executive_summary = metrics_executive_summary,
+    # Jail Bookings
     bookings_multiproducer_mixmethod_month_total = bookings_multiproducer_mixmethod_month_total,
     booking_year_totals = booking_year_totals,
     latest_month = latest_month_bookings,
+    # Jail Releases
     release_counts = processed_data$release_counts,
     release_shares = processed_data$release_shares,
-    brek_report = brek_report,
+    # Jail Average Daily Population (ADP)
     adp_summary = processed_data$adp_summary,
-    key_metrics = key_metrics
+    # Other
+    brek_report = brek_report
   )
 }

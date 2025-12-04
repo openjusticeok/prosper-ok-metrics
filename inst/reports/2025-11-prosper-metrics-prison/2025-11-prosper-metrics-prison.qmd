@@ -1,6 +1,5 @@
 ---
-title: |
-  ProsperOK Metrics Report<br>for Tulsa County's Prison Population,<br> Q4 2025
+title: "`r paste0(if (isTRUE(params$draft)) '[DRAFT, NOT FOR EXTERNAL SHARING] ' else '', 'ProsperOK Metrics Report<br>for Tulsa Countys Prison Population,<br> Q4 2025')`"
 subtitle: |
   November 2025 update on Tulsa County Prison Population and Sentences
 format:
@@ -38,9 +37,16 @@ description: |
 embed-resources: false
 params:
   audience: "internal"
+  draft: true
 # abstract-title: Publication Note
 # abstract: 'DRAFT REPORT -- NOT FOR PUBLICATION'
 ---
+
+```{r draft-disclaimer, echo=FALSE, results='asis'}
+if (isTRUE(params$draft)) {
+  cat("::: {.callout-warning}\n**[DRAFT, NOT FOR EXTERNAL SHARING]** This draft report is for internal use only.\n:::\n\n")
+}
+```
 
 ```{r}
 
@@ -49,7 +55,6 @@ params:
 
 # We'll build this into the YAML header so you don't have to take this extra step
 # once the {pagedown} people get around to adding quarto support.
-
 ```
 
 ```{r setup, include=FALSE}
