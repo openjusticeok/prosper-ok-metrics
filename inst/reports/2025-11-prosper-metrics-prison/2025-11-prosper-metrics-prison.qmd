@@ -84,6 +84,11 @@ audience_show <- function(levels) audience %in% levels
 # Load in the prison metrics data
 # to be used in line for the narrative section
 # TODO: feat(report): Filter/pull to only the INDIVIDUAL metrics used in this report
+# WARNING: I'm considering moving this code to analyze_processsed_prison_data.R
+# and turning each into a target object for locality of behavior and to simplify
+# the pipeline. Either that or create a new R script to do this. The advantage
+# of a new script is we don't have to run the whole prison_analysis.R script for
+# each minor change. For now, we'll just pull from the big list object.
 sentences_doc_admin_2025_total_tulsa  <- prison_analysis$sentences_doc_admin_year_total_by_county
 releases_vera_admin_2024_total_tulsa  <- prison_analysis$releases_vera_admin_year_total_by_county
 population_doc_admin_2025_yoy_by_gender_tulsa <- prison_analysis$population_doc_admin_yoy_by_gender_county
