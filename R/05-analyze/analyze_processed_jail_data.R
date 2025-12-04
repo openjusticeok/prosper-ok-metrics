@@ -1,4 +1,4 @@
-analyze_jail_metrics <- function(processed_data = jail_processed_data) {
+analyze_processed_jail_data <- function(processed_data = jail_processed_data) {
   booking_totals <- processed_data$booking_totals
   booking_records <- processed_data$booking_records
   brek_report <- processed_data$brek_report

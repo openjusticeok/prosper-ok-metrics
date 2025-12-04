@@ -1,5 +1,5 @@
 ### Main analysis function
-analyze_prison_metrics <- function(processed_data = prison_processed_data) {
+analyze_processsed_prison_data <- function(processed_data = prison_processed_data) {
   people_with_sentence_info <- processed_data$people_with_sentence_info
 
   sentences_doc_admin_year_total_by_county <- placeholder_tibble()

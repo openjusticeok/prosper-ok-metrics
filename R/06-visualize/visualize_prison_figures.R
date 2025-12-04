@@ -1,4 +1,4 @@
-generate_prison_figures <- function(analysis_results = prison_analysis_results) {
+visualize_prison_figures <- function(analysis_results = prison_analysis_results) {
 
   plot_sentences_doc_admin_year_total_by_county <- placeholder_ggplot()
   plot_releases_vera_admin_year_total_by_county <- placeholder_ggplot()
