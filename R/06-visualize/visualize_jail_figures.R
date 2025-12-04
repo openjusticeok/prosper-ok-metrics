@@ -4,8 +4,6 @@ visualize_jail_figures <- function(analysis_results = jail_analysis_results) {
   fmt_num <- function(x) scales::comma(x, accuracy = 1)
 
 
-
-
   ### Executive Summary
   ## Overview Metrics Table
   table_metrics_executive_summary <- analysis_results$metrics_executive_summary |>
@@ -18,8 +16,6 @@ visualize_jail_figures <- function(analysis_results = jail_analysis_results) {
     ) |>
     dplyr::rename(`Metric` = metric, `Value` = value, `Yoy Change` = yoy_change) |>
     ojothemes::gt_ojo()
-
-
 
 
   ### Jail Bookings
@@ -38,12 +34,11 @@ visualize_jail_figures <- function(analysis_results = jail_analysis_results) {
   # TODO: feat(jail-processing): Add data source type (scraped, administrative, etc.)
   bookings_multiproducer_mixmethod_month_total <-
     analysis_results$bookings_multiproducer_mixmethod_month_total
-  bookings_multiproducer_mixmethod_month_total <- placeholder_tibble()
 
-  plot_bookings_multiproducer_mixmethod_month_total <- ggplot2::ggplot(
-    bookings_multiproducer_mixmethod_month_total,
-    ggplot2::aes(x = booking_month, y = bookings, color = source)
-  ) +
+  plot_bookings_multiproducer_mixmethod_month_total <-
+    bookings_multiproducer_mixmethod_month_total |> ggplot2::ggplot(
+      ggplot2::aes(x = booking_month, y = bookings, color = source)
+    ) +
     ggplot2::geom_line(linewidth = 1) +
     ggplot2::geom_point(size = 1) +
     ggplot2::labs(
@@ -57,10 +52,6 @@ visualize_jail_figures <- function(analysis_results = jail_analysis_results) {
     ggplot2::guides(color = ggplot2::guide_legend(ncol = 3))
 
 
-
-
-
-
   ### Jail Releases Figures
   ## Public Jail Releases Figures
   plot_releases_vera_admin_quarter_total <- placeholder_ggplot()
@@ -72,8 +63,6 @@ visualize_jail_figures <- function(analysis_results = jail_analysis_results) {
   table_releases_vera_admin_year_last_5_years_all <- placeholder_gt()
 
 
-
-
   ### Jail Average Daily Population (ADP) Figures
   ## Public Jail Average Daily Population Figures
   plot_adp_multiproducer_estimate_year_total_county_gender <- placeholder_ggplot()
@@ -82,8 +71,6 @@ visualize_jail_figures <- function(analysis_results = jail_analysis_results) {
 
   ## External Jail Average Daily Population Figures
   plot_adp_multiproducer_mixmethod_year_total_county_gender <- placeholder_ggplot()
-
-
 
 
   ### Return list as the targets object
