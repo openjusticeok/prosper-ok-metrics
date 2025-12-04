@@ -100,7 +100,7 @@ doc_repeat <- sentence_data |>
 # Joining all the datasets but paying special attention to the sentence data
 # which contains the sentencing_county and `js_date` and profile data which
 # contains the person's `sex` which we are using in place of gender.
-doc_data_join_all <- sentence_data |>
+people_with_sentence_info <- sentence_data |>
   left_join(consecutive_data,
             by = "sentence_id") |>
   inner_join(doc_repeat,
@@ -144,4 +144,4 @@ doc_data_join_all <- sentence_data |>
              by = c("doc_num"))
 
 
-write_csv(doc_data_join_all, here("data", "output", "doc_data_join_all.csv"))
+write_csv(people_with_sentence_info, here("data", "output", "people_with_sentence_info.csv"))

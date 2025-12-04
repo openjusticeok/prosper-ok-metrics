@@ -1,9 +1,9 @@
-filter_doc_population <- function(data,
-                                  sentencing_county = NA_character_,
-                                  physical_custody_only = TRUE,
-                                  status_active_only = TRUE,
-                                  exclude_interstate = TRUE,
-                                  sentence_date = NA) {
+filter_people_with_sentence_info <- function(data,
+                                             sentencing_county = NA_character_,
+                                             physical_custody_only = TRUE,
+                                             status_active_only = TRUE,
+                                             exclude_interstate = TRUE,
+                                             sentence_date = NA) {
   data |>
     dplyr::filter(
       is.na(sentencing_county) | .data$most_recent_sentencing_county == sentencing_county,
@@ -27,20 +27,20 @@ summarise_population_count <- function(data, group_vars = NULL) {
 }
 
 analyze_prison_metrics <- function(processed_data) {
-  doc_population <- processed_data$doc_population
+  people_with_sentence_info <- processed_data$people_with_sentence_info
   baseline_date <- as.Date("2024-10-16")
 
   current_population <- dplyr::bind_rows(
-    filter_doc_population(
-      doc_population,
+    filter_people_with_sentence_info(
+      people_with_sentence_info,
       physical_custody_only = TRUE,
       status_active_only = TRUE,
       exclude_interstate = TRUE
     ) |>
       summarise_population_count() |>
       dplyr::mutate(metric = "current_physical_active_excluding_interstate"),
-    filter_doc_population(
-      doc_population,
+    filter_people_with_sentence_info(
+      people_with_sentence_info,
       physical_custody_only = TRUE,
       status_active_only = TRUE,
       exclude_interstate = FALSE
@@ -57,8 +57,8 @@ analyze_prison_metrics <- function(processed_data) {
       lapply(
         counties,
         function(county) {
-          filter_doc_population(
-            doc_population,
+          filter_people_with_sentence_info(
+            people_with_sentence_info,
             sentencing_county = county,
             physical_custody_only = TRUE,
             status_active_only = TRUE,
@@ -75,8 +75,8 @@ analyze_prison_metrics <- function(processed_data) {
       lapply(
         counties,
         function(county) {
-          filter_doc_population(
-            doc_population,
+          filter_people_with_sentence_info(
+            people_with_sentence_info,
             sentencing_county = county,
             physical_custody_only = FALSE,
             status_active_only = TRUE,
@@ -98,8 +98,8 @@ analyze_prison_metrics <- function(processed_data) {
       lapply(
         counties,
         function(county) {
-          filter_doc_population(
-            doc_population,
+          filter_people_with_sentence_info(
+            people_with_sentence_info,
             sentencing_county = county,
             physical_custody_only = TRUE,
             status_active_only = TRUE,
@@ -117,8 +117,8 @@ analyze_prison_metrics <- function(processed_data) {
       lapply(
         counties,
         function(county) {
-          filter_doc_population(
-            doc_population,
+          filter_people_with_sentence_info(
+            people_with_sentence_info,
             sentencing_county = county,
             physical_custody_only = FALSE,
             status_active_only = TRUE,
@@ -141,8 +141,8 @@ analyze_prison_metrics <- function(processed_data) {
       lapply(
         counties,
         function(county) {
-          filter_doc_population(
-            doc_population,
+          filter_people_with_sentence_info(
+            people_with_sentence_info,
             sentencing_county = county,
             physical_custody_only = TRUE,
             status_active_only = TRUE,
@@ -160,8 +160,8 @@ analyze_prison_metrics <- function(processed_data) {
       lapply(
         counties,
         function(county) {
-          filter_doc_population(
-            doc_population,
+          filter_people_with_sentence_info(
+            people_with_sentence_info,
             sentencing_county = county,
             physical_custody_only = FALSE,
             status_active_only = TRUE,
@@ -179,8 +179,14 @@ analyze_prison_metrics <- function(processed_data) {
     )
   )
 
+
+  sentences_doc_admin_year_total_by_county <- placeholder_tibble()
+  releases_vera_admin_year_total_by_county <- placeholder_tibble()
+  population_doc_admin_yoy_by_gender_county <- placeholder_tibble()
+  population_doc_admin_year_by_gender_county <- placeholder_tibble()
+
   list(
-    doc_population = doc_population,
+    people_with_sentence_info = people_with_sentence_info,
     current_population = current_population,
     county_current = county_current,
     county_since_2024_10_16 = county_since_baseline,
