@@ -97,7 +97,7 @@ process_ingested_prison_data <- function(ingested_checks = prison_ingested_check
       .groups = "drop"
     )
 
-  doc_data_join_all <- sentence_data |>
+  people_with_sentence_information <- sentence_data |>
     dplyr::left_join(consecutive_data, by = "sentence_id") |>
     dplyr::left_join(doc_repeat, by = "doc_num") |>
     dplyr::left_join(
@@ -124,6 +124,7 @@ process_ingested_prison_data <- function(ingested_checks = prison_ingested_check
       ),
       most_recent_sentencing_county = .data$sentencing_county[.data$sentencing_date == .data$most_recent_sentencing_date][1]
     ) |>
+    # Nested offenses per doc_num, so each row is one individual
     tidyr::nest(
       offenses = c(
         "statute_code",
@@ -146,6 +147,6 @@ process_ingested_prison_data <- function(ingested_checks = prison_ingested_check
     dplyr::left_join(clean_profile_data, by = "doc_num")
 
   list(
-    doc_population = doc_data_join_all
+    people_with_sentence_info = people_with_sentence_info
   )
 }

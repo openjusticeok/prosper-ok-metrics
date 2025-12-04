@@ -24,11 +24,11 @@ summarise_date_range <- function(data, date_field) {
 }
 
 check_prison_processed <- function(processed_data = prison_processed_data) {
-  doc_population <- processed_data$doc_population
+  people_with_sentence_info <- processed_data$people_with_sentence_info
 
-  missing_county <- summarise_missing(doc_population, .data$most_recent_sentencing_county)
-  missing_date <- summarise_missing(doc_population, .data$most_recent_sentencing_date)
-  date_range <- summarise_date_range(doc_population, .data$most_recent_sentencing_date)
+  missing_county <- summarise_missing(people_with_sentence_info, .data$most_recent_sentencing_county)
+  missing_date <- summarise_missing(people_with_sentence_info, .data$most_recent_sentencing_date)
+  date_range <- summarise_date_range(people_with_sentence_info, .data$most_recent_sentencing_date)
 
   tibble::tibble(
     check = c(

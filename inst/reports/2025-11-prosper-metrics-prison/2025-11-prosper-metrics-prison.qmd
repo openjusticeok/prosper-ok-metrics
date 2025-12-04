@@ -69,6 +69,8 @@ library(nanoparquet)
 library(ggrepel)
 
 ojothemes::ojo_set_theme(theme = "okpi")
+prison_metrics$sentences_admin_yoy_total_by_county
+prison_metrics$population_doc_admin_year_total_by_county_by_gender
 ```
 
 # Overview
@@ -76,19 +78,46 @@ ojothemes::ojo_set_theme(theme = "okpi")
 This is an overview report to provide some basic numbers about the current
 population and recent bookings at the Oklahoma County Detention Center (OCDC).
 
-It includes aggregations for each in total and by gender:
-
-* Prison Sentences from Tulsa County
+* Prison Sentences from those sentenced in Tulsa County
 * Prison Releases from those sentenced in Tulsa County
-* Prison Population by Gender  from Tulsa County
-* Oklahoma County comparison to Tulsa County vs all other counties
+* Prison Population by Gender from Tulsa County
 
 {{< pagebreak >}}
 
 # Prison Sentences
 
+```{r prison-sentences-total}
+#| include: !expr audience_show(c("internal", "external", "public"))
+#| eval: !expr audience_show(c("internal", "external", "public"))
+
+prison_figures$plot_sentences_doc_admin_year_total_by_county
+```
+
 # Prison Releases
+- Mention we can't get data more recent thatn __ because we need the DSA with
+DOC first.
 
-# Population by Gender
+```{r prison-releases-total}
+#| include: !expr audience_show(c("internal", "external", "public"))
+#| eval: !expr audience_show(c("internal", "external", "public"))
 
-# Oklahoma County comparison to Tulsa County vs all other counties
+prison_figures$plot_releases_vera_admin_year_total_by_county
+```
+
+# Prison Population by Gender
+
+```{r prison-population-total}
+#| include: !expr audience_show(c("internal", "external", "public"))
+#| eval: !expr audience_show(c("internal", "external", "public"))
+
+# Dodge by county, group by total & gender
+prison_figures$plot_population_doc_admin_year_by_gender_county
+```
+
+```{r prison-population-yoy}
+#| include: !expr audience_show(c("internal", "external", "public"))
+#| eval: !expr audience_show(c("internal", "external", "public"))
+
+# Dodge by county, group by total & gender
+prison_figures$plot_population_doc_admin_yoy_by_gender_county
+```

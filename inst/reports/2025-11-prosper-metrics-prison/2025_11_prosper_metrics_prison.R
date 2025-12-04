@@ -14,7 +14,7 @@ for (f in source_files) source(f)
 # Load data:
 # Currently using the most recent release and this "joined" data is created in
 # the 2025_11_processing_doc_data.R script.
-doc_data_20251022 <- read_csv(here("data/output/doc_data_join_all.csv"))
+doc_data_20251022 <- read_csv(here("data/output/people_with_sentence_info.csv"))
 
 ## _________________________Run checks__________________________________________
 # Check that we have the sentencing county for each person:
@@ -51,7 +51,7 @@ doc_data_20251022 |>
 
 # Our count comes up to 22,758.
 doc_data_20251022 |>
-  filter_doc_population(
+  filter_people_with_sentence_info(
     physical_custody_only = TRUE,
     status_active_only = TRUE,
     exclude_interstate = TRUE) |>
@@ -59,7 +59,7 @@ doc_data_20251022 |>
 
 # Unless you exclude interstate compacts and then it goes up to 24,261 ://
 doc_data_20251022 |>
-  filter_doc_population(
+  filter_people_with_sentence_info(
     physical_custody_only = TRUE,
     status_active_only = TRUE,
     exclude_interstate = FALSE) |>
@@ -67,7 +67,7 @@ doc_data_20251022 |>
 
 # * Total people currently physically incarcerated who were sentenced in Tulsa:
 doc_data_20251022 |>
-  filter_doc_population(
+  filter_people_with_sentence_info(
     sentencing_county = "Tulsa",
     physical_custody_only = TRUE,
     status_active_only = TRUE,
@@ -76,7 +76,7 @@ doc_data_20251022 |>
 
 # * Total number of people in DOC custody who were sentenced in Tulsa:
 doc_data_20251022 |>
-  filter_doc_population(
+  filter_people_with_sentence_info(
     sentencing_county = "Tulsa",
     physical_custody_only = FALSE,
     status_active_only = TRUE,
@@ -85,7 +85,7 @@ doc_data_20251022 |>
 
 # * Total people currently physically incarcerated sentenced in Oklahoma County:
 doc_data_20251022 |>
-  filter_doc_population(
+  filter_people_with_sentence_info(
     sentencing_county = "Oklahoma",
     physical_custody_only = TRUE,
     status_active_only = TRUE,
@@ -94,7 +94,7 @@ doc_data_20251022 |>
 
 # * Total number of people in DOC custody who were sentenced in Oklahoma County:
 doc_data_20251022 |>
-  filter_doc_population(
+  filter_people_with_sentence_info(
     sentencing_county = "Oklahoma",
     physical_custody_only = FALSE,
     status_active_only = TRUE,
@@ -108,7 +108,7 @@ doc_data_20251022 |>
 
 # * Physically incarcerated and sentenced in Tulsa SINCE LAST YEAR:
 doc_data_20251022 |>
-  filter_doc_population(
+  filter_people_with_sentence_info(
     sentencing_county = "Tulsa",
     physical_custody_only = TRUE,
     status_active_only = TRUE,
@@ -121,7 +121,7 @@ doc_data_20251022 |>
 # * Total number of people in DOC custody sentenced in Tulsa SINCE LAST YEAR
 # (This gives us a number that's closer to last year's GKFF report)
 doc_data_20251022 |>
-  filter_doc_population(
+  filter_people_with_sentence_info(
     sentencing_county = "Tulsa",
     physical_custody_only = FALSE,
     status_active_only = TRUE,
@@ -136,7 +136,7 @@ doc_data_20251022 |>
 
 # * Physically incarcerated sentenced in Tulsa by sex SINCE LAST YEAR
 doc_data_20251022 |>
-  filter_doc_population(
+  filter_people_with_sentence_info(
     sentencing_county = "Tulsa",
     physical_custody_only = TRUE,
     status_active_only = TRUE,
@@ -148,7 +148,7 @@ doc_data_20251022 |>
 
 # * Total number of people in DOC custody sentenced in Tulsa by sex SINCE LAST YEAR
 doc_data_20251022 |>
-  filter_doc_population(
+  filter_people_with_sentence_info(
     sentencing_county = "Tulsa",
     physical_custody_only = FALSE,
     status_active_only = TRUE,
@@ -160,7 +160,7 @@ doc_data_20251022 |>
 # Metric 3: "Oklahoma County comparison to Tulsa County vs all other counties"
 # * Physically incarcerated and sentenced in Oklahoma County SINCE LAST YEAR:
 doc_data_20251022 |>
-  filter_doc_population(
+  filter_people_with_sentence_info(
     sentencing_county = "Oklahoma",
     physical_custody_only = TRUE,
     status_active_only = TRUE,
@@ -171,7 +171,7 @@ doc_data_20251022 |>
 
 # * Total people in DOC custody who were sentenced in Oklahoma County SINCE LAST YEAR:
 doc_data_20251022 |>
-  filter_doc_population(
+  filter_people_with_sentence_info(
     sentencing_county = "Oklahoma",
     physical_custody_only = FALSE,
     status_active_only = TRUE,
@@ -182,7 +182,7 @@ doc_data_20251022 |>
 
 # * Physically incarcerated and sentenced in Oklahoma county by sex SINCE LAST YEAR:
 doc_data_20251022 |>
-  filter_doc_population(
+  filter_people_with_sentence_info(
     sentencing_county = "Oklahoma",
     physical_custody_only = TRUE,
     status_active_only = TRUE,
@@ -193,7 +193,7 @@ doc_data_20251022 |>
 
 # * TOTAL number of people in DOC custody sentenced in Oklahoma county by sex SINCE LAST YEAR:
 doc_data_20251022 |>
-  filter_doc_population(
+  filter_people_with_sentence_info(
     sentencing_county = "Oklahoma",
     physical_custody_only = FALSE,
     status_active_only = TRUE,
