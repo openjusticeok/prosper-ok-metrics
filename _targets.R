@@ -38,6 +38,7 @@ tar_option_set(
 tar_source("R/pipeline_helpers.R")
 tar_source("R/01-ingest/ingest_jail_data.R")
 tar_source("R/01-ingest/ingest_prison_data.R")
+tar_source("R/01-ingest/ingest_vera_data.R")
 tar_source("R/02-check-ingested/check_jail_ingested_data.R")
 tar_source("R/02-check-ingested/check_prison_ingested_data.R")
 tar_source("R/03-process/process_ingested_jail_data.R")
@@ -53,10 +54,14 @@ tar_source("R/render_report_prison.R")
 
 # Targets pipeline definition:
 list(
+  tar_target(
+    name = vera_data,
+    command = ingest_vera_data()
+  ),
   # Jail pipeline
   tar_target(
     name = jail_ingested_data,
-    command = ingest_jail_data()
+    command = ingest_jail_data(vera_data)
   ),
   # TODO: feat(check): Implement real input checks for jail data
   # Can wait until after first draft of report.
@@ -95,7 +100,7 @@ list(
   # Prison pipeline
   tar_target(
     name = prison_ingested_data,
-    command = ingest_prison_data()
+    command = ingest_prison_data(vera_data)
   ),
   # Can wait until after today.
   tar_target(
