@@ -3,8 +3,7 @@
     "Version": "4.5.1",
     "Repositories": [
       {
-        "Name": "CRAN",
-        "URL": "https://p3m.dev/cran/latest/bin/linux/noble-x86_64/4.5"
+        "Name": "CRAN"
       }
     ]
   },
