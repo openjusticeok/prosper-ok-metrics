@@ -104,7 +104,7 @@ list(
   ),
   tar_target(
     name = prison_processed_data,
-    command = process_ingested_prison_data(prison_ingested_checks)
+    command = process_ingested_prison_data(prison_ingested_data)
   ),
   # TODO: feat(check): Implement real output checks for prison data
   # Can wait until after report.
