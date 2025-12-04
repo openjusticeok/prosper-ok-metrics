@@ -13,7 +13,6 @@ standardize_sex_gender <- function(data, sex_gender_col = "gender", clean_col_na
       )
     )
 }
-
 standardize_race_ethnicity <- function(data, race_ethnicity_col = "race", clean_col_name = "race_ethnicity_standardized") {
   data |>
     dplyr::mutate(
@@ -418,6 +417,10 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
     ) |>
     dplyr::arrange(desc(booking_month))
 
+  booking_demographics_gender <- placeholder_tibble()
+
+  booking_demographics_race <- placeholder_tibble()
+
   # NOTE: This logic needs to be merged into the above as part of one of the TODOs
   booking_counts_by_date <- combined_processed_bookings |>
     # The accurate counts are only for dates where scraping occurred
@@ -467,25 +470,29 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
 
   ### Return processed data
   list(
+    # Jail Bookings Data
     booking_records = combined_processed_bookings,
     booking_totals = booking_totals,
     booking_demographics = list(
       gender = booking_demographics_gender,
       race = booking_demographics_race
     ),
-    vera = vera,
+    brek_bookings_summary = ingested_data$brek |>
+      dplyr::filter(metric_family == "bookings"),
     jail_data_initiative = list(
       people = jail_data_initiative_bookings_with_inmate_info,
       charges = jail_data_initiative_charges
     ),
-    brek_report = ingested_data$brek,
+    # Jail Releases Data
     release_counts = ingested_data$brek |>
       dplyr::filter(metric_family == "release_counts"),
     release_shares = ingested_data$brek |>
       dplyr::filter(metric_family == "release_share"),
+    # Jail Average Daily Population (ADP) Data
     adp_summary = ingested_data$brek |>
       dplyr::filter(metric_family == "adp"),
-    brek_bookings_summary = ingested_data$brek |>
-      dplyr::filter(metric_family == "bookings")
+    # Multiple Metrics Data
+    vera = vera,
+    brek_report = ingested_data$brek
   )
 }
