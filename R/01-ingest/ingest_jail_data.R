@@ -1,4 +1,11 @@
-# Function to injest Tulsa jail data using the OK Policy's scraper package
+#' Ingest Tulsa jail data using the OK Policy scraper
+#'
+#' Scrapes the Tulsa County jail site via the OK Policy scraper package and
+#' caches the result under `data/input/` with a daily stamp. On subsequent runs
+#' within the same day, the cached `.qs2` file is read instead of re-scraping.
+#'
+#' @return A list with `bookings` and `charges` tibbles, each including a
+#'   `created_at` column stamped with `today()`.
 ingest_okpolicy_scraped_data <- function() {
   # Define path for cached scraped data stamped with today's date
   # This means we only scrape once per day and rescrape if a new day starts
@@ -33,7 +40,12 @@ ingest_okpolicy_scraped_data <- function() {
   return(scraped_jail_data_list)
 }
 
-# Function to ingest Asemio-scraped jail data from an OJO database
+#' Ingest Asemio-scraped jail data from the OJO database
+#'
+#' Pulls arrest, offense, and inmate tables from the `iic` schema using
+#' `ojodb::ojo_tbl()` and returns them as collected tibbles.
+#'
+#' @return A list with `bookings`, `charges`, and `inmates` tibbles.
 ingest_asemio_scraped_data <- function() {
   list(
     bookings = ojodb::ojo_tbl("arrest", schema = "iic") |>
@@ -45,7 +57,14 @@ ingest_asemio_scraped_data <- function() {
   )
 }
 
-# Function to read static Brek Jail Report data from a CSV file
+#' Ingest static Brek Jail Report reference data
+#'
+#' Reads a cached Brek Jail Report CSV (`data/input/brek_jail_report_data.csv`)
+#' or builds it on first run from hard-coded values transcribed from the 2024
+#' report. Derived 2023 values are back-calculated from year-over-year changes
+#' and saved for reuse.
+#'
+#' @return A tibble of Brek reference metrics with `year` and `year_date`.
 ingest_brek_jail_report_data <- function() {
   path <- here::here("data", "input", "brek_jail_report_data.csv")
 
@@ -280,7 +299,13 @@ ingest_brek_jail_report_data <- function() {
   return(brek_jail_data)
 }
 
-# Function to read Jail Data Initiative scraped data from a Google Drive folder
+#' Ingest Jail Data Initiative scraped data from Google Drive
+#'
+#' Downloads `people.csv` and `charges.csv` from a fixed Drive folder, handling
+#' common authentication errors with friendly guidance. Files are read as
+#' character columns to avoid type inference issues and removed after ingest.
+#'
+#' @return A list with `people` and `charges` tibbles.
 ingest_jail_data_initiative_scraped_data <- function() {
   drive_folder_url <- "https://drive.google.com/drive/folders/1fsv2pAkRd6DoDgG77SoXA3-0wK5tUnmh"
   charges_filename <- "charges.csv"
@@ -366,10 +391,18 @@ ingest_jail_data_initiative_scraped_data <- function() {
   )
 }
 
-# Function to ingest Vera Institute incarceration trends data
-# Source: https://github.com/vera-institute/incarceration-trends
-# Codebook: https://github.com/vera-institute/incarceration-trends/blob/main/Incarceration%20Trends%20Codebook%2005-2025.pdf
-# Data access terms: https://github.com/vera-institute/incarceration-trends/blob/main/License.pdf
+#' Ingest Vera Institute incarceration trends data (OK counties only)
+#'
+#' Fetches the latest incarceration trends CSV from GitHub, stamps it with the
+#' current commit hash and commit date, and caches the result under
+#' `data/input/` using the commit SHA in the filename. Subsequent runs reuse the
+#' cached `.qs2` file when present.
+#'
+#' Data source: <https://github.com/vera-institute/incarceration-trends>  
+#' Codebook: <https://github.com/vera-institute/incarceration-trends/blob/main/Incarceration%20Trends%20Codebook%2005-2025.pdf>  
+#' License: <https://github.com/vera-institute/incarceration-trends/blob/main/License.pdf>
+#'
+#' @return A tibble filtered to Oklahoma counties with commit metadata columns.
 ingest_vera_incerceration_trends_data <- function() {
   # Get current commit info from GitHub API
   commit_info <- httr2::request("https://api.github.com/repos/vera-institute/incarceration-trends/commits") |>
@@ -412,7 +445,14 @@ ingest_vera_incerceration_trends_data <- function() {
   return(vera_data)
 }
 
-# Target function to ingest all raw jail data sources
+#' Ingest all raw jail data sources
+#'
+#' Orchestrates ingestion for all jail inputs: Jail Data Initiative, OK Policy
+#' scraper, Asemio database tables, Brek reference data, and Vera incarceration
+#' trends. Each sub-source applies its own caching strategy to minimize
+#' re-downloads or re-scrapes.
+#'
+#' @return A named list of ingested jail data sources.
 ingest_jail_data <- function() {
   total_sources <- 5
 
