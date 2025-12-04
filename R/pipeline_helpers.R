@@ -1,5 +1,10 @@
 # Shared helper functions for the jail and prison target pipelines.
 
+
+# Report Rendering ============================================================
+
+## Report Paths ---------------------------------------------------------------
+
 .pipeline_report_paths <- list(
   jail = here::here("inst", "reports", "2025-11-prosper-metrics-jail", "2025-11-prosper-metrics-jail.qmd"),
   prison = here::here("inst", "reports", "2025-11-prosper-metrics-prison", "2025-11-prosper-metrics-prison.qmd")
@@ -12,15 +17,18 @@ pipeline_report_path <- function(report) {
   .pipeline_report_paths[[report]]
 }
 
+## Render Reports -------------------------------------------------------------
+
 render_report <- function(
   report,
   analysis_results,
   figure_outputs,
   execute = TRUE,
+  draft = TRUE,
   input = pipeline_report_path(report),
   audiences = "internal"
 ) {
-  audiences <- unique(match.arg(audiences, c("internal", "external"), several.ok = TRUE))
+  audiences <- unique(match.arg(audiences, c("internal", "external", "public"), several.ok = TRUE))
 
   data_dir <- here::here("data", "output")
   fs::dir_create(data_dir, recurse = TRUE)
@@ -46,11 +54,12 @@ render_report <- function(
   variant_specs <- lapply(
     audiences,
     function(audience) {
-      output_file <- if (identical(audience, "internal")) {
-        paste0(file_stem, ".html")
-      } else {
-        paste0(file_stem, "-external.html")
-      }
+      output_file <- switch(
+        audience,
+        internal = paste0(file_stem, "-internal.html"),
+        external = paste0(file_stem, "-external.html"),
+        public = paste0(file_stem, "-public.html")
+      )
 
       list(audience = audience, output_file = output_file)
     }
@@ -62,7 +71,10 @@ render_report <- function(
       quarto::quarto_render(
         input = input,
         execute = execute,
-        execute_params = list(audience = spec$audience),
+        execute_params = list(
+          audience = spec$audience,
+          draft = draft
+        ),
         output_file = spec$output_file,
         quiet = FALSE # Always set to FALSE for easier debugging
       )
@@ -85,19 +97,78 @@ render_report <- function(
   unname(outputs)
 }
 
+
+# General Utilities ===========================================================
+
+#' Build a named list from bare object names
+#'
+#' Creates a list where each element is named after the variable passed to it.
+#' This avoids repetition when returning lists of objects where the list name
+#' should match all of the object names.
+#'
+#' This is particularly useful in target pipelines where functions return a
+#' lists of objects to be used in downstream targets, and you want the list
+#' names to match the object names without having to type them out twice.
+#'
+#' Without this, renaming or refactoring variables would require updating both the
+#' variable names and the list construction, increasing the chance of errors.
+#'
+#' @param ... Bare object names (not strings or expressions).
+#' @return A named list with names derived from the argument symbols.
+#'
+#' @examples
+#' foo <- 1
+#' bar <- 2
+#' named_list(foo, bar)
+#' # list(foo = 1, bar = 2)
+#'
+#' @export
+named_list <- function(...) {
+  values <- list(...)
+  names(values) <- as.character(substitute(list(...))[-1])
+
+  if (any(names(values) == "")) {
+    stop("All arguments must be bare object names.", call. = FALSE)
+  }
+
+  values
+}
+
+
+# Placeholder Helpers =========================================================
 # Shared placeholder helpers for targets scaffolding.
+
+## Internal Placeholder Data --------------------------------------------------
+
 .placeholder_time_series <- function() {
   tibble::tibble(
-    Time = seq(as.Date("2025-01-01"), by = "1 month", length.out = 7),
-    `Good Stuff` = c(10, 14, 12, 18, 16, 22, 27)
+    time = seq(as.Date("2025-01-01"), by = "1 month", length.out = 7),
+    good_stuff = c(10, 14, 12, 18, 16, 22, 27)
   )
 }
+
+.placeholder_ok_counties <- function() {
+  counties <- withr::with_options(
+    list(tigris_use_cache = TRUE, tigris_class = "sf"),
+    tigris::counties(state = "OK", cb = TRUE, year = 2022)
+  )
+
+  counties <- dplyr::arrange(counties, .data$GEOID)
+
+  withr::with_seed(7, {
+    counties$good <- stats::runif(nrow(counties))
+  })
+
+  sf::st_transform(counties, 4326)
+}
+
+## Placeholder Functions ------------------------------------------------------
 
 placeholder_ggplot <- function() {
   data <- .placeholder_time_series()
 
-  ggplot2::ggplot(data, ggplot2::aes(x = Time, y = `Good Stuff`)) +
-    ggplot2::geom_line(color = "#972421", linewidth = 1) +
+  ggplot2::ggplot(data, ggplot2::aes(x = time, y = good_stuff)) +
+    ggplot2::geom_line(color = "#972421") +
     ggplot2::geom_point(color = "#972421", size = 2) +
     ggplot2::labs(
       title = "Placeholder",
@@ -128,28 +199,13 @@ placeholder_highchart <- function() {
     highcharter::hc_add_series(
       data = data,
       type = "line",
-      highcharter::hcaes(x = Time, y = `Good Stuff`),
+      highcharter::hcaes(x = time, y = good_stuff),
       name = "Good Stuff"
     ) |>
     highcharter::hc_title(text = "Placeholder") |>
     highcharter::hc_subtitle(text = "A very scientific graph.") |>
     highcharter::hc_xAxis(title = list(text = "Time")) |>
     highcharter::hc_yAxis(title = list(text = "Good Stuff"))
-}
-
-.placeholder_ok_counties <- function() {
-  counties <- withr::with_options(
-    list(tigris_use_cache = TRUE, tigris_class = "sf"),
-    tigris::counties(state = "OK", cb = TRUE, year = 2022)
-  )
-
-  counties <- dplyr::arrange(counties, .data$GEOID)
-
-  withr::with_seed(7, {
-    counties$good <- stats::runif(nrow(counties))
-  })
-
-  sf::st_transform(counties, 4326)
 }
 
 placeholder_highchart_map <- function() {
