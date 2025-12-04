@@ -88,7 +88,7 @@ list(
   # TODO: feat(analyze): Create data for figure 4: Bookings over time
   tar_target(
     name = jail_analysis_results,
-    command = analyze_jail_metrics(jail_processed_data)
+    command = analyze_processsed_jail_data(jail_processed_data)
   ),
   # TODO: feat(visualize): Create figure 1: Average Daily Population over time
   # TODO: feat(visualize): Create figure 2: Bookings over time
@@ -96,7 +96,7 @@ list(
   # TODO: feat(visualize): Create figure 4: Bookings over time
   tar_target(
     name = jail_figures,
-    command = generate_jail_figures(jail_analysis_results)
+    command = visualize_jail_figures(jail_analysis_results)
   ),
   # TODO: feat(report): Add tests to ensure path is correct
   tar_target(
@@ -148,7 +148,7 @@ list(
   # TODO: feat(analyze): Create data for figure 4: Length of stay over time
   tar_target(
     name = prison_analysis_results,
-    command = analyze_prison_metrics(prison_processed_data)
+    command = analyze_processsed_prison_data(prison_processed_data)
   ),
   # TODO: feat(visualize): Create figure 1: Average Daily Population over time
   # TODO: feat(visualize): Create figure 2: Admissions over time
@@ -156,7 +156,7 @@ list(
   # TODO: feat(visualize): Create figure 4: Length of stay over time
   tar_target(
     name = prison_figures,
-    command = generate_prison_figures(prison_analysis_results)
+    command = visualize_prison_figures(prison_analysis_results)
   ),
   # TODO: feat(report): Add tests to ensure path is correct
   tar_target(

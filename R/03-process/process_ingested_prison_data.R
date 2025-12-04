@@ -97,7 +97,7 @@ process_ingested_prison_data <- function(ingested_checks = prison_ingested_check
       .groups = "drop"
     )
 
-  people_with_sentence_information <- sentence_data |>
+  people_with_sentence_info <- sentence_data |>
     dplyr::left_join(consecutive_data, by = "sentence_id") |>
     dplyr::left_join(doc_repeat, by = "doc_num") |>
     dplyr::left_join(
