@@ -1,5 +1,7 @@
 ### Main analysis function
 
+#TODO: figure out when we need to group by data source
+#TODO: figure out how we're calculating percentage change yoy
 analyze_processed_prison_data <- function(processed_data = prison_processed_data) {
   people_with_sentence_info <- processed_data$people_with_sentence_info |>
     as.data.frame()
@@ -10,7 +12,7 @@ analyze_processed_prison_data <- function(processed_data = prison_processed_data
                           status_active_only = TRUE,
                           exclude_interstate = TRUE,
                           sentence_date = as.Date("2024-10-16")) |>
-    summarise_population_count("Tulsa", "Oklahoma")
+    summarise_population_count("Tulsa", "Oklahoma") #add snapshot date
 
   releases_vera_admin_year_total_by_county <- placeholder_tibble()
 
@@ -19,7 +21,7 @@ analyze_processed_prison_data <- function(processed_data = prison_processed_data
     filter_doc_population(physical_custody_only = TRUE,
                           status_active_only = TRUE,
                           exclude_interstate = TRUE) |>
-    summarise_population_count("Tulsa", "Oklahoma", "sex")
+    summarise_population_count("Tulsa", "Oklahoma", "sex") #add snapshot date
 
   population_doc_admin_yoy_by_gender_county <- placeholder_tibble()
 
@@ -90,22 +92,44 @@ filter_doc_population <- function(data,
 }
 
 
-#' This function returns a count of unique individuals based on `doc_num`.
-#' You can supply one or more grouping variables to break the
-#' counts into sub-populations (e.g., by sex, race, county).
+#' Summarise unique individuals for two sentencing counties and a total
 #'
-#' @param data A dataframe containing DOC person-level records.
-#' @param group_vars Optional parameters indicating variables to
-#'   group results by (e.g., `sex`, `c(sex, race)`, or `repeat_offender`).
-#'   Defaults to `NULL`, returning a single population count with no grouping.
+#' This function returns counts of unique individuals (based on `doc_num`)
+#' for two specified sentencing counties, plus a total across all counties
+#' in `filtered_data`. We can break these counts into sub-populations
+#' (e.g., by sex, sex and race, or sex race and age).
 #'
-#' @return A tibble containing the count of unique individuals (`n_people`),
-#'   optionally grouped by the supplied variables.
+#' @param filtered_data A dataframe containing DOC person-level records that
+#'   has already been filtered as needed (e.g., by custody status, date).
+#' @param county_1 A character scalar giving the name of the first
+#'   sentencing county to count.
+#' @param county_2 A character scalar giving the name of the second
+#'   sentencing county to count.
+#' @param group_vars Optional character vector of variable names to group
+#'   results by (e.g., `"sex"`, `c("sex", "race")`, or `"repeat_offender"`).
+#'   Defaults to `NULL`, returning a single row with no grouping.
+#'
+#' @return A tibble with one row per group (or a single row if
+#'   `group_vars` is `NULL`), and three count columns:
+#'   one column named after `county_1`, one named after `county_2`,
+#'   and a `total` column giving the count across all counties
+#'   in `filtered_data`.
 #'
 #' @examples
-#' # Count by sex and race:
-#' summarise_population_count(data, c("sex", "race"))
+#' # Overall counts for Oklahoma, Tulsa, and total:
+#' summarise_population_count(
+#'   filtered_data = df,
+#'   county_1 = "Oklahoma",
+#'   county_2 = "Tulsa"
+#' )
 #'
+#' # Counts by sex for Oklahoma, Tulsa, and total:
+#' summarise_population_count(
+#'   filtered_data = df,
+#'   county_1 = "Oklahoma",
+#'   county_2 = "Tulsa",
+#'   group_vars = "sex"
+#' )
 summarise_population_count <- function(filtered_data,
                                        county_1,
                                        county_2,
