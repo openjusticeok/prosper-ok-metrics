@@ -1,37 +1,35 @@
 ### Main analysis function
 
 analyze_processed_prison_data <- function(processed_data = prison_processed_data) {
-  people_with_sentence_info <- processed_data$people_with_sentence_info
+  people_with_sentence_info <- processed_data$people_with_sentence_info |>
+    as.data.frame()
 
   sentences_doc_admin_year_total_by_county <-
     people_with_sentence_info |>
-    filter_doc_population(sentencing_county = NA_character_,
-                          # TODO: replace sentencing county parameter with function that will select Tulsa, Oklahoma, and then all counties
-                          physical_custody_only = TRUE,
-                          status_active_only = TRUE,
-                          exclude_interstate = TRUE) |>
-    summarise_population_count()
-
-  releases_vera_admin_year_total_by_county <- placeholder_tibble()
-
-  population_doc_admin_yoy_by_gender_county <- placeholder_tibble()
-
-  population_doc_admin_year_by_gender_county <-
-    people_with_sentence_info |>
-    filter_doc_population(sentencing_county = NA_character_,
-                          physical_custody_only = TRUE,
+    filter_doc_population(physical_custody_only = TRUE,
                           status_active_only = TRUE,
                           exclude_interstate = TRUE,
                           sentence_date = as.Date("2024-10-16")) |>
-    summarise_population_count("sex")
+    summarise_population_count("Tulsa", "Oklahoma")
+
+  releases_vera_admin_year_total_by_county <- placeholder_tibble()
+
+  population_doc_admin_year_by_gender_county <-
+    people_with_sentence_info |>
+    filter_doc_population(physical_custody_only = TRUE,
+                          status_active_only = TRUE,
+                          exclude_interstate = TRUE) |>
+    summarise_population_count("Tulsa", "Oklahoma", "sex")
+
+  population_doc_admin_yoy_by_gender_county <- placeholder_tibble()
 
 
   # Return named list as the targets object
   named_list(
     sentences_doc_admin_year_total_by_county,
     releases_vera_admin_year_total_by_county,
-    population_doc_admin_yoy_by_gender_county,
-    population_doc_admin_year_by_gender_county
+    population_doc_admin_year_by_gender_county,
+    population_doc_admin_yoy_by_gender_county
   )
 }
 
@@ -108,15 +106,37 @@ filter_doc_population <- function(data,
 #' # Count by sex and race:
 #' summarise_population_count(data, c("sex", "race"))
 #'
-summarise_population_count <- function(data,
+summarise_population_count <- function(filtered_data,
+                                       county_1,
+                                       county_2,
                                        group_vars = NULL) {
+
   if (is.null(group_vars)) {
-    data |>
-      summarise(n_people = n_distinct(doc_num), .groups = "drop")
+
+    summary_data <- filtered_data |>
+      summarise(
+        county_1_tmp = n_distinct(doc_num[most_recent_sentencing_county == county_1]),
+        county_2_tmp = n_distinct(doc_num[most_recent_sentencing_county == county_2]),
+        total = n_distinct(doc_num),
+        .groups = "drop"
+      )
 
   } else {
-    data |>
-      group_by(across({{ group_vars }})) |>
-      summarise(n_people = n_distinct(doc_num), .groups = "drop")
+
+    summary_data <- filtered_data |>
+      group_by(across(all_of(group_vars))) |>
+      summarise(
+        county_1_tmp = n_distinct(doc_num[most_recent_sentencing_county == county_1]),
+        county_2_tmp = n_distinct(doc_num[most_recent_sentencing_county == county_2]),
+        total = n_distinct(doc_num),
+        .groups = "drop"
+      )
   }
+
+  summary_data <- summary_data |>
+    rename_with(~ county_1, "county_1_tmp") |>
+    rename_with(~ county_2, "county_2_tmp")
+
+  return(summary_data)
 }
+
