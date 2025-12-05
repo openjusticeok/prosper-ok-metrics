@@ -63,7 +63,7 @@ clean_hold_charge_description <- function(charge_description, hold_category) {
 
 
 ### Main processing function
-process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
+process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks, vera_processed_data) {
   ingested_data <- ingested_checks$ingested_data
 
   ### Normalize, clean, and parse ingested data
@@ -76,17 +76,8 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
   # TODO: Pull out some helper functions for repeated processing tasks
   # TODO: feat(process): Coalesce columns when multiple columns exist for same data
 
-  ## Process Vera Incarceration Trends Data
-  vera <- ingested_data$vera |>
-    dplyr::mutate(
-      source = "Vera: Incarceration Trends",
-      quarter_date = lubridate::ymd(paste0(.data$year, "-", .data$quarter * 3, "-01"))
-    )
-
-
   ## Process Starling Analytics (JailNet) Data
   brek <- ingested_data$brek
-
 
   ## Process Jail Data Initiative (JDI) Scraped Data
   # JDI Bookings with Inmate Info
@@ -388,8 +379,9 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
     dplyr::count(source, booking_month, name = "bookings") |>
     # Combining data from sources which are already aggregated
     dplyr::bind_rows(
-      vera |>
+      vera_processed_data |>
         dplyr::filter(!is.na(total_jail_adm)) |>
+        # TODO: Should this be higher up in the pipeline to apply to all vera data in jail pipeline?
         dplyr::filter(county_code == "US_OK_TULSA") |>
         dplyr::filter(year >= 1999) |>
         dplyr::mutate(
@@ -492,7 +484,7 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
     adp_summary = ingested_data$brek |>
       dplyr::filter(metric_family == "adp"),
     # Multiple Metrics Data
-    vera = vera,
+    vera = vera_processed_data,
     brek_report = ingested_data$brek
   )
 }

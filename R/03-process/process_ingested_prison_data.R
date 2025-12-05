@@ -1,4 +1,4 @@
-process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
+process_ingested_prison_data <- function(ingested_data = prison_ingested_data, vera_processed_data) {
   doc_ingested_data <- ingested_data$doc
 
   available_extracts <- doc_ingested_data$available_extracts
@@ -148,6 +148,7 @@ process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
     dplyr::left_join(clean_profile_data, by = "doc_num")
 
   list(
-    people_with_sentence_info = people_with_sentence_info
+    people_with_sentence_info = people_with_sentence_info,
+    vera = vera_processed_data
   )
 }
