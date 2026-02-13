@@ -249,9 +249,82 @@ sentences |>
   )
 
 
-# Profiles
+# Analysis
+
+## Prison Sentences
+
+sentences |>
+  left_join(
+    profiles |>
+      slice_head(
+        by = doc_num,
+        n = 1
+      ),
+    by = c("doc_num"),
+    suffix = c(".sentence", ".profile")
+  ) |>
+  count(fiscal_year.profile)
+
+sentences |>
+  left_join(
+    profiles |>
+      slice_head(
+        by = doc_num,
+        n = 1
+      ),
+    by = c("doc_num"),
+    suffix = c(".sentence", ".profile")
+  ) |>
+  mutate(
+    month_sentenced = floor_date(js_date, "month")
+  ) |>
+  count(month_sentenced) |>
+  ggplot(aes(x = month_sentenced, y = n)) +
+    geom_line() +
+    scale_y_continuous(limits = \(y) range(y, 0))
+
+
+## Prison Releases
 
 profiles |>
+  slice_head(
+    by = doc_num,
+    n = 1
+  ) |>
+  count(fiscal_year)
+
+profiles |>
+  slice_head(
+    by = doc_num,
+    n = 1
+  ) |>
+  mutate(
+    month_released = floor_date(release_date, "month")
+  ) |>
+  count(month_released) |>
+  ggplot(aes(x = month_released, y = n)) +
+    geom_line() +
+    scale_y_continuous(limits = \(y) range(y, 0))
+
+
+## Prison Admissions
+
+profiles |>
+  slice_head(
+    by = doc_num,
+    n = 1
+  ) |>
+  filter(
+    admit_date >= start_date,
+    admit_date <= end_date
+  ) |>
+  count(fiscal_year)
+
+profiles |>
+  slice_head(
+    by = doc_num,
+    n = 1
+  ) |>
   filter(
     admit_date >= start_date,
     admit_date <= end_date
@@ -264,11 +337,70 @@ profiles |>
     geom_line() +
     scale_y_continuous(limits = \(y) range(y, 0))
 
+
+## Population by Gender
+
 profiles |>
+  slice_head(
+    by = doc_num,
+    n = 1
+  ) |>
+  count(sex)
+
+profiles |>
+  slice_head(
+    by = doc_num,
+    n = 1
+  ) |>
   mutate(
     month_released = floor_date(release_date, "month")
   ) |>
-  count(month_released) |>
-  ggplot(aes(x = month_released, y = n)) +
+  count(month_released, sex) |>
+  ggplot(aes(x = month_released, y = n, color = sex)) +
+    geom_line() +
+    scale_y_continuous(limits = \(y) range(y, 0))
+
+
+## County Comparison
+
+sentences |>
+  left_join(
+    profiles |>
+      slice_head(
+        by = doc_num,
+        n = 1
+      ),
+    by = c("doc_num"),
+    suffix = c(".sentence", ".profile")
+  ) |>
+  mutate(
+    county_group = case_when(
+      sentencing_county == "Oklahoma" ~ "Oklahoma County",
+      sentencing_county == "Tulsa" ~ "Tulsa County",
+      TRUE ~ "All Other Counties"
+    )
+  ) |>
+  count(fiscal_year.profile, county_group)
+
+sentences |>
+  left_join(
+    profiles |>
+      slice_head(
+        by = doc_num,
+        n = 1
+      ),
+    by = c("doc_num"),
+    suffix = c(".sentence", ".profile")
+  ) |>
+  mutate(
+    county_group = case_when(
+      sentencing_county == "Oklahoma" ~ "Oklahoma County",
+      sentencing_county == "Tulsa" ~ "Tulsa County",
+      TRUE ~ "All Other Counties"
+    ),
+    month_sentenced = floor_date(js_date, "month")
+  ) |>
+  count(month_sentenced, county_group) |>
+  ggplot(aes(x = month_sentenced, y = n, color = county_group)) +
     geom_line() +
     scale_y_continuous(limits = \(y) range(y, 0))
