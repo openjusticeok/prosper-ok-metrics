@@ -15,6 +15,7 @@
 
 - Not all `fiscal_year` match between joined `profile` and `sentence`
 - Some sentence dates appear corrupted
+- `js_date` is often (~25% of those in this set) over 1 year away from `admit_date`
 
 ## Alias
 
@@ -33,7 +34,7 @@
     - This can be cleaned up on our end
 - Population
   - Profile table only covers those released within FY2024-2025
-  - Need to query all profiles where there is no release date or where release date is within FY2024-2025
+  - Need to query all profiles where there is no release date, release date is in the future (if possible in the database), or where release date is within FY2024-2025
 - County Comparison
   - Since sentencing county comes from sentencing table the same query range issue applies
 - Prison Releases

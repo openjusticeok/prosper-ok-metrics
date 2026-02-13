@@ -8,6 +8,7 @@ library(janitor)
 library(lubridate)
 library(ggplot2)
 library(ojodb)
+library(readr)
 
 
 # Download
@@ -251,39 +252,6 @@ sentences |>
 
 # Analysis
 
-## Prison Sentences
-
-sentences |>
-  left_join(
-    profiles |>
-      slice_head(
-        by = doc_num,
-        n = 1
-      ),
-    by = c("doc_num"),
-    suffix = c(".sentence", ".profile")
-  ) |>
-  count(fiscal_year.profile)
-
-sentences |>
-  left_join(
-    profiles |>
-      slice_head(
-        by = doc_num,
-        n = 1
-      ),
-    by = c("doc_num"),
-    suffix = c(".sentence", ".profile")
-  ) |>
-  mutate(
-    month_sentenced = floor_date(js_date, "month")
-  ) |>
-  count(month_sentenced) |>
-  ggplot(aes(x = month_sentenced, y = n)) +
-    geom_line() +
-    scale_y_continuous(limits = \(y) range(y, 0))
-
-
 ## Prison Releases
 
 profiles |>
@@ -307,62 +275,9 @@ profiles |>
     scale_y_continuous(limits = \(y) range(y, 0))
 
 
-## Prison Admissions
+## Date Comparison: js_date vs admit_date
 
-profiles |>
-  slice_head(
-    by = doc_num,
-    n = 1
-  ) |>
-  filter(
-    admit_date >= start_date,
-    admit_date <= end_date
-  ) |>
-  count(fiscal_year)
-
-profiles |>
-  slice_head(
-    by = doc_num,
-    n = 1
-  ) |>
-  filter(
-    admit_date >= start_date,
-    admit_date <= end_date
-  ) |>
-  mutate(
-    month_admitted = floor_date(admit_date, "month")
-  ) |>
-  count(month_admitted) |>
-  ggplot(aes(x = month_admitted, y = n)) +
-    geom_line() +
-    scale_y_continuous(limits = \(y) range(y, 0))
-
-
-## Population by Gender
-
-profiles |>
-  slice_head(
-    by = doc_num,
-    n = 1
-  ) |>
-  count(sex)
-
-profiles |>
-  slice_head(
-    by = doc_num,
-    n = 1
-  ) |>
-  mutate(
-    month_released = floor_date(release_date, "month")
-  ) |>
-  count(month_released, sex) |>
-  ggplot(aes(x = month_released, y = n, color = sex)) +
-    geom_line() +
-    scale_y_continuous(limits = \(y) range(y, 0))
-
-
-## County Comparison
-
+### Summary statistics by fiscal year alignment
 sentences |>
   left_join(
     profiles |>
@@ -373,34 +288,85 @@ sentences |>
     by = c("doc_num"),
     suffix = c(".sentence", ".profile")
   ) |>
+  filter(
+    !is.na(js_date),
+    !is.na(admit_date)
+  ) |>
   mutate(
-    county_group = case_when(
-      sentencing_county == "Oklahoma" ~ "Oklahoma County",
-      sentencing_county == "Tulsa" ~ "Tulsa County",
-      TRUE ~ "All Other Counties"
+    js_fiscal_year = ojo_fiscal_year(js_date),
+    admit_fiscal_year = ojo_fiscal_year(admit_date),
+    same_fiscal_year = js_fiscal_year == admit_fiscal_year
+  ) |>
+  count(same_fiscal_year)
+
+### Distribution of date differences
+sentences |>
+  left_join(
+    profiles |>
+      slice_head(
+        by = doc_num,
+        n = 1
+      ),
+    by = c("doc_num"),
+    suffix = c(".sentence", ".profile")
+  ) |>
+  filter(
+    !is.na(js_date),
+    !is.na(admit_date)
+  ) |>
+  mutate(
+    days_diff = as.numeric(js_date - admit_date),
+    diff_category = factor(
+      case_when(
+        days_diff == 0 ~ "Same Day",
+        abs(days_diff) <= 30 ~ "Within 30 days",
+        abs(days_diff) <= 90 ~ "Within 90 days",
+        abs(days_diff) <= 365 ~ "Within 1 year",
+        TRUE ~ "> 1 year"
+      ),
+      levels = c("Same Day", "Within 30 days", "Within 90 days", "Within 1 year", "> 1 year")
     )
   ) |>
-  count(fiscal_year.profile, county_group)
+  count(diff_category) |>
+  ggplot(aes(x = diff_category, y = n)) +
+    geom_col() +
+    labs(
+      x = "Date Difference (js_date - admit_date)",
+      y = "Count",
+      title = "Distribution of Days Between Sentencing and Admission"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-sentences |>
+
+# Export
+
+## Releases by month, sex, race, sentencing county
+
+releases_summary <- profiles |>
   left_join(
-    profiles |>
-      slice_head(
-        by = doc_num,
-        n = 1
-      ),
-    by = c("doc_num"),
-    suffix = c(".sentence", ".profile")
+    sentences |>
+      slice_head(by = doc_num, n = 1),
+    by = "doc_num",
+    suffix = c(".profile", ".sentence")
   ) |>
   mutate(
-    county_group = case_when(
-      sentencing_county == "Oklahoma" ~ "Oklahoma County",
-      sentencing_county == "Tulsa" ~ "Tulsa County",
-      TRUE ~ "All Other Counties"
-    ),
-    month_sentenced = floor_date(js_date, "month")
+    month_released = floor_date(release_date, "month"),
+    fiscal_year = ojo_fiscal_year(release_date)
   ) |>
-  count(month_sentenced, county_group) |>
-  ggplot(aes(x = month_sentenced, y = n, color = county_group)) +
-    geom_line() +
-    scale_y_continuous(limits = \(y) range(y, 0))
+  count(
+    month_released,
+    fiscal_year,
+    sex,
+    race,
+    sentencing_county,
+    name = "releases"
+  )
+
+output_dir <- here::here("data/output/2026-02-10-adhoc-request")
+fs::dir_create(output_dir)
+
+releases_summary |>
+  write_csv(
+    fs::path(output_dir, "releases_by_month_sex_race_county.csv")
+  )
