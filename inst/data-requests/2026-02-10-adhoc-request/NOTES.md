@@ -14,10 +14,29 @@
 ## Sentences
 
 - Not all `fiscal_year` match between joined `profile` and `sentence`
+- Some sentence dates appear corrupted
 
 ## Alias
 
 - Lots of aliases don't link to a profile and vice versa. 
 
 
+# Conclusions
 
+- Prison Admissions 
+  - Only captures admissions if the person was eventually released in FY2024-2025
+  - Need to query all admissions within FY2024-2025
+- Prison Sentences
+  - Only captures sentences of those people released in FY2024-2025
+  - Need to query all sentences within FY2024-2025
+  - Some dates are corrupted in received data
+    - This can be cleaned up on our end
+- Population
+  - Profile table only covers those released within FY2024-2025
+  - Need to query all profiles where there is no release date or where release date is within FY2024-2025
+- County Comparison
+  - Since sentencing county comes from sentencing table the same query range issue applies
+- Prison Releases
+  - This is the only metric correctly captured
+  - Data was specifically queried by release dates
+  - Duplicate `doc_nums` means some individuals are counted multiple times
