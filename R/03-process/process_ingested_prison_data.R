@@ -107,6 +107,11 @@ process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
     )
 
   # Identify repeat offenders based on number of distinct sentencing dates
+  # Determine if a person has multiple distinct sentencing dates, which is a proxy for repeat offenders.
+  # This is not a perfect measure, as some people may have multiple sentences on
+  # aa similar day, and some repeat offenders may only have one sentencing date
+  # in the data. However, it provides a useful starting point for identifying
+  # potential repeat offenders.
   doc_repeat <- sentence_data |>
     dplyr::group_by(.data$doc_num) |>
     dplyr::summarise(
