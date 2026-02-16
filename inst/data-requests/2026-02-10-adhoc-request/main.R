@@ -343,7 +343,7 @@ sentences |>
 
 # Export
 
-output_dir <- here::here("data/output/2026-02-10-adhoc-request")
+output_dir <- here::here("data/output/2026-02-10-adhoc-request/releases")
 fs::dir_create(output_dir)
 
 ## Releases by month, sex, race, sentencing county
@@ -358,7 +358,12 @@ releases_summary <- profiles |>
   ) |>
   mutate(
     month_released = floor_date(release_date, "month"),
-    fiscal_year = ojo_fiscal_year(release_date)
+    fiscal_year = ojo_fiscal_year(release_date),
+    sentencing_county = case_when(
+      is.na(sentencing_county) ~ "Unknown",
+      !(sentencing_county %in% c("Tulsa", "Oklahoma")) ~ "All Other Counties",
+      TRUE ~ sentencing_county
+    )
   )
 
 ## Releases by fiscal year, then add sex, race, sentence, county
