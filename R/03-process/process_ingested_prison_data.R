@@ -91,14 +91,26 @@ process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
     ) |>
     dplyr::select(-c("facility_upper"))
 
+  offense_data <- offense_data |>
+    dplyr::rename(
+      offense_description = "description"
+    )
+
   sentence_data <- sentence_data |>
-    dplyr::mutate(js_date = lubridate::as_date(.data$js_date))
+    dplyr::rename(
+      sentencing_date = "js_date"
+    ) |>
+    dplyr::mutate(
+      sentencing_date = lubridate::ymd(.data$sentencing_date),
+      incarcerated_term_in_years = as.numeric(.data$incarcerated_term_in_years),
+      probation_term_in_years = as.numeric(.data$probation_term_in_years)
+    )
 
   # Identify repeat offenders based on number of distinct sentencing dates
   doc_repeat <- sentence_data |>
     dplyr::group_by(.data$doc_num) |>
     dplyr::summarise(
-      num_sentencing_dates = dplyr::n_distinct(.data$js_date, na.rm = TRUE),
+      num_sentencing_dates = dplyr::n_distinct(.data$sentencing_date, na.rm = TRUE),
       repeat_offender = .data$num_sentencing_dates > 1,
       .groups = "drop"
     )
