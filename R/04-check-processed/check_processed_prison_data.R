@@ -23,5 +23,15 @@ check_prison_processed <- function(processed_data) {
     pointblank::col_vals_lt(columns = most_recent_sentencing_date, value = "2025-10-22") |>
     pointblank::interrogate()
 
+  # TODO: Add this as a check
+  # # Identify multiple people with same sentence_id on the same extract date in
+  #   # different counties
+  # sentence_data |>
+  #     dplyr::left_join(consecutive_data, by = c("sentence_id", "snapshot_date")) |>
+  #     dplyr::filter(
+  #       n() > 1,
+  #       .by = c("sentence_id", "consecutive_to_id", "snapshot_date")
+  #     )
+
   agent
 }
