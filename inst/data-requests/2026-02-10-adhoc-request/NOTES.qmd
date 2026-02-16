@@ -1,9 +1,12 @@
+---
+format: typst
+---
 # Findings
 
 ## Profile
 
 - `fiscal_year` on `profile` table represents the fiscal year of release date
-- `profile` rows were queried by release dates within fiscal years 2024 and 2025 
+- `profile` rows were queried by release dates within fiscal years 2024 and 2025
 - `doc_num` is not distinct
   - Some duplicate `doc_num` due to separate periods, but some have same `admit_date` and different `release_date`
   - 10 rows (5 people) have same `admit_date` with different `release_date`
@@ -19,12 +22,12 @@
 
 ## Alias
 
-- Lots of aliases don't link to a profile and vice versa. 
+- Lots of aliases don't link to a profile and vice versa.
 
 
 # Conclusions
 
-- Prison Admissions 
+- Prison Admissions
   - Only captures admissions if the person was eventually released in FY2024-2025
   - Need to query all admissions within FY2024-2025
 - Prison Sentences
