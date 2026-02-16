@@ -10,6 +10,8 @@ library(ggplot2)
 library(ojodb)
 library(readr)
 
+source(here::here("R/functions/write_group_count.R"))
+
 
 # Download
 
@@ -341,9 +343,13 @@ sentences |>
 
 # Export
 
-## Releases by month, sex, race, sentencing county
+output_dir <- here::here("data/output/2026-02-10-adhoc-request")
+fs::dir_create(output_dir)
 
+## Releases by month, sex, race, sentencing county
 releases_summary <- profiles |>
+  # Add sentence information, meaning there should not be
+  # More rows after joining than before.
   left_join(
     sentences |>
       slice_head(by = doc_num, n = 1),
@@ -353,20 +359,26 @@ releases_summary <- profiles |>
   mutate(
     month_released = floor_date(release_date, "month"),
     fiscal_year = ojo_fiscal_year(release_date)
-  ) |>
-  count(
-    month_released,
-    fiscal_year,
-    sex,
-    race,
-    sentencing_county,
-    name = "releases"
   )
 
-output_dir <- here::here("data/output/2026-02-10-adhoc-request")
-fs::dir_create(output_dir)
+## Releases by fiscal year, then add sex, race, sentence, county
+write_group_count(
+  data = releases_summary,
+  base_group_vars = c("fiscal_year"),
+  other_group_vars = c("sex", "race", "sentencing_county"),
+  output_dir = output_dir,
+  prefix = "releases",
+  value_name = "releases",
+  cumulative = TRUE
+)
 
-releases_summary |>
-  write_csv(
-    fs::path(output_dir, "releases_by_month_sex_race_county.csv")
-  )
+## Releases by fiscal year and month, then add sex, race, sentence, county
+write_group_count(
+  data = releases_summary,
+  base_group_vars = c("fiscal_year", "month_released"),
+  other_group_vars = c("sex", "race", "sentencing_county"),
+  output_dir = output_dir,
+  prefix = "releases",
+  value_name = "releases",
+  cumulative = TRUE
+)
