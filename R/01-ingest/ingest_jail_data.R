@@ -7,6 +7,7 @@
 #' @return A list with `bookings` and `charges` tibbles, each including a
 #'   `created_at` column stamped with `today()`.
 ingest_okpolicy_scraped_data <- function() {
+  # TODO: Add ingestion of the recent_releases table.
   # Define path for cached scraped data stamped with today's date
   # This means we only scrape once per day and rescrape if a new day starts
   today <- lubridate::today() |> format("%Y_%m_%d")
@@ -398,8 +399,8 @@ ingest_jail_data_initiative_scraped_data <- function() {
 #' `data/input/` using the commit SHA in the filename. Subsequent runs reuse the
 #' cached `.qs2` file when present.
 #'
-#' Data source: <https://github.com/vera-institute/incarceration-trends>  
-#' Codebook: <https://github.com/vera-institute/incarceration-trends/blob/main/Incarceration%20Trends%20Codebook%2005-2025.pdf>  
+#' Data source: <https://github.com/vera-institute/incarceration-trends>
+#' Codebook: <https://github.com/vera-institute/incarceration-trends/blob/main/Incarceration%20Trends%20Codebook%2005-2025.pdf>
 #' License: <https://github.com/vera-institute/incarceration-trends/blob/main/License.pdf>
 #'
 #' @return A tibble filtered to Oklahoma counties with commit metadata columns.

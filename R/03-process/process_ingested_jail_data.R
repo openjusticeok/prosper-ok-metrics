@@ -337,6 +337,8 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
       booking_year = lubridate::year(booking_date),
       release_month = lubridate::floor_date(release_date, "month"),
       release_year = lubridate::year(release_date),
+      released_month = lubridate::floor_date(released_date, "month"),
+      released_year = lubridate::year(released_date),
       created_at_month = lubridate::floor_date(created_at, "month"),
       created_at_year = lubridate::year(created_at),
       created_at_inmate_month = lubridate::floor_date(created_at_inmate, "month"),
@@ -449,6 +451,14 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks) {
 
 
   ## Jail Releases
+  # Asemio Release Counts
+  combined_processed_bookings |>
+    count(
+      source, release_year, released_year,
+      name = "n_yearly_releases"
+    )
+  # OK Policy Release Counts
+  # JDI Release Counts
 
 
   ## Jail Average Daily Population (ADP)
