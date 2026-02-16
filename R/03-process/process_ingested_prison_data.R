@@ -50,6 +50,7 @@ process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
   interstate <- c("INTERSTATE COMPACT (OUT TO OTHER STATE) UNIT")
 
   clean_profile_data <- profile_data |>
+    # Construct full name variable
     dplyr::mutate(
       # TODO: Reconsider name formatting for consistency with other datasets
       name = stringr::str_c(
@@ -63,6 +64,7 @@ process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
       ),
       # TODO: Should be from the time of the snapshot, not the current date.
       # TODO: I need to add a snapshot date to the ingested data.
+      # Construct age and age_bucket variables based on birth_date
       age = floor(lubridate::time_length(lubridate::interval(.data$birth_date, Sys.Date()), "years")),
       age_bucket = dplyr::case_when(
         .data$age < 18 ~ "Under 18",
@@ -74,6 +76,8 @@ process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
         .data$age >= 65 ~ "65 and older",
         TRUE ~ "Unknown"
       ),
+      # Determine physical custody based on facility, and whehter it's of a
+      # certain type
       facility_upper = stringr::str_to_upper(.data$facility),
       physical_custody = .data$facility_upper %in% c(
         assessment_and_reception,
@@ -90,6 +94,7 @@ process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
   sentence_data <- sentence_data |>
     dplyr::mutate(js_date = lubridate::as_date(.data$js_date))
 
+  # Identify repeat offenders based on number of distinct sentencing dates
   doc_repeat <- sentence_data |>
     dplyr::group_by(.data$doc_num) |>
     dplyr::summarise(
