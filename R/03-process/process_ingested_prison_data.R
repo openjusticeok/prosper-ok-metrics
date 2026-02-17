@@ -49,7 +49,7 @@ process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
 
   interstate <- c("INTERSTATE COMPACT (OUT TO OTHER STATE) UNIT")
 
-  clean_profile_data <- profile_data |>
+  profile_data <- profile_data |>
     # Construct full name variable
     dplyr::mutate(
       # TODO: Reconsider name formatting for consistency with other datasets
@@ -62,18 +62,28 @@ process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
         dplyr::if_else(!is.na(.data$middle_name), stringr::str_c(" ", .data$middle_name), ""),
         "."
       ),
-      # TODO: Should be from the time of the snapshot, not the current date.
-      # TODO: I need to add a snapshot date to the ingested data.
-      # Construct age and age_bucket variables based on birth_date
-      age = floor(lubridate::time_length(lubridate::interval(.data$birth_date, Sys.Date()), "years")),
-      age_bucket = dplyr::case_when(
-        .data$age < 18 ~ "Under 18",
-        .data$age >= 18 & .data$age < 25 ~ "18-24",
-        .data$age >= 25 & .data$age < 35 ~ "25-34",
-        .data$age >= 35 & .data$age < 45 ~ "35-44",
-        .data$age >= 45 & .data$age < 55 ~ "45-54",
-        .data$age >= 55 & .data$age < 65 ~ "55-64",
-        .data$age >= 65 ~ "65 and older",
+      # Construct snapshot_age, current_age, and age_bucket variables based on birth_date
+      snapshot_age = floor(lubridate::time_length(lubridate::interval(.data$birth_date, as.Date(.data$snapshot_date)), "years")),
+      current_age = floor(lubridate::time_length(lubridate::interval(.data$birth_date, Sys.Date()), "years")),
+      current_age_date = today(), # Day the current age was calculated, which can be useful for tracking when age-based analyses were conducted
+      snapshot_age_bucket = dplyr::case_when(
+        .data$snapshot_age < 18 ~ "Under 18",
+        .data$snapshot_age >= 18 & .data$snapshot_age < 25 ~ "18-24",
+        .data$snapshot_age >= 25 & .data$snapshot_age < 35 ~ "25-34",
+        .data$snapshot_age >= 35 & .data$snapshot_age < 45 ~ "35-44",
+        .data$snapshot_age >= 45 & .data$snapshot_age < 55 ~ "45-54",
+        .data$snapshot_age >= 55 & .data$snapshot_age < 65 ~ "55-64",
+        .data$snapshot_age >= 65 ~ "65 and older",
+        TRUE ~ "Unknown"
+      ),
+      current_age_bucket = dplyr::case_when(
+        .data$current_age < 18 ~ "Under 18",
+        .data$current_age >= 18 & .data$current_age < 25 ~ "18-24",
+        .data$current_age >= 25 & .data$current_age < 35 ~ "25-34",
+        .data$current_age >= 35 & .data$current_age < 45 ~ "35-44",
+        .data$current_age >= 45 & .data$current_age < 55 ~ "45-54",
+        .data$current_age >= 55 & .data$current_age < 65 ~ "55-64",
+        .data$current_age >= 65 ~ "65 and older",
         TRUE ~ "Unknown"
       ),
       # Determine physical custody based on facility, and whehter it's of a
@@ -113,63 +123,59 @@ process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
   # in the data. However, it provides a useful starting point for identifying
   # potential repeat offenders.
   doc_repeat <- sentence_data |>
-    dplyr::group_by(.data$doc_num) |>
     dplyr::summarise(
-      num_sentencing_dates = dplyr::n_distinct(.data$sentencing_date, na.rm = TRUE),
-      repeat_offender = .data$num_sentencing_dates > 1,
-      .groups = "drop"
+      n_sentences = dplyr::n(),
+      n_sentencing_dates = dplyr::n_distinct(.data$sentencing_date, na.rm = TRUE),
+      repeat_offender = .data$n_sentencing_dates > 1,
+      .by = c("doc_num")
     )
 
-  people_with_sentence_info <- sentence_data |>
-    dplyr::left_join(consecutive_data, by = "sentence_id") |>
-    dplyr::left_join(doc_repeat, by = "doc_num") |>
+
+  ### Joins
+  profile_data <- profile_data |>
+    dplyr::left_join(doc_repeat, by = c("doc_num")) |>
+    dplyr::relocate("snapshot_date", .after = -1)
+
+  # TODO: Join data where a unique sentence is the unit of analysis
+  sentence_with_profile_offense_data <- sentence_data |> # Each row is a unique sentence
     dplyr::left_join(
       offense_data |>
-        dplyr::distinct(.data$statute_code, .keep_all = TRUE),
-      by = "statute_code"
+        # the changes in offense data itself.
+        # We usually want the latest offense data unless we are analyzing
+        filter(snapshot_date == max(snapshot_date)) |>
+        # There are ~2 offense which are not unique. They have a row where
+        # violent is "N" for not violent and "C" for circumstancial. See
+        # documentation for more details.
+        # For now keep the first row, which is "C".
+        distinct(statute_code, .keep_all = TRUE) |>
+        select(-c("snapshot_date")),
+      by = c("statute_code")
     ) |>
-    dplyr::rename(
-      offense_description = "description",
-      sentencing_date = "js_date"
-    ) |>
+    # Add booleans for life sentence, life without parole, and death penalty
     dplyr::mutate(
       life_sentence = .data$incarcerated_term_in_years == "7777",
-      lwop = .data$incarcerated_term_in_years == "8888",
-      dp = .data$incarcerated_term_in_years == "9999"
+      life_without_parole = .data$incarcerated_term_in_years == "8888",
+      death_penalty = .data$incarcerated_term_in_years == "9999"
     ) |>
-    dplyr::group_by(.data$doc_num) |>
-    dplyr::arrange(.data$doc_num, .data$sentencing_date, .data$sentence_id, .data$statute_code, .by_group = TRUE) |>
-    dplyr::mutate(
-      most_recent_sentencing_date = dplyr::if_else(
-        all(is.na(.data$sentencing_date)),
-        as.Date(NA),
-        max(.data$sentencing_date, na.rm = TRUE)
-      ),
-      most_recent_sentencing_county = .data$sentencing_county[.data$sentencing_date == .data$most_recent_sentencing_date][1]
+    # Arrange for easier visual skimming
+    dplyr::arrange(
+      .data$doc_num,
+      .data$sentencing_date,
+      .data$sentence_id,
+      .data$statute_code
     ) |>
-    # Nested offenses per doc_num, so each row is one individual
-    tidyr::nest(
-      offenses = c(
-        "statute_code",
-        "offense_description",
-        "sentence_id",
-        "consecutive_to_id",
-        "sentencing_county",
-        "sentencing_date",
-        "crf_number",
-        "incarcerated_term_in_years",
-        "probation_term_in_years",
-        "violent",
-        "num_sentencing_dates",
-        "life_sentence",
-        "lwop",
-        "dp"
-      )
-    ) |>
-    dplyr::ungroup() |>
-    dplyr::left_join(clean_profile_data, by = "doc_num")
+    # Join profile data to sentence data to get demographic and other profile information for each sentence
+    # This is a many-to-one join because there are multiple sentences per
+    # profile (via doc_num), and doc_num is unique per snapshot_date in the profile data.
+    dplyr::left_join(
+      profile_data,
+      by = c("doc_num", "snapshot_date")
+    )
 
   list(
-    people_with_sentence_info = people_with_sentence_info
+    profile_data = profile_data,
+    sentence_data = sentence_data,
+    offense_data = offense_data,
+    sentence_with_profile_offense_data = sentence_with_profile_offense_data
   )
 }
