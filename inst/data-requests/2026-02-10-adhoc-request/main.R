@@ -273,8 +273,8 @@ profiles |>
   ) |>
   count(month_released) |>
   ggplot(aes(x = month_released, y = n)) +
-    geom_line() +
-    scale_y_continuous(limits = \(y) range(y, 0))
+  geom_line() +
+  scale_y_continuous(limits = \(y) range(y, 0))
 
 
 ## Date Comparison: js_date vs admit_date
@@ -331,14 +331,14 @@ sentences |>
   ) |>
   count(diff_category) |>
   ggplot(aes(x = diff_category, y = n)) +
-    geom_col() +
-    labs(
-      x = "Date Difference (js_date - admit_date)",
-      y = "Count",
-      title = "Distribution of Days Between Sentencing and Admission"
-    ) +
-    theme_minimal() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  geom_col() +
+  labs(
+    x = "Date Difference (js_date - admit_date)",
+    y = "Count",
+    title = "Distribution of Days Between Sentencing and Admission"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
 # Export
@@ -358,7 +358,7 @@ releases_summary <- profiles |>
   ) |>
   mutate(
     month_released = floor_date(release_date, "month"),
-    fiscal_year = ojo_fiscal_year(release_date),
+    fiscal_year = ojodb::ojo_fiscal_year(release_date),
     sentencing_county = case_when(
       is.na(sentencing_county) ~ "Unknown",
       !(sentencing_county %in% c("Tulsa", "Oklahoma")) ~ "All Other Counties",
@@ -385,5 +385,128 @@ write_group_count(
   output_dir = output_dir,
   prefix = "releases",
   value_name = "releases",
+  cumulative = TRUE
+)
+
+
+# Sentences, Population, and Admissions
+## Import the processed public media release data
+tar_load(prison_processed_data)
+
+sentence_with_profile_offense_data <- prison_processed_data$sentence_with_profile_offense_data
+profile_data <- prison_processed_data$profile_data
+
+
+### Number of sentences
+active_sentence_with_profile_offense_data <- sentence_with_profile_offense_data |>
+  # TODO: Do I not want those who aren't in physical custody? I.e. those in community supervision?
+  # TODO: Do I want to exclude those in the interstate compact unit?
+  filter(
+    physical_custody == "TRUE",
+    status == "ACTIVE",
+    facility != "INTERSTATE COMPACT (OUT TO OTHER STATE) UNIT"
+  )
+
+# Number of active sentences by snapshot date
+active_sentence_with_profile_offense_data |>
+  count(snapshot_date, name = "n_active_sentences")
+active_sentence_with_profile_offense_data |>
+  count(snapshot_date, race, name = "n_active_sentences")
+active_sentence_with_profile_offense_data |>
+  count(snapshot_date, sex, name = "n_active_sentences")
+
+sentence_summary <- sentence_with_profile_offense_data |>
+  filter(
+    snapshot_date == max(.data$snapshot_date)
+  ) |>
+  mutate(
+    sentencing_county = case_when(
+      is.na(sentencing_county) ~ "Unknown",
+      sentencing_county == "Other State" ~ "Other State",
+      !(sentencing_county %in% c("Tulsa", "Oklahoma")) ~ "All Other Counties",
+      TRUE ~ sentencing_county
+    ),
+    sentencing_year = sentencing_date |> lubridate::year(),
+    sentencing_fiscal_year = ojodb::ojo_fiscal_year(sentencing_date)
+  )
+
+active_sentence_summary <- active_sentence_with_profile_offense_data |>
+  mutate(
+    sentencing_county = case_when(
+      is.na(sentencing_county) ~ "Unknown",
+      sentencing_county == "Other State" ~ "Other State",
+      !(sentencing_county %in% c("Tulsa", "Oklahoma")) ~ "All Other Counties",
+      TRUE ~ sentencing_county
+    ),
+    sentencing_year = sentencing_date |> lubridate::year(),
+    sentencing_fiscal_year = ojodb::ojo_fiscal_year(sentencing_date)
+  )
+
+
+output_dir <- here::here("data/output/2026-02-10-adhoc-request/sentences")
+fs::dir_create(output_dir)
+
+write_group_count(
+  data = sentence_summary,
+  base_group_vars = c("sentencing_fiscal_year"),
+  other_group_vars = c("sex", "race", "sentencing_county"),
+  output_dir = output_dir,
+  prefix = "sentences",
+  value_name = "sentences",
+  cumulative = TRUE
+)
+
+write_group_count(
+  data = active_sentence_summary,
+  base_group_vars = c("sentencing_fiscal_year", "snapshot_date"),
+  other_group_vars = c("sex", "race", "sentencing_county"),
+  output_dir = output_dir,
+  prefix = "active_sentences",
+  value_name = "active_sentences",
+  cumulative = TRUE
+)
+
+
+# Population
+# TODO: Add this to processing and remove the join below
+latest_sentence_info <- sentence_with_profile_offense_data |>
+  summarise(
+    latest_sentencing_date = max(sentencing_date, na.rm = TRUE),
+    latest_sentencing_county = sentencing_county[which.max(sentencing_date)],
+    .by = c("doc_num", "snapshot_date")
+  )
+
+profile_summary <- profile_data |>
+  # For population we want those actively in DOC custody, and in physical
+  # custody so that we are not including those in community supervision. We also want to
+  # Exclude those in the interstate compact unit, as they are not in custody in Oklahoma.
+  # Even though they are technically in DOC custody.
+  filter(
+    physical_custody == "TRUE",
+    status == "ACTIVE",
+    facility != "INTERSTATE COMPACT (OUT TO OTHER STATE) UNIT"
+  ) |>
+  left_join(
+    latest_sentence_info,
+    by = c("doc_num", "snapshot_date")
+  ) |>
+  mutate(
+    latest_sentencing_county = case_when(
+      is.na(latest_sentencing_county) ~ "Unknown",
+      latest_sentencing_county == "Other State" ~ "Other State",
+      !(latest_sentencing_county %in% c("Tulsa", "Oklahoma")) ~ "All Other Counties",
+      TRUE ~ latest_sentencing_county
+    )
+  )
+
+output_dir <- here::here("data/output/2026-02-10-adhoc-request/population")
+fs::dir_create(output_dir)
+write_group_count(
+  data = profile_summary,
+  base_group_vars = c("snapshot_date"),
+  other_group_vars = c("sex", "race", "latest_sentencing_county"),
+  output_dir = output_dir,
+  prefix = "population",
+  value_name = "population",
   cumulative = TRUE
 )
