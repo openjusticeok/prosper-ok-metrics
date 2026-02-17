@@ -1,7 +1,3 @@
-### Main analysis function
-
-#TODO: figure out when we need to group by data source
-#TODO: figure out how we're calculating percentage change yoy
 analyze_processed_prison_data <- function(processed_data = prison_processed_data) {
   people_with_sentence_info <- processed_data$people_with_sentence_info |>
     as.data.frame()
