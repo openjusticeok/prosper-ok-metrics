@@ -174,8 +174,6 @@ process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
 
   list(
     profile_data = profile_data,
-    sentence_data = sentence_data,
-    offense_data = offense_data,
     sentence_with_profile_offense_data = sentence_with_profile_offense_data
   )
 }
