@@ -29,6 +29,7 @@ check_prison_ingested <- function(ingested_data = prison_ingested_data) {
     pointblank::col_is_date(pointblank::vars(js_date), actions = warn_only) |>
     pointblank::col_vals_not_null(pointblank::vars(sentence_id)) |>
     pointblank::col_vals_not_null(pointblank::vars(doc_num)) |>
+    pointblank::col_vals_not_null(pointblank::vars(sentencing_county)) |>
     # Check that all doc_num's in the sentence data appear in the profile data
     # I.e. sentence doc_num's ⊆ profile doc_num's
     pointblank::col_vals_in_set(
