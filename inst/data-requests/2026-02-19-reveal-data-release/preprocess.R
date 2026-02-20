@@ -38,6 +38,39 @@ preprocess_offender <- function(input_file, output_file) {
       n_fields <- length(fields)
       n_extra <- n_fields - expected_cols
 
+      if (n_extra == 1 && fields[3] == " Jr.") {
+        # Special case: LastName contains comma (e.g., "Edmonds, Jr.")
+        # Merge fields 2 and 3 into LastName
+        merged_lastname <- str_flatten(fields[2:3], collapse = ",")
+        
+        # CurrentFacility is now at position 15 (shifted by 1)
+        # But we need to check if CurrentFacility itself contains commas
+        if (n_fields > 15) {
+          # CurrentFacility has commas - merge from position 15
+          merged_facility <- str_flatten(fields[15:n_fields], collapse = ",")
+          merged_facility <- str_remove(merged_facility, "^,")
+          
+          fields <- c(
+            fields[1],
+            str_c('"', str_replace_all(merged_lastname, '"', '""'), '"'),
+            fields[4:14],
+            str_c('"', str_replace_all(merged_facility, '"', '""'), '"')
+          )
+        } else {
+          # CurrentFacility doesn't have commas - it's at position 15, Status at 16
+          # After merging LastName, we should have 15 columns total
+          fields <- c(
+            fields[1],
+            str_c('"', str_replace_all(merged_lastname, '"', '""'), '"'),
+            fields[4:14],
+            str_c('"', str_replace_all(fields[15], '"', '""'), '"'),
+            fields[16]
+          )
+        }
+        
+        return(str_flatten(fields, collapse = ","))
+      }
+
       # CurrentFacility is column 14, but we need to account for extra commas
       # The extra commas are IN the CurrentFacility field
       merge_start <- 14
