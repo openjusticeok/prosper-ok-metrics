@@ -1,0 +1,122 @@
+---
+title: "ODOC Reveal News Data Release Overview"
+format:
+  html:
+    embed-resources: true
+execute:
+  echo: false
+---
+
+```{r}
+#| include: false
+
+library(here)
+library(fs)
+library(purrr)
+library(dplyr)
+library(readr)
+library(janitor)
+```
+
+```{r}
+#| include: false
+
+output_dir <- here::here("data/output/2026-02-19-reveal-data-release")
+preprocess_dir <- here::here(output_dir, "preprocess")
+
+preprocessed_data_files <- fs::dir_ls(preprocess_dir)
+
+
+walk(
+  preprocessed_data_files,
+  \(x) {
+    obj_name <- fs::path_file(x) |>
+      fs::path_ext_remove()
+
+    data <- readr::read_csv(
+      x,
+      col_types = cols(.default = col_character())
+    ) |>
+      janitor::clean_names()
+
+    assign(obj_name, data, envir = .GlobalEnv)
+  }
+)
+```
+
+# Offender
+
+```{r}
+offender |>
+  select(doc_num, race, gender, dob, reception_date, current_facility, status)
+```
+
+# OffenderSentence
+
+```{r}
+offender_sentence |>
+  count(offence_description, sort = TRUE)
+```
+
+```{r}
+offender_sentence |>
+  count(offence_comment, sort = TRUE)
+```
+
+```{r}
+offender_sentence |>
+  count(sentence_term_code, sort = TRUE)
+```
+
+```{r}
+offender_sentence |>
+  count(sentence_term, sort = TRUE)
+```
+
+```{r}
+offender_sentence |>
+  count(order_code, sort = TRUE)
+```
+
+```{r}
+offender_sentence |>
+  count(charge_status, sort = TRUE)
+```
+
+# OffenderReception
+
+```{r}
+offender_reception |>
+  count(
+    facility,
+    sort = TRUE
+  )
+```
+
+```{r}
+offender_reception |>
+  count(
+    doc_num,
+    name = "n_receptions"
+  ) |>
+  count(n_receptions, sort = TRUE)
+```
+
+# OffenderExit
+
+```{r}
+offender_exit |>
+  count(
+    exit_reason,
+    sort = TRUE
+  )
+```
+
+```{r}
+offender_exit |>
+  count(
+    doc_num,
+    name = "n_exits"
+  ) |>
+  count(n_exits, sort = TRUE)
+```
