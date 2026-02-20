@@ -44,29 +44,18 @@ preprocess_offender <- function(input_file, output_file) {
         merged_lastname <- str_flatten(fields[2:3], collapse = ",")
         
         # CurrentFacility is now at position 15 (shifted by 1)
-        # But we need to check if CurrentFacility itself contains commas
-        if (n_fields > 15) {
-          # CurrentFacility has commas - merge from position 15
-          merged_facility <- str_flatten(fields[15:n_fields], collapse = ",")
-          merged_facility <- str_remove(merged_facility, "^,")
-          
-          fields <- c(
-            fields[1],
-            str_c('"', str_replace_all(merged_lastname, '"', '""'), '"'),
-            fields[4:14],
-            str_c('"', str_replace_all(merged_facility, '"', '""'), '"')
-          )
-        } else {
-          # CurrentFacility doesn't have commas - it's at position 15, Status at 16
-          # After merging LastName, we should have 15 columns total
-          fields <- c(
-            fields[1],
-            str_c('"', str_replace_all(merged_lastname, '"', '""'), '"'),
-            fields[4:14],
-            str_c('"', str_replace_all(fields[15], '"', '""'), '"'),
-            fields[16]
-          )
-        }
+        # Flatten from position 15 to second-to-last field (Status is always last)
+        # If no extra commas in CurrentFacility, 15:(n_fields-1) evaluates to 15:15
+        merged_facility <- str_flatten(fields[15:(n_fields - 1)], collapse = ",")
+        merged_facility <- str_remove(merged_facility, "^,")
+        
+        fields <- c(
+          fields[1],
+          str_c('"', str_replace_all(merged_lastname, '"', '""'), '"'),
+          fields[4:14],
+          str_c('"', str_replace_all(merged_facility, '"', '""'), '"'),
+          fields[n_fields]  # Status is always the last field
+        )
         
         return(str_flatten(fields, collapse = ","))
       }
