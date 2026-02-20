@@ -1,5 +1,5 @@
 ---
-title: "ODOC Reveal News Data Release Overview"
+title: "[DRAFT] ODOC Reveal News Data Release Overview"
 format:
   html:
     embed-resources: true
@@ -16,16 +16,11 @@ library(purrr)
 library(dplyr)
 library(readr)
 library(janitor)
-```
-
-```{r}
-#| include: false
 
 output_dir <- here::here("data/output/2026-02-19-reveal-data-release")
 preprocess_dir <- here::here(output_dir, "preprocess")
 
 preprocessed_data_files <- fs::dir_ls(preprocess_dir)
-
 
 walk(
   preprocessed_data_files,
@@ -44,14 +39,656 @@ walk(
 )
 ```
 
-# Offender
+```{r}
+#| include: false
+
+# Pre-calculate all statistics for inline use
+sentence_stats <- offender_sentence |>
+  count(doc_num, name = "n_sentences") |>
+  summarise(
+    min_sentences = min(n_sentences),
+    max_sentences = max(n_sentences),
+    mean_sentences = round(mean(n_sentences), 1),
+    median_sentences = median(n_sentences),
+    people_with_multiple = sum(n_sentences > 1),
+    total_people = n()
+  )
+
+consecutive_count <- offender_sentence |>
+  filter(!is.na(consecutive_to_count)) |>
+  nrow()
+consecutive_pct <- round(100 * consecutive_count / nrow(offender_sentence), 1)
+
+corrupted_start <- offender_sentence |>
+  filter(!is.na(start_date)) |>
+  mutate(start_year = as.numeric(substr(start_date, 1, 4))) |>
+  filter(start_year < 1950 | start_year > 2025) |>
+  nrow()
+
+backwards_dates <- offender_sentence |>
+  filter(!is.na(start_date), !is.na(end_date)) |>
+  filter(end_date < start_date) |>
+  nrow()
+
+order_code_count <- offender_sentence |>
+  filter(!is.na(order_code)) |>
+  distinct(order_code) |>
+  nrow()
+
+multi_sentence_stats <- offender_sentence |>
+  count(doc_num, name = "n_sentences") |>
+  summarise(
+    people_with_multiple = sum(n_sentences > 1),
+    max_sentences = max(n_sentences),
+    total_people = n()
+  )
+
+missing_count_num <- offender_sentence |> filter(is.na(count_num)) |> nrow()
+missing_start_date <- offender_sentence |> filter(is.na(start_date)) |> nrow()
+missing_end_date <- offender_sentence |> filter(is.na(end_date)) |> nrow()
+missing_order_code <- offender_sentence |> filter(is.na(order_code)) |> nrow()
+total_sentences <- nrow(offender_sentence)
+```
+
+# Data Source Context
+
+This data comes from the Reveal News Oklahoma offender data release (obtained 2025-02-19), which provides a snapshot of Oklahoma Department of Corrections data. The data was originally obtained from: https://s3-us-west-2.amazonaws.com/oklahoma-offender-data/oklahoma_offender_data.zip
+
+**Note:** Exact column names in future DOC data releases may differ from those shown here. The field names below are To Be Determined (TBD) by DOC, but the data elements described are needed for accurate analysis.
+
+# Critical Fields for Accurate Analysis
+
+Based on analysis of this data, the following fields are essential for properly tracking sentences, movements, and exits:
+
+## Sentence Table Fields
+
+### DOC Sentence Count Number
+
+**Purpose:** Required to accurately aggregate unique sentences and track changes to sentences over time.
+
+**Evidence from data:** This data contains `count_num` which appears to serve this purpose. Analysis shows individuals have between `r sentence_stats$min_sentences` and `r sentence_stats$max_sentences` sentences (mean: `r sentence_stats$mean_sentences`, median: `r sentence_stats$median_sentences`). `r scales::comma(sentence_stats$people_with_multiple)` individuals (`r round(100 * sentence_stats$people_with_multiple / sentence_stats$total_people, 1)`%) have multiple sentences. Without a unique sentence identifier, aggregating sentences produces incorrect results.
+
+### Sentence Type/Term Code
+
+**Purpose:** Provides crucial sentence information about the type of sentence (e.g., incarceration, probation, deferred, suspended, specialty court, etc.).
+
+**Values present in this data (`sentence_term_code`):**
+
+```{r}
+offender_sentence |>
+  count(sentence_term_code, sort = TRUE) |>
+  mutate(
+    pct = n / sum(n),
+    n_fmt = scales::comma(n),
+    pct_fmt = scales::percent(pct, accuracy = 0.1)
+  ) |>
+  select(sentence_term_code, n_fmt, pct_fmt) |>
+  rename(
+    `Sentence Type` = sentence_term_code,
+    Count = n_fmt,
+    Percent = pct_fmt
+  )
+```
+
+This field is critical because it allows analysts to distinguish between active incarceration, probation supervision, deferred sentences, and other sentence types.
+
+### Sentence Start Date
+
+**Purpose:** The date the sentence begins. **Differs from Judgment and Sentence (JS) Date** because multiple sentences may run concurrently or consecutively.
+
+**Evidence from data:** This data contains `start_date` which shows sentence start dates. Analysis reveals complex sentencing structures where judgment/sentence dates (when available via `convict_date`) often differ from sentence start dates, indicating the need for both fields.
+
+### Discharge Date/Status
+
+**Purpose:** Tracks when and how a sentence ends.
+
+**Evidence from data:** This data contains `end_date` and `charge_status` fields:
+
+```{r}
+offender_sentence |>
+  count(charge_status, sort = TRUE) |>
+  mutate(
+    pct = n / sum(n),
+    n_fmt = scales::comma(n),
+    pct_fmt = scales::percent(pct, accuracy = 0.1)
+  ) |>
+  select(charge_status, n_fmt, pct_fmt) |>
+  rename(
+    `Charge Status` = charge_status,
+    Count = n_fmt,
+    Percent = pct_fmt
+  )
+```
+
+### Consecutive Sentence Tracking
+
+**Purpose:** Identifies which sentences run consecutively to others.
+
+**Evidence from data:** This data contains `consecutive_to_count` field. The data shows `r scales::comma(consecutive_count)` sentences (`r consecutive_pct`%) are marked as consecutive to another sentence count. This is essential for calculating total time to be served.
+
+## Offender Exit Table Fields
+
+### DOC Exit Date
+
+**Purpose:** The date the offender exited DOC custody or supervision.
+
+**Note:** Release date may indicate release on probation and is not 1:1 with exit. The exit date captures the actual departure from DOC jurisdiction.
+
+### DOC Exit Reason
+
+**Purpose:** Explains why the offender exited.
+
+**Values present in this data (`exit_reason`):**
+
+```{r}
+offender_exit |>
+  count(exit_reason, sort = TRUE) |>
+  mutate(
+    pct = n / sum(n),
+    n_fmt = scales::comma(n),
+    pct_fmt = scales::percent(pct, accuracy = 0.1)
+  ) |>
+  select(exit_reason, n_fmt, pct_fmt) |>
+  rename(
+    `Exit Reason` = exit_reason,
+    Count = n_fmt,
+    Percent = pct_fmt
+  )
+```
+
+## Offender Reception/Movement Table Fields
+
+### Movement Date
+
+**Purpose:** Tracks when an offender moves between facilities or statuses.
+
+### Movement Reason
+
+**Purpose:** Explains why the movement occurred.
+
+**Values present in this data (`reason`):**
+
+```{r}
+offender_reception |>
+  count(reason, sort = TRUE) |>
+  mutate(
+    pct = n / sum(n),
+    n_fmt = scales::comma(n),
+    pct_fmt = scales::percent(pct, accuracy = 0.1)
+  ) |>
+  select(reason, n_fmt, pct_fmt) |>
+  rename(
+    `Movement Reason` = reason,
+    Count = n_fmt,
+    Percent = pct_fmt
+  )
+```
+
+### Facility
+
+**Purpose:** Tracks which facility the offender is in.
+
+**Values present in this data (`facility`):**
+
+```{r}
+offender_reception |>
+  count(facility, sort = TRUE) |>
+  mutate(
+    pct = n / sum(n),
+    n_fmt = scales::comma(n),
+    pct_fmt = scales::percent(pct, accuracy = 0.1)
+  ) |>
+  select(facility, n_fmt, pct_fmt) |>
+  rename(
+    Facility = facility,
+    Count = n_fmt,
+    Percent = pct_fmt
+  )
+```
+
+**Note:** This data only tracks reception movements, not all facility transfers. Full facility movement data would provide greater confidence in population analysis.
+
+# Additional Recommended Fields
+
+Based on analysis of this data, the following fields provide greater detail for quality assurance:
+
+## Sentence Detail Fields
+
+### CountNum, OrderID, OrderCode, ChargeSequence
+
+**Purpose:** Provide granular tracking of individual charges and orders within sentences.
+
+**Evidence from data:**
+
+- `count_num`: Sentence count number (present in data)
+- `order_id`: Order identifier (present in data)
+- `order_code`: Order type code (`r order_code_count` unique values present)
+- `charge_seq`: Charge sequence number (present in data)
+
+These fields allow analysts to:
+
+- Track individual sentences ending earlier than expected
+- Understand why sentences end early
+- Perform automated data quality assurance checks
+- Clarify ambiguities or correct data entry errors
+
+**Order code values in this data:**
+
+```{r}
+offender_sentence |>
+  count(order_code, sort = TRUE) |>
+  mutate(
+    pct = n / sum(n),
+    n_fmt = scales::comma(n),
+    pct_fmt = scales::percent(pct, accuracy = 0.1)
+  ) |>
+  select(order_code, n_fmt, pct_fmt) |>
+  rename(
+    `Order Code` = order_code,
+    Count = n_fmt,
+    Percent = pct_fmt
+  )
+```
+
+### Year, Month, Days (Original Term Components)
+
+**Purpose:** Original components used to calculate sentence term.
+
+**Evidence from data:** This data contains separate `years`, `months`, and `days` columns that appear to be the source for calculating `sentence_term`. For quality assurance and to ease burden on DOC, requesting these original columns is preferred over pre-calculated terms.
+
+### CRFNum (Case Number)
+
+**Purpose:** Court case reference number for linking to court records.
+
+**Evidence from data:** Present in this data as `crf_num`, allowing linkage back to court records.
+
+# Data Quality Observations
+
+## Sentence Date Issues
+
+Analysis of this data reveals some date quality issues:
+
+- Some `start_date` values appear corrupted (`r scales::comma(corrupted_start)` records with dates before 1950 or in the future)
+- Some `end_date` values are earlier than `start_date` (`r scales::comma(backwards_dates)` records)
+- Missing dates are common and expected for active sentences
+
+These issues highlight the need for:
+
+1. Multiple date fields for cross-validation
+2. Quality assurance flags in the data
+3. Clear documentation of date field definitions
+
+## Multiple Sentences Per Person
+
+The data shows extensive multiple sentencing:
+
+- `r scales::comma(multi_sentence_stats$people_with_multiple)` individuals (`r round(100 * multi_sentence_stats$people_with_multiple / multi_sentence_stats$total_people, 1)`%) have multiple sentences
+- Maximum sentences for one individual: `r multi_sentence_stats$max_sentences`
+- Sentences may be concurrent or consecutive
+
+This reinforces the need for:
+
+- `consecutive_to_count` field to track consecutive sentences
+- `count_num` field to uniquely identify each sentence
+- `sentence_term_code` to distinguish sentence types
+
+## Missing Data
+
+Key fields have missing values that affect analysis:
+
+```{r}
+tibble(
+  field = c("count_num", "start_date", "end_date", "order_code"),
+  missing_count = c(missing_count_num, missing_start_date, missing_end_date, missing_order_code),
+  total_count = total_sentences
+) |>
+  mutate(
+    missing_pct = missing_count / total_count,
+    missing_fmt = scales::comma(missing_count),
+    pct_fmt = scales::percent(missing_pct, accuracy = 0.1)
+  ) |>
+  select(field, missing_fmt, pct_fmt) |>
+  rename(
+    Field = field,
+    `Missing Count` = missing_fmt,
+    `Missing %` = pct_fmt
+  )
+```
+
+**Note:** Missing `end_date` values are expected for active sentences.
+
+# Date Field Relationships
+
+Understanding the relationships between date fields is critical for accurate analysis of offender stays. This section examines how `convict_date`, `reception_date`, `start_date`, `end_date`, `movement_date`, and `exit_date` relate to each other.
+
+## Date Field Availability
+
+```{r}
+#| include: false
+
+# Calculate date availability stats
+date_availability <- tibble(
+  field = c("convict_date", "start_date", "end_date", "reception_date", "movement_date", "exit_date"),
+  present_count = c(
+    offender_sentence |> filter(!is.na(convict_date)) |> nrow(),
+    offender_sentence |> filter(!is.na(start_date)) |> nrow(),
+    offender_sentence |> filter(!is.na(end_date)) |> nrow(),
+    offender |> filter(!is.na(reception_date)) |> nrow(),
+    offender_reception |> filter(!is.na(movement_date)) |> nrow(),
+    offender_exit |> filter(!is.na(exit_date)) |> nrow()
+  ),
+  total_records = c(
+    nrow(offender_sentence),
+    nrow(offender_sentence),
+    nrow(offender_sentence),
+    nrow(offender),
+    nrow(offender_reception),
+    nrow(offender_exit)
+  )
+) |>
+  mutate(
+    pct_present = present_count / total_records,
+    present_fmt = scales::comma(present_count),
+    pct_fmt = scales::percent(pct_present, accuracy = 0.1)
+  )
+```
+
+```{r}
+date_availability |>
+  select(field, present_fmt, pct_fmt) |>
+  rename(
+    `Date Field` = field,
+    `Present Count` = present_fmt,
+    `Present %` = pct_fmt
+  )
+```
+
+## Convict Date vs Sentence Start Date
+
+The `convict_date` represents when the court entered judgment, while `start_date` represents when the sentence actually begins. These dates often differ.
+
+```{r}
+#| include: false
+
+# Compare convict_date and start_date
+convict_start_comparison <- offender_sentence |>
+  filter(!is.na(convict_date), !is.na(start_date)) |>
+  mutate(
+    convict_date_parsed = as.Date(substr(convict_date, 1, 10)),
+    start_date_parsed = as.Date(substr(start_date, 1, 10)),
+    days_diff = as.numeric(difftime(start_date_parsed, convict_date_parsed, units = "days"))
+  )
+
+convict_start_stats <- convict_start_comparison |>
+  summarise(
+    n_both_dates = n(),
+    mean_diff = round(mean(days_diff, na.rm = TRUE), 1),
+    median_diff = round(median(days_diff, na.rm = TRUE), 1),
+    same_day = sum(days_diff == 0, na.rm = TRUE),
+    start_before_convict = sum(days_diff < 0, na.rm = TRUE),
+    start_after_1yr = sum(days_diff > 365, na.rm = TRUE)
+  )
+```
+
+Analysis of records with both dates (`r scales::comma(convict_start_stats$n_both_dates)` records):
+
+- **Mean difference** (start - convict): `r convict_start_stats$mean_diff` days
+- **Median difference**: `r convict_start_stats$median_diff` days
+- **Same day**: `r scales::comma(convict_start_stats$same_day)` records (`r round(100 * convict_start_stats$same_day / convict_start_stats$n_both_dates, 1)`%)
+- **Start before convict**: `r scales::comma(convict_start_stats$start_before_convict)` records (`r round(100 * convict_start_stats$start_before_convict / convict_start_stats$n_both_dates, 1)`%)
+- **Start after convict by >1 year**: `r scales::comma(convict_start_stats$start_after_1yr)` records (`r round(100 * convict_start_stats$start_after_1yr / convict_start_stats$n_both_dates, 1)`%)
+
+## Reception Date vs Sentence Start Date
+
+The `reception_date` represents when DOC first receives the offender, which may differ from when the sentence officially begins.
+
+```{r}
+#| include: false
+
+# Compare reception_date and start_date
+reception_start_comparison <- offender |>
+  select(doc_num, reception_date) |>
+  inner_join(
+    offender_sentence |>
+      select(doc_num, start_date) |>
+      filter(!is.na(start_date)),
+    by = "doc_num"
+  ) |>
+  filter(!is.na(reception_date), !is.na(start_date)) |>
+  mutate(
+    reception_date_parsed = as.Date(substr(reception_date, 1, 10)),
+    start_date_parsed = as.Date(substr(start_date, 1, 10)),
+    days_diff = as.numeric(difftime(reception_date_parsed, start_date_parsed, units = "days"))
+  )
+
+reception_start_stats <- reception_start_comparison |>
+  summarise(
+    n_both_dates = n(),
+    mean_diff = round(mean(days_diff, na.rm = TRUE), 1),
+    median_diff = round(median(days_diff, na.rm = TRUE), 1),
+    same_day = sum(days_diff == 0, na.rm = TRUE),
+    reception_before_start = sum(days_diff < 0, na.rm = TRUE),
+    reception_after_1yr = sum(days_diff > 365, na.rm = TRUE)
+  )
+```
+
+Analysis of records with both dates (`r scales::comma(reception_start_stats$n_both_dates)` records):
+
+- **Mean difference** (reception - start): `r reception_start_stats$mean_diff` days
+- **Median difference**: `r reception_start_stats$median_diff` days
+- **Same day**: `r scales::comma(reception_start_stats$same_day)` records (`r round(100 * reception_start_stats$same_day / reception_start_stats$n_both_dates, 1)`%)
+- **Reception before start**: `r scales::comma(reception_start_stats$reception_before_start)` records (`r round(100 * reception_start_stats$reception_before_start / reception_start_stats$n_both_dates, 1)`%)
+- **Reception after start by >1 year**: `r scales::comma(reception_start_stats$reception_after_1yr)` records (`r round(100 * reception_start_stats$reception_after_1yr / reception_start_stats$n_both_dates, 1)`%)
+
+## Movement Date vs Reception Date
+
+Movement dates track when offenders move between facilities, which may differ from their initial reception date.
+
+```{r}
+#| include: false
+
+# Compare first movement date with reception date
+movement_reception_comparison <- offender |>
+  select(doc_num, reception_date) |>
+  inner_join(
+    offender_reception |>
+      group_by(doc_num) |>
+      summarise(
+        first_movement = min(movement_date, na.rm = TRUE),
+        .groups = "drop"
+      ) |>
+      filter(!is.na(first_movement)),
+    by = "doc_num"
+  ) |>
+  filter(!is.na(reception_date)) |>
+  mutate(
+    reception_date_parsed = as.Date(substr(reception_date, 1, 10)),
+    first_movement_parsed = as.Date(first_movement),
+    days_diff = as.numeric(difftime(first_movement_parsed, reception_date_parsed, units = "days"))
+  )
+
+movement_reception_stats <- movement_reception_comparison |>
+  summarise(
+    n_both_dates = n(),
+    mean_diff = round(mean(days_diff, na.rm = TRUE), 1),
+    median_diff = round(median(days_diff, na.rm = TRUE), 1),
+    same_day = sum(days_diff == 0, na.rm = TRUE),
+    movement_before_reception = sum(days_diff < 0, na.rm = TRUE)
+  )
+```
+
+Analysis of records with both dates (`r scales::comma(movement_reception_stats$n_both_dates)` records):
+
+- **Mean difference** (first movement - reception): `r movement_reception_stats$mean_diff` days
+- **Median difference**: `r movement_reception_stats$median_diff` days
+- **Same day**: `r scales::comma(movement_reception_stats$same_day)` records (`r round(100 * movement_reception_stats$same_day / movement_reception_stats$n_both_dates, 1)`%)
+- **Movement before reception**: `r scales::comma(movement_reception_stats$movement_before_reception)` records (`r round(100 * movement_reception_stats$movement_before_reception / movement_reception_stats$n_both_dates, 1)`%)
+
+## Exit Date vs Sentence End Date
+
+Exit dates track when offenders leave DOC custody, which may differ from when their sentence officially ends.
+
+```{r}
+#| include: false
+
+# Compare first exit date with sentence end date
+exit_end_comparison <- offender_sentence |>
+  select(doc_num, end_date) |>
+  filter(!is.na(end_date)) |>
+  inner_join(
+    offender_exit |>
+      group_by(doc_num) |>
+      summarise(
+        first_exit = min(exit_date, na.rm = TRUE),
+        .groups = "drop"
+      ) |>
+      filter(!is.na(first_exit)),
+    by = "doc_num"
+  ) |>
+  mutate(
+    end_date_parsed = as.Date(substr(end_date, 1, 10)),
+    first_exit_parsed = as.Date(first_exit),
+    days_diff = as.numeric(difftime(first_exit_parsed, end_date_parsed, units = "days"))
+  )
+
+exit_end_stats <- exit_end_comparison |>
+  summarise(
+    n_both_dates = n(),
+    mean_diff = round(mean(days_diff, na.rm = TRUE), 1),
+    median_diff = round(median(days_diff, na.rm = TRUE), 1),
+    same_day = sum(days_diff == 0, na.rm = TRUE),
+    exit_before_end = sum(days_diff < 0, na.rm = TRUE),
+    exit_after_30days = sum(days_diff > 30, na.rm = TRUE)
+  )
+```
+
+Analysis of records with both dates (`r scales::comma(exit_end_stats$n_both_dates)` records):
+
+- **Mean difference** (first exit - end): `r exit_end_stats$mean_diff` days
+- **Median difference**: `r exit_end_stats$median_diff` days
+- **Same day**: `r scales::comma(exit_end_stats$same_day)` records (`r round(100 * exit_end_stats$same_day / exit_end_stats$n_both_dates, 1)`%)
+- **Exit before end**: `r scales::comma(exit_end_stats$exit_before_end)` records (`r round(100 * exit_end_stats$exit_before_end / exit_end_stats$n_both_dates, 1)`%)
+- **Exit after end by >30 days**: `r scales::comma(exit_end_stats$exit_after_30days)` records (`r round(100 * exit_end_stats$exit_after_30days / exit_end_stats$n_both_dates, 1)`%)
+
+## Date Range Summary
+
+```{r}
+#| include: false
+
+# Get date ranges
+convict_range <- offender_sentence |>
+  filter(!is.na(convict_date)) |>
+  summarise(
+    min_date = min(convict_date, na.rm = TRUE),
+    max_date = max(convict_date, na.rm = TRUE)
+  )
+
+start_range <- offender_sentence |>
+  filter(!is.na(start_date)) |>
+  summarise(
+    min_date = min(start_date, na.rm = TRUE),
+    max_date = max(start_date, na.rm = TRUE)
+  )
+
+end_range <- offender_sentence |>
+  filter(!is.na(end_date)) |>
+  summarise(
+    min_date = min(end_date, na.rm = TRUE),
+    max_date = max(end_date, na.rm = TRUE)
+  )
+
+reception_range <- offender |>
+  filter(!is.na(reception_date)) |>
+  summarise(
+    min_date = min(reception_date, na.rm = TRUE),
+    max_date = max(reception_date, na.rm = TRUE)
+  )
+
+movement_range <- offender_reception |>
+  filter(!is.na(movement_date)) |>
+  summarise(
+    min_date = min(movement_date, na.rm = TRUE),
+    max_date = max(movement_date, na.rm = TRUE)
+  )
+
+exit_range <- offender_exit |>
+  filter(!is.na(exit_date)) |>
+  summarise(
+    min_date = min(exit_date, na.rm = TRUE),
+    max_date = max(exit_date, na.rm = TRUE)
+  )
+```
+
+| Date Field | Earliest Date | Latest Date |
+|------------|---------------|-------------|
+| Convict Date | `r convict_range$min_date[[1]]` | `r convict_range$max_date[[1]]` |
+| Sentence Start Date | `r start_range$min_date[[1]]` | `r start_range$max_date[[1]]` |
+| Sentence End Date | `r end_range$min_date[[1]]` | `r end_range$max_date[[1]]` |
+| Reception Date | `r reception_range$min_date[[1]]` | `r reception_range$max_date[[1]]` |
+| Movement Date | `r movement_range$min_date[[1]]` | `r movement_range$max_date[[1]]` |
+| Exit Date | `r exit_range$min_date[[1]]` | `r exit_range$max_date[[1]]` |
+
+## Key Findings
+
+1. **Convict vs Start Dates**: Often differ significantly, with sentences sometimes starting before conviction (data quality issue) or more than a year after conviction (delayed sentencing).
+
+2. **Reception vs Start Dates**: Reception into DOC custody frequently occurs on the same day as sentence start, but can vary significantly, especially for delayed sentences or transfers.
+
+3. **Movement vs Reception**: First movement dates generally align with reception dates, but some records show movements before official reception (data quality issue).
+
+4. **Exit vs End Dates**: Exit from DOC custody often occurs on the same day as sentence end, but can occur before (early release) or after (administrative delays) the official sentence end date.
+
+5. **Data Quality Issues**: Significant date inconsistencies exist, including dates before 1950 and future dates, highlighting the need for validation rules and clear documentation of date field definitions.
+
+# Summary of Required Fields
+
+## Essential Fields (Must Have)
+
+### Sentence Table
+
+1. **DOC Sentence Count Number** - Unique identifier for each sentence
+2. **Sentence Type/Term Code** - Type of sentence (incarceration, probation, deferred, etc.)
+3. **Sentence Start Date** - When sentence begins
+4. **Discharge Date/Status** - When and how sentence ends
+5. **Consecutive To Count** - For tracking consecutive sentences
+6. **CRF Number** - Court case reference
+
+### Offender Exit Table
+
+7. **DOC Exit Date** - When offender exited
+8. **DOC Exit Reason** - Why offender exited
+
+### Offender Reception/Movement Table
+
+9. **Movement Date** - When movement occurred
+10. **Movement Reason** - Why movement occurred
+11. **Facility** - Which facility
+
+## Recommended Fields (Should Have)
+
+### Sentence Detail
+
+12. **OrderID** - Order identifier
+13. **OrderCode** - Order type code
+14. **ChargeSequence** - Charge sequence number
+15. **ChargeStatus** - Current status of charge
+
+### Term Components
+
+16. **Years** - Sentence term years
+17. **Months** - Sentence term months
+18. **Days** - Sentence term days
+
+# Current Data Overview
+
+## Offender
 
 ```{r}
 offender |>
   select(doc_num, race, gender, dob, reception_date, current_facility, status)
 ```
 
-# OffenderSentence
+## OffenderSentence
 
 ```{r}
 offender_sentence |>
@@ -83,7 +720,7 @@ offender_sentence |>
   count(charge_status, sort = TRUE)
 ```
 
-# OffenderReception
+## OffenderReception
 
 ```{r}
 offender_reception |>
@@ -102,7 +739,7 @@ offender_reception |>
   count(n_receptions, sort = TRUE)
 ```
 
-# OffenderExit
+## OffenderExit
 
 ```{r}
 offender_exit |>
