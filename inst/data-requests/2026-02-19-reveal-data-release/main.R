@@ -71,68 +71,86 @@ preprocess_offender_exit(
   output_file = fs::path(preprocess_dir, "offender_exit.csv")
 )
 
+# Upload Preprocessed
+drive_preprocessed_folder_id <- drive_mkdir(
+  name = "preprocessed",
+  path = drive_folder_id,
+  overwrite = TRUE
+) |>
+  pull(id)
+
+preprocessed_data_files <- fs::dir_ls(preprocess_dir)
+
+walk(
+  preprocessed_data_files,
+  \(x) {
+    drive_upload(x, drive_preprocessed_folder_id, overwrite = TRUE)
+  }
+)
+
 # Load
 
-## Remaining 2 warnings are expected
-offender <- readr::read_csv(
-  fs::path(preprocess_dir, "offender.csv"),
-  col_types = cols(.default = col_character())
-) |>
-  janitor::clean_names()
+walk(
+  preprocessed_data_files,
+  \(x) {
+    obj_name <- fs::path_file(x) |>
+      fs::path_ext_remove()
 
-offender_alias <- readr::read_csv(
-  fs::path(preprocess_dir, "offender_alias.csv"),
-  show_col_types = FALSE
-) |>
-  janitor::clean_names()
+    data <- readr::read_csv(
+      x,
+      col_types = cols(.default = col_character())
+    ) |>
+      janitor::clean_names()
 
-offender_sentence <- readr::read_csv(
-  fs::path(preprocess_dir, "offender_sentence.csv"),
-  show_col_types = FALSE
-) |>
-  janitor::clean_names()
+    assign(obj_name, data, envir = .GlobalEnv)
+  }
+)
 
-offender_reception <- readr::read_csv(
-  fs::path(preprocess_dir, "offender_reception.csv"),
-  show_col_types = FALSE
-) |>
-  janitor::clean_names()
+# Explore
 
-offender_exit <- readr::read_csv(
-  fs::path(preprocess_dir, "offender_exit.csv"),
-  show_col_types = FALSE
-) |>
-  janitor::clean_names()
+offender |>
+  select(doc_num, race, gender, dob, reception_date, current_facility, status)
 
+offender_sentence |>
+  count(offence_description, sort = TRUE)
 
-# # Clean
-#
-# offender |>
-#   select(
-#     -c(
-#       "hair_color",
-#       "eye_color",
-#       "height",
-#       "weight"
-#     )
-#   ) |>
-#   mutate(
-#     across(
-#       c("dob", ends_with("_date")),
-#       \(x) lubridate::ymd_hms(x)
-#     )
-#   ) |>
-#   glimpse()
-#
-# ## Some `doc_num` are not actual numbers and can break joins
-# offender |>
-#   filter(
-#     is.na(as.integer(doc_num))
-#   ) |>
-#   distinct(doc_num)
-#
-# offender_alias
-# offender_sentence
-# offender_reception
-# offender_exit
-#
+offender_sentence |>
+  count(offence_comment, sort = TRUE)
+
+offender_sentence |>
+  count(sentence_term_code, sort = TRUE)
+
+offender_sentence |>
+  count(sentence_term, sort = TRUE)
+
+offender_sentence |>
+  count(order_code, sort = TRUE)
+
+offender_sentence |>
+  count(charge_status, sort = TRUE)
+
+offender_reception |>
+  count(
+    facility,
+    sort = TRUE
+  )
+
+offender_reception |>
+  count(
+    doc_num,
+    name = "n_receptions"
+  ) |>
+  count(n_receptions, sort = TRUE)
+
+offender_exit |>
+  count(
+    exit_reason,
+    sort = TRUE
+  )
+
+offender_exit |>
+  count(
+    doc_num,
+    name = "n_exits"
+  ) |>
+  count(n_exits, sort = TRUE)
