@@ -84,20 +84,12 @@ preprocess_offender <- function(input_file, output_file) {
         merged <- str_remove(merged, "^,")
 
         # Reconstruct the line with proper quoting
-        if (merge_end < n_fields) {
-          # There are more fields after CurrentFacility (Status column)
-          fields <- c(
-            fields[1:13],
-            str_c('"', merged, '"'),
-            fields[(merge_end + 1):n_fields]
-          )
-        } else {
-          # CurrentFacility is the last field
-          fields <- c(
-            fields[1:13],
-            str_c('"', merged, '"')
-          )
-        }
+        # Use tail() to handle remaining fields after CurrentFacility
+        fields <- c(
+          fields[1:13],
+          str_c('"', merged, '"'),
+          tail(fields, n_fields - merge_end)
+        )
 
         return(str_flatten(fields, collapse = ","))
       }
@@ -278,18 +270,13 @@ preprocess_offender_reception <- function(input_file, output_file) {
       if (merge_end <= n_fields) {
         merged <- str_flatten(fields[merge_start:merge_end], collapse = ",")
 
-        if (merge_end < n_fields) {
-          fields <- c(
-            fields[1:2],
-            str_c('"', merged, '"'),
-            fields[(merge_end + 1):n_fields]
-          )
-        } else {
-          fields <- c(
-            fields[1:2],
-            str_c('"', merged, '"')
-          )
-        }
+        # Reconstruct the line with proper quoting
+        # Use tail() to handle remaining fields after Reason
+        fields <- c(
+          fields[1:2],
+          str_c('"', merged, '"'),
+          tail(fields, n_fields - merge_end)
+        )
         return(str_flatten(fields, collapse = ","))
       }
       return(line)
@@ -346,18 +333,13 @@ preprocess_offender_exit <- function(input_file, output_file) {
       if (merge_end <= n_fields) {
         merged <- str_flatten(fields[merge_start:merge_end], collapse = ",")
 
-        if (merge_end < n_fields) {
-          fields <- c(
-            fields[1:2],
-            str_c('"', merged, '"'),
-            fields[(merge_end + 1):n_fields]
-          )
-        } else {
-          fields <- c(
-            fields[1:2],
-            str_c('"', merged, '"')
-          )
-        }
+        # Reconstruct the line with proper quoting
+        # Use tail() to handle remaining fields after ExitReason
+        fields <- c(
+          fields[1:2],
+          str_c('"', merged, '"'),
+          tail(fields, n_fields - merge_end)
+        )
         return(str_flatten(fields, collapse = ","))
       }
       return(line)
