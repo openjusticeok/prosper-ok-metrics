@@ -149,11 +149,12 @@ preprocess_offender_alias <- function(input_file, output_file) {
         
         # Remove one empty field from position 7 (before DOB)
         # Result: Id, DOCNum, LastName, FirstName, MiddleInit, Suffix, DOB
+        # Use fields[n_fields] to always grab DOB from the end, regardless of how many empty fields
         fields <- c(
           fields[1:3],
           merged_firstname,
           fields[6],
-          fields[8]
+          fields[n_fields]
         )
 
         return(str_flatten(fields, collapse = ","))
