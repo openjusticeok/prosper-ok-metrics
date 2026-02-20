@@ -7,8 +7,6 @@ library(readr)
 library(stringr)
 library(janitor)
 library(lubridate)
-# library(ggplot2)
-# library(ojodb)
 
 source(here::here("inst/data-requests/2026-02-19-reveal-data-release/preprocess.R"))
 
@@ -75,9 +73,10 @@ preprocess_offender_exit(
 
 # Load
 
+## Remaining 2 warnings are expected
 offender <- readr::read_csv(
   fs::path(preprocess_dir, "offender.csv"),
-  show_col_types = FALSE
+  col_types = cols(.default = col_character())
 ) |>
   janitor::clean_names()
 
@@ -105,13 +104,6 @@ offender_exit <- readr::read_csv(
 ) |>
   janitor::clean_names()
 
-## Problems
-
-problems(offender)
-problems(offender_alias)
-problems(offender_sentence)
-problems(offender_reception)
-problems(offender_exit)
 
 # # Clean
 #
