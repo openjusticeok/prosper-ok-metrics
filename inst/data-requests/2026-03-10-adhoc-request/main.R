@@ -236,6 +236,20 @@ new_doc_nums_09 |>
   ) |>
   count(has_release_record)
 
+releases_09 |>
+  filter(year(movement_date) == 2024) |>
+  anti_join(
+    releases_02,
+    by = "doc_num"
+  )
+
+releases_02 |>
+  filter(year(exit_date) == 2024) |>
+  anti_join(
+    releases_09 ,
+    by = "doc_num"
+  )
+
 releases_2025_patched <- releases_02 |>
   rename(movement_date = exit_date) |>
   mutate(movement_date = as.Date(movement_date)) |>
