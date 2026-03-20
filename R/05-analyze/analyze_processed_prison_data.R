@@ -1,9 +1,9 @@
 analyze_processed_prison_data <- function(processed_data = prison_processed_data) {
-  people_with_sentence_info <- processed_data$people_with_sentence_info |>
+  sentence_with_profile_offense <- processed_data$sentence_with_profile_offense |>
     as.data.frame()
 
   sentences_doc_admin_year_total_by_county <-
-    people_with_sentence_info |>
+    sentence_with_profile_offense |>
     filter_doc_population(physical_custody_only = TRUE,
                           status_active_only = TRUE,
                           exclude_interstate = TRUE,
@@ -13,7 +13,7 @@ analyze_processed_prison_data <- function(processed_data = prison_processed_data
   releases_vera_admin_year_total_by_county <- placeholder_tibble()
 
   population_doc_admin_year_by_gender_county <-
-    people_with_sentence_info |>
+    sentence_with_profile_offense |>
     filter_doc_population(physical_custody_only = TRUE,
                           status_active_only = TRUE,
                           exclude_interstate = TRUE) |>
