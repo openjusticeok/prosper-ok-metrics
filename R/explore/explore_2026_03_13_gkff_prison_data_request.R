@@ -161,7 +161,7 @@ releases_agent <- releases_data |>
   pointblank::col_vals_not_null(facility) |>
   pointblank::interrogate()
 
-profile_data <- profile_data |>
+profile_agent <- profile_data |>
   pointblank::create_agent(
     tbl_name = "ODOC Inmate Profile",
     label = "Profile Data"
@@ -184,4 +184,74 @@ profile_data <- profile_data |>
   pointblank::col_vals_lte(birth_date, snapshot_date) |>
   pointblank::interrogate()
 
+# TODO: Add offense and alias checks
+# TODO: Incorporate the checks Polina created
+
 # Process
+
+# Analysis
+profile_data <- profile_data |>
+  mutate(
+    birth_date = ymd(birth_date),
+    admit_date = ymd(admit_date),
+    release_date = ymd(release_date)
+  ) |>
+  mutate(
+    physical_stay = lubridate::interval(
+      start = admit_date,
+      end = if_else(is.na(release_date), snapshot_date, release_date)
+    )
+  )
+
+dates <- tibble::tibble(
+  day = seq(ymd("2024-01-01"), ymd("2025-12-31"), by = "1 day")
+) |>
+  dplyr::mutate(day = lubridate::floor_date(day, "hour"))
+
+compute_daily_population <- function(date, intervals) {
+  return(
+    # This is equivalent to sum(date %within% intervals):
+    sum(lubridate::`%within%`(date, intervals), na.rm = TRUE)
+  )
+}
+
+dates |>
+  dplyr::mutate(
+    total_pop = sapply(dates, function(x) {
+      compute_daily_population(x, profile_data$physical_stay)
+    })
+  )
+
+start_date <- ymd("2024-01-01")
+end_date   <- ymd("2025-12-31")
+
+daily_population <- profile_data |>
+  transmute(
+    admit_date   = ymd(admit_date),
+    exit_date    = coalesce(ymd(release_date), snapshot_date)
+  ) |>
+  filter(!is.na(admit_date), !is.na(exit_date), admit_date <= exit_date) |>
+  transmute(
+    start = admit_date,
+    end   = exit_date + days(1)
+  ) |>
+  bind_rows(
+    transmute(., day = start, delta =  1),
+    transmute(., day = end,   delta = -1)
+  ) |>
+  summarise(delta = sum(delta), .by = day) |>
+  right_join(tibble(day = seq(start_date, end_date, by = "1 day")), by = "day") |>
+  arrange(day) |>
+  mutate(
+    delta = replace_na(delta, 0L),
+    total_pop = cumsum(delta)
+  ) |>
+  select(day, total_pop)
+
+
+### Takeaways
+## sentences data
+# INCARCERATED_TERM_IN_YEARS is missing __, __, __. Shows only 999.
+# What is the reason for lack of SENTENCE_START_DATE?
+# Why do some have such high SENTENCE_END_DATE?
+#
