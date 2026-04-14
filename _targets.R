@@ -26,7 +26,6 @@ tar_option_set(
     "here",
     "withr",
     "fs",
-    "qs",
     "qs2",
     "glue",
     "rlang"
