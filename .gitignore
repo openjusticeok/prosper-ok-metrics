@@ -46,8 +46,6 @@ vignettes/*.pdf
 
 # Data directories
 data/*
-data/output/*
-data/input/*
 
 # macOS system files
 .DS_Store
