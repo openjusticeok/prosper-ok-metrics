@@ -56,7 +56,7 @@ gcs_read_parquet <- function(
     # TODO: pass other arugments
     object_name = object,
     bucket = bucket
-    ) |>
+  ) |>
     arrow::read_parquet(
       # TODO: pass other arguments
     )
@@ -65,14 +65,6 @@ gcs_read_parquet <- function(
   return(data)
 }
 
-
-# Ingest
-single_drive_folder_url <- "https://drive.google.com/drive/u/0/folders/1AcwuaOHYifDDYHCHQaykAzLba1yDkHcZ"
-folder_id <- googledrive::as_id(single_drive_folder_url)
-folder_meta <- googledrive::drive_get(folder_id)
-drive_files <- googledrive::drive_ls(folder_id)
-snapshot_date <- lubridate::ymd("2026-03-13")
-input_dir <- here::here("data/input/doc/2026-03-13-gkff/")
 
 # Ingest
 ## Auth
@@ -94,10 +86,10 @@ purrr::walk(
   .f = function(object) {
     new_object <- object |>
       stringr::str_replace(".xlsx", ".parquet") |>
-      stringr::str_replace("landing/EXTID-136 ODOC", "raw")
+      stringr::str_replace("landing/EXTID-136 ODOC", "formatted")
 
     googleCloudStorageR::gcs_get_object(object) |>
-      fastexcel::read_excel(as = "tibble") |>
+      fastexcel::read_excel() |>
       janitor::clean_names() |>
       parquet_raw() |>
       gcs_upload_raw(
@@ -108,7 +100,7 @@ purrr::walk(
   }
 )
 
-object_dir <- "2026-03-13-gkff/raw/"
+object_dir <- "2026-03-13-gkff/formatted/"
 sentences_data <- gcs_read_parquet(paste0(object_dir, "Sentences.parquet"))
 receptions_data <- gcs_read_parquet(paste0(object_dir, "OffenderReception.parquet"))
 releases_data <- gcs_read_parquet(paste0(object_dir, "OffenderExit.parquet"))
