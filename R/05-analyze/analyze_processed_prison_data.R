@@ -1,6 +1,6 @@
 analyze_processed_prison_data <- function(processed_data = prison_processed_data) {
   sentence_with_profile_offense <- processed_data$sentence_with_profile_offense |>
-    as.data.frame()
+    as_tibble()
 
   sentences_doc_admin_year_total_by_county <-
     sentence_with_profile_offense |>

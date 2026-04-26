@@ -258,13 +258,6 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks, v
     ) |>
     dplyr::mutate(
       source = "OK Policy Scraper",
-      bail_set_datetime = lubridate::ymd_hms(
-        # TODO: We actually need to confirm the timezone of the booking date
-        .data$bail_set_date,
-        tz = "America/Chicago",
-        quiet = TRUE
-      ),
-      bail_set_date = as.Date(.data$bail_set_datetime),
       created_at_date = as.Date(created_at_date),
       updated_at_date = as.Date(updated_at_datetime),
       updated_at_time = hms::as_hms(updated_at_datetime),
@@ -382,18 +375,20 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks, v
     # Combining data from sources which are already aggregated
     dplyr::bind_rows(
       vera_processed_data |>
-        dplyr::filter(!is.na(total_jail_adm)) |>
+        # TODO: Handle this change from adm to admits
+        dplyr::filter(!is.na(total_jail_admits)) |>
         # TODO: Should this be higher up in the pipeline to apply to all vera data in jail pipeline?
         dplyr::filter(county_code == "US_OK_TULSA") |>
         dplyr::filter(year >= 1999) |>
         dplyr::mutate(
           source,
-          booking_month = quarter_date,
+          # TODO: Why is quarter now missing?
+          #booking_month = quarter_date,
           # total_jail_adm is an estimate of total admissions in the past year
           # for a county.
           # Source: pg.10 of Vera Incarceration Trends codebook
-          bookings_past_year = total_jail_adm,
-          bookings = total_jail_adm / 12,
+          bookings_past_year = total_jail_admits,
+          bookings = total_jail_admits / 12,
           .keep = "none"
         ),
       brek |>
