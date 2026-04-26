@@ -2,12 +2,16 @@
   "bioconductor.version": [],
   "external.libraries": [],
   "ignored.packages": [],
+  "lockfile.sanitize": true,
   "package.dependency.fields": [
     "Imports",
     "Depends",
     "LinkingTo"
   ],
+  "ppm.enabled": true,
+  "ppm.ignored.urls": [],
   "r.version": [],
+  "snapshot.dev": false,
   "snapshot.type": "implicit",
   "use.cache": true,
   "vcs.ignore.cellar": true,
