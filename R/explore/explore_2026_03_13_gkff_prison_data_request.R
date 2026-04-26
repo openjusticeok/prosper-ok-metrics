@@ -10,6 +10,60 @@ library(readxl)
 library(pointblank)
 library(janitor)
 library(benchCalculatePopulation)
+library(ojoutils)
+library(googleCloudStorageR)
+library(gargle)
+library(DBI)
+library(duckdb)
+library(fastexcel)
+
+parquet_raw <- function(x, ...) {
+  sink <- arrow::BufferOutputStream$create()
+
+  arrow::write_parquet(x, sink, ...)
+
+  sink$finish()$data()
+}
+
+gcs_upload_raw <- function(raw, bucket, name, token,
+                           content_type = "application/vnd.apache.parquet") {
+  token$refresh()
+
+  resp <- httr2::request(
+    glue::glue("https://storage.googleapis.com/upload/storage/v1/b/{bucket}/o")
+  ) |>
+    httr2::req_url_query(
+      uploadType = "media",
+      name = name
+    ) |>
+    httr2::req_headers(
+      Authorization = paste("Bearer", token$credentials$access_token),
+      `Content-Type` = content_type
+    ) |>
+    httr2::req_body_raw(raw) |>
+    httr2::req_perform()
+
+  httr2::resp_body_json(resp)
+}
+
+
+gcs_read_parquet <- function(
+  object,
+  bucket = googleCloudStorageR::gcs_get_global_bucket(),
+  clean_names = TRUE
+) {
+  data <- googleCloudStorageR::gcs_get_object(
+    # TODO: pass other arugments
+    object_name = object,
+    bucket = bucket
+    ) |>
+    arrow::read_parquet(
+      # TODO: pass other arguments
+    )
+  if (clean_names) data <- janitor::clean_names(data)
+
+  return(data)
+}
 
 
 # Ingest
@@ -20,31 +74,47 @@ drive_files <- googledrive::drive_ls(folder_id)
 snapshot_date <- lubridate::ymd("2026-03-13")
 input_dir <- here::here("data/input/doc/2026-03-13-gkff/")
 
-# fs::dir_create(input_dir)
-#
-# purrr::pwalk(
-#   .l = drive_files,
-#   .f = function(id, name, ...) {
-#     googledrive::drive_download(
-#       file = id,
-#       path = here::here(input_dir, name),
-#       overwrite = TRUE
-#     )
-#   }
-# )
+# Ingest
+## Auth
+scope <- "https://www.googleapis.com/auth/cloud-platform"
+bucket <- "odoc-adhoc-data-requests"
 
-sentences_data <- readxl::read_xlsx(here(input_dir, "Sentences.xlsx")) |>
-  janitor::clean_names()
-receptions_data <- readxl::read_xlsx(here(input_dir, "OffenderReception.xlsx")) |>
-  janitor::clean_names()
-releases_data <- readxl::read_xlsx(here(input_dir, "OffenderExit.xlsx")) |>
-  janitor::clean_names()
-profile_data <- readxl::read_xlsx(here(input_dir, "Profile.xlsx")) |>
-  janitor::clean_names()
-offense_data <- readxl::read_xlsx(here(input_dir, "Offense.xlsx")) |>
-  janitor::clean_names()
-alias_data <- readxl::read_xlsx(here(input_dir, "Alias.xlsx")) |>
-  janitor::clean_names()
+token <- gargle::token_fetch(scopes = scope)
+googleCloudStorageR::gcs_global_bucket(bucket = bucket)
+googleCloudStorageR::gcs_auth(token = token)
+
+objects <- googleCloudStorageR::gcs_list_objects(
+  prefix = "2026-03-13-gkff/landing/EXTID-136 ODOC"
+) |>
+  filter(stringr::str_detect(name, ".xlsx")) |>
+  pull(name)
+
+purrr::walk(
+  .x = objects,
+  .f = function(object) {
+    new_object <- object |>
+      stringr::str_replace(".xlsx", ".parquet") |>
+      stringr::str_replace("landing/EXTID-136 ODOC", "raw")
+
+    googleCloudStorageR::gcs_get_object(object) |>
+      fastexcel::read_excel(as = "tibble") |>
+      janitor::clean_names() |>
+      parquet_raw() |>
+      gcs_upload_raw(
+        name = new_object,
+        bucket = bucket,
+        token = token
+      )
+  }
+)
+
+object_dir <- "2026-03-13-gkff/raw/"
+sentences_data <- gcs_read_parquet(paste0(object_dir, "Sentences.parquet"))
+receptions_data <- gcs_read_parquet(paste0(object_dir, "OffenderReception.parquet"))
+releases_data <- gcs_read_parquet(paste0(object_dir, "OffenderExit.parquet"))
+profile_data <- gcs_read_parquet(paste0(object_dir, "Profile.parquet"))
+offense_data <- gcs_read_parquet(paste0(object_dir, "Offense.parquet"))
+alias_data <- gcs_read_parquet(paste0(object_dir, "Alias.parquet"))
 
 
 # Check Ingested
