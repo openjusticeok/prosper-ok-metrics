@@ -312,98 +312,82 @@ dates <- tibble::tibble(
 ) |>
   dplyr::mutate(day = lubridate::floor_date(day, "hour"))
 
-compute_daily_population <- function(date, intervals) {
-  return(
-    # This is equivalent to sum(date %within% intervals):
-    sum(lubridate::`%within%`(date, intervals), na.rm = TRUE)
-  )
-}
-
-dates |>
-  dplyr::mutate(
-    total_pop = sapply(dates, function(x) {
-      compute_daily_population(x, profile_data$physical_stay)
-    })
-  )
-
 start_date <- ymd("2024-01-01")
 end_date <- ymd("2025-12-31")
 
-daily_population <- profile_data |>
-  transmute(
-    admit_date   = ymd(admit_date),
-    exit_date    = coalesce(ymd(release_date), snapshot_date)
+profile_data |>
+  # Construct full name variable
+  dplyr::mutate(
+    # TODO: Reconsider name formatting for consistency with other datasets
+    name = stringr::str_c(
+      dplyr::if_else(!is.na(.data$last_name), stringr::str_c(" ", .data$last_name), ""),
+      dplyr::if_else(!is.na(.data$suffix), stringr::str_c(" ", .data$suffix), ""),
+      ", ",
+      dplyr::if_else(!is.na(.data$first_name), stringr::str_c(" ", .data$first_name), ""),
+      " ",
+      dplyr::if_else(!is.na(.data$middle_name), stringr::str_c(" ", .data$middle_name), ""),
+      "."
+    ),
+    # Construct snapshot_age, current_age, and age_bucket variables based on birth_date
+    snapshot_age = floor(lubridate::time_length(lubridate::interval(.data$birth_date, as.Date(.data$snapshot_date)), "years")),
+    current_age = floor(lubridate::time_length(lubridate::interval(.data$birth_date, Sys.Date()), "years")),
+    current_age_date = today(), # Day the current age was calculated, which can be useful for tracking when age-based analyses were conducted
+    snapshot_age_bucket = dplyr::case_when(
+      .data$snapshot_age < 18 ~ "Under 18",
+      .data$snapshot_age >= 18 & .data$snapshot_age < 25 ~ "18-24",
+      .data$snapshot_age >= 25 & .data$snapshot_age < 35 ~ "25-34",
+      .data$snapshot_age >= 35 & .data$snapshot_age < 45 ~ "35-44",
+      .data$snapshot_age >= 45 & .data$snapshot_age < 55 ~ "45-54",
+      .data$snapshot_age >= 55 & .data$snapshot_age < 65 ~ "55-64",
+      .data$snapshot_age >= 65 ~ "65 and older",
+      TRUE ~ "Unknown"
+    ),
+    current_age_bucket = dplyr::case_when(
+      .data$current_age < 18 ~ "Under 18",
+      .data$current_age >= 18 & .data$current_age < 25 ~ "18-24",
+      .data$current_age >= 25 & .data$current_age < 35 ~ "25-34",
+      .data$current_age >= 35 & .data$current_age < 45 ~ "35-44",
+      .data$current_age >= 45 & .data$current_age < 55 ~ "45-54",
+      .data$current_age >= 55 & .data$current_age < 65 ~ "55-64",
+      .data$current_age >= 65 ~ "65 and older",
+      TRUE ~ "Unknown"
+    ),
+    # Determine physical custody based on facility, and whehter it's of a
+    # certain type
+    facility_upper = stringr::str_to_upper(.data$facility),
+    physical_custody = .data$facility_upper %in% c(
+      assessment_and_reception,
+      state_institutions,
+      community_centers,
+      halfway_house,
+      private_facilities,
+      interstate
+    ) |
+      stringr::str_detect(.data$facility_upper, "(?i)jail|SHERIFFS OFFICE")
   ) |>
-  filter(!is.na(admit_date), !is.na(exit_date), admit_date <= exit_date) |>
-    # Construct full name variable
-    dplyr::mutate(
-      # TODO: Reconsider name formatting for consistency with other datasets
-      name = stringr::str_c(
-        dplyr::if_else(!is.na(.data$last_name), stringr::str_c(" ", .data$last_name), ""),
-        dplyr::if_else(!is.na(.data$suffix), stringr::str_c(" ", .data$suffix), ""),
-        ", ",
-        dplyr::if_else(!is.na(.data$first_name), stringr::str_c(" ", .data$first_name), ""),
-        " ",
-        dplyr::if_else(!is.na(.data$middle_name), stringr::str_c(" ", .data$middle_name), ""),
-        "."
-      ),
-      # Construct snapshot_age, current_age, and age_bucket variables based on birth_date
-      snapshot_age = floor(lubridate::time_length(lubridate::interval(.data$birth_date, as.Date(.data$snapshot_date)), "years")),
-      current_age = floor(lubridate::time_length(lubridate::interval(.data$birth_date, Sys.Date()), "years")),
-      current_age_date = today(), # Day the current age was calculated, which can be useful for tracking when age-based analyses were conducted
-      snapshot_age_bucket = dplyr::case_when(
-        .data$snapshot_age < 18 ~ "Under 18",
-        .data$snapshot_age >= 18 & .data$snapshot_age < 25 ~ "18-24",
-        .data$snapshot_age >= 25 & .data$snapshot_age < 35 ~ "25-34",
-        .data$snapshot_age >= 35 & .data$snapshot_age < 45 ~ "35-44",
-        .data$snapshot_age >= 45 & .data$snapshot_age < 55 ~ "45-54",
-        .data$snapshot_age >= 55 & .data$snapshot_age < 65 ~ "55-64",
-        .data$snapshot_age >= 65 ~ "65 and older",
-        TRUE ~ "Unknown"
-      ),
-      current_age_bucket = dplyr::case_when(
-        .data$current_age < 18 ~ "Under 18",
-        .data$current_age >= 18 & .data$current_age < 25 ~ "18-24",
-        .data$current_age >= 25 & .data$current_age < 35 ~ "25-34",
-        .data$current_age >= 35 & .data$current_age < 45 ~ "35-44",
-        .data$current_age >= 45 & .data$current_age < 55 ~ "45-54",
-        .data$current_age >= 55 & .data$current_age < 65 ~ "55-64",
-        .data$current_age >= 65 ~ "65 and older",
-        TRUE ~ "Unknown"
-      ),
-      # Determine physical custody based on facility, and whehter it's of a
-      # certain type
-      facility_upper = stringr::str_to_upper(.data$facility),
-      physical_custody = .data$facility_upper %in% c(
-        assessment_and_reception,
-        state_institutions,
-        community_centers,
-        halfway_house,
-        private_facilities,
-        interstate
-      ) |
-        stringr::str_detect(.data$facility_upper, "(?i)jail|SHERIFFS OFFICE")
-    ) |>
-    dplyr::select(-c("facility_upper"))
-  transmute(
-    start = admit_date,
-    end   = exit_date + days(1)
-  ) |>
-  bind_rows(
-    transmute(., day = start, delta = 1),
-    transmute(., day = end, delta = -1)
-  ) |>
-  summarise(delta = sum(delta), .by = day) |>
-  right_join(tibble(day = seq(start_date, end_date, by = "1 day")), by = "day") |>
-  arrange(day) |>
-  mutate(
-    delta = replace_na(delta, 0L),
-    total_pop = cumsum(delta)
-  ) |>
-  select(day, total_pop)
+  dplyr::select(-c("facility_upper"))
 
 # NOTE: All of this track Annual + YOY for CY24/25
 # Overall population trends
+profile_data |>
+  filter(stringr::str_detect(facility, "(?i)jail"))
+profile_data |>
+  mutate(
+    admit_date = if_else(
+      is.na(admit_date),
+      ymd("2024-01-01"),
+      admit_date
+    )
+  ) |>
+  distinct(doc_num, .keep_all = TRUE) |>
+  benchCalculatePopulation::calculate_population(
+    start = "admit_date",
+    end = "release_date",
+    groups = c("sex")
+  ) |>
+  mutate(n_total = sum(n), .by = "date") |>
+  as_tibble()
+
 population_data <- profile_data |>
   distinct(doc_num, admit_date, release_date, .keep_all = TRUE) |>
   benchCalculatePopulation::calculate_population(
@@ -412,17 +396,70 @@ population_data <- profile_data |>
     groups = c("sex", "race")
   ) |>
   as_tibble()
+
 # Population trends, breakdown by gender (male vs. female)
+population_month_data <- profile_data |>
+  distinct(doc_num, admit_date, release_date, .keep_all = TRUE) |>
+  mutate(
+    admit_month = lubridate::floor_date(admit_date, "month"),
+    release_month = lubridate::floor_date(release_date, "month")
+  ) |>
+  benchCalculatePopulation::calculate_population(
+    start = "admit_month",
+    end = "release_month",
+    groups = c("sex", "race")
+  ) |>
+  rename(month = date) |>
+  as_tibble()
+
+population_year_data <- profile_data |>
+  distinct(doc_num, admit_date, release_date, .keep_all = TRUE) |>
+  mutate(
+    admit_year = lubridate::floor_date(admit_date, "month"),
+    release_year = lubridate::floor_date(release_date, "month")
+  ) |>
+  benchCalculatePopulation::calculate_population(
+    start = "admit_year",
+    end = "release_year",
+    groups = c("sex", "race")
+  ) |>
+  rename(year = date) |>
+  as_tibble()
+
 population_data <- population_data |>
   mutate(
     year = lubridate::year(date),
     month = lubridate::floor_date(date, "month")
   )
 
+population_data <- population_data |>
+  mutate(
+    n_month = sum(n),
+    .by = month
+  ) |>
+  mutate(
+    n_year = sum(n),
+    .by = year
+  )
+
+
+# Average Daily Prison Population by Year
 population_data |>
   summarize(
     n = sum(n),
-    .by = year
+    .by = c("date")
+  ) |>
+  mutate(
+    year = year(date)
+  ) |>
+  summarize(
+    population_year_avg = mean(n),
+    .by = c("year")
+  )
+population_data |>
+  summarize(
+    population_year_avg = mean(n),
+    .by = c("year", "sex", "race")
   )
 # Population trends, breakdown by race/ethnicity
 # Population trends, breakdown by county
@@ -449,12 +486,27 @@ profile_data |>
     release_year = lubridate::year(release_date),
   ) |>
   filter(release_year < 2024)
-  summarise(
-    n_releases = n(),
-    .by = release_year
-  )
+summarise(
+  n_releases = n(),
+  .by = release_year
+)
+
+profile_data |>
+  filter(!is.na(admit_date)) |>
+  filter(n() > 1, .by = c("doc_num", "admit_date"))
 
 # Prison sentences - Overall
+sentences_data |>
+  distinct(doc_num, js_date) |>
+  count(
+    year(js_date)
+  )
+
+sentences_data |>
+  distinct(doc_num, sentence_start_date) |>
+  count(
+    year(sentence_start_date)
+  )
 # Prison sentences - breakdown by county
 
 # Prison recidivism rate - overall
