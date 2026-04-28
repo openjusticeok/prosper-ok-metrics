@@ -52,8 +52,11 @@ tar_source("R/06-visualize/visualize_jail_figures.R")
 tar_source("R/06-visualize/visualize_prison_figures.R")
 tar_source("R/render_report_jail.R")
 tar_source("R/render_report_prison.R")
+tar_source("R/08-export/export_jail_metrics.R")
+tar_source("R/08-export/upload_jail_metrics_to_drive.R")
 
-# Targets pipeline definition:
+
+  # Targets pipeline definition:
 list(
   tar_target(
     name = vera_data,
@@ -101,6 +104,14 @@ list(
     name = jail_report,
     command = render_jail_report(jail_analysis_results, jail_figures, report_source = jail_report_source),
     format = "file"
+  ),
+  tar_target(
+    name = jail_exported_metrics,
+    command = export_jail_metrics(jail_processed_data)
+  ),
+  tar_target(
+    name = jail_exported_metrics_drive,
+    command = upload_jail_metrics_to_drive(jail_exported_metrics)
   ),
   # Prison pipeline
   tar_target(
