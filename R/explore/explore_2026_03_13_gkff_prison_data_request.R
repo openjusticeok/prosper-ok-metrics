@@ -14,7 +14,6 @@ library(ojoutils)
 library(googleCloudStorageR)
 library(gargle)
 library(DBI)
-library(duckdb)
 library(fastexcel)
 
 parquet_raw <- function(x, ...) {

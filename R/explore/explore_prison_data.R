@@ -4,11 +4,11 @@
 # Check for duplicate sentence and consecutive sentence IDs within the same snapshot
 # In order to understand the meaning of the data and check data quality issues
 # Findings:
-# 1) There are no duplicate sentence_id/snapshot_date combinations in the sentence_data.
+# 1) There are no duplicate sentence_id/snapshot_date combinations in the sentences_data.
 # but there are 12k rows in the consecutive_data.
 # If the "consecutive_to_id" variable indicates that the sentence in sentence_id
 # is consecutive to the sentence in consecutive_to_id, then we would expect
-# that each sentence_id in the sentence_data would appear at most once
+# that each sentence_id in the sentences_data would appear at most once
 # in the consecutive_data. Since we see around 12k rows, this suggests either
 # that some sentences are marked as consecutive to multiple other sentences, or
 # some data error. It may be possible for a sentence to be consecutive
@@ -36,7 +36,7 @@
 # case information to understand if this is a data error or if it reflects some complex
 # sentencing structure.
 # The sentence data for the individual in case above.
-sentence_data |>
+sentences_data |>
   dplyr::filter(doc_num == "0000718254", snapshot_date == "2024-10-16")
 # The great irony is these consecutive sentences (nor the other sentences for
 # this individual) don't appear in the consecutive_data, which suggests some data
@@ -46,7 +46,7 @@ consecutive_data |>
 
 
 # There are no duplicate sentence_id's in sentence table.
-sentence_data |>
+sentences_data |>
   dplyr::filter(n() > 1, .by = c("sentence_id",  "snapshot_date"))
 
 # Duplicate sentence IDs in consecutive_sentence table

@@ -160,3 +160,79 @@ summarise_population_count <- function(filtered_data,
   return(summary_data)
 }
 
+#' Analyze processed GKFF prison data
+#'
+#' Computes population averages, admission counts, release counts, and
+#' sentence counts from the processed GKFF prison data.
+#'
+#' @param processed_data List of processed GKFF data as returned by
+#'   [process_gkff_prison_data()].
+#'
+#' @return A named list of analysis tibbles.
+#' @export
+analyze_gkff_prison_data <- function(processed_data) {
+  population_data <- processed_data$population_data
+  profile_data <- processed_data$profile_data
+  sentences_data <- processed_data$sentences_data
+  releases_data <- processed_data$releases_data
+
+  # Average Daily Prison Population by Year
+  population_year_avg <- population_data |>
+    dplyr::summarize(
+      population_year_avg = mean(n),
+      .by = c("year")
+    )
+
+  population_year_avg_demographics <- population_data |>
+    dplyr::summarize(
+      population_year_avg = mean(n),
+      .by = c("year", "sex", "race")
+    )
+
+  # Prison admissions by year
+  admissions_by_year <- profile_data |>
+    dplyr::filter(!is.na(admit_date)) |>
+    dplyr::distinct(doc_num, admit_date) |>
+    dplyr::mutate(
+      admit_year = lubridate::year(admit_date)
+    ) |>
+    dplyr::summarise(
+      n_admissions = dplyr::n(),
+      .by = admit_year
+    )
+
+  # Prison releases by year
+  releases_by_year <- releases_data |>
+    dplyr::mutate(
+      release_year = lubridate::year(movement_date)
+    ) |>
+    dplyr::filter(!is.na(release_year)) |>
+    dplyr::summarise(
+      n_releases = dplyr::n(),
+      .by = release_year
+    )
+
+  # Prison sentences by year (by JS date)
+  sentences_by_js_year <- sentences_data |>
+    dplyr::distinct(doc_num, js_date) |>
+    dplyr::count(
+      year = lubridate::year(js_date)
+    )
+
+  # Prison sentences by year (by sentence start date)
+  sentences_by_start_year <- sentences_data |>
+    dplyr::distinct(doc_num, sentence_start_date) |>
+    dplyr::count(
+      year = lubridate::year(sentence_start_date)
+    )
+
+  named_list(
+    population_year_avg,
+    population_year_avg_demographics,
+    admissions_by_year,
+    releases_by_year,
+    sentences_by_js_year,
+    sentences_by_start_year
+  )
+}
+

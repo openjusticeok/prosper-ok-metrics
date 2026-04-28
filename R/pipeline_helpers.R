@@ -1,6 +1,76 @@
 # Shared helper functions for the jail and prison target pipelines.
 
 
+# GCS Utilities ===============================================================
+
+#' Convert a data frame to in-memory Parquet bytes
+#'
+#' @param x A data frame or tibble
+#' @param ... Additional arguments passed to [arrow::write_parquet()]
+#' @return Raw Parquet bytes
+#' @export
+parquet_raw <- function(x, ...) {
+  sink <- arrow::BufferOutputStream$create()
+
+  arrow::write_parquet(x, sink, ...)
+
+  sink$finish()$data()
+}
+
+#' Upload raw bytes to a GCS bucket
+#'
+#' @param raw Raw bytes to upload
+#' @param bucket GCS bucket name
+#' @param name Object name in the bucket
+#' @param token A gargle OAuth token
+#' @param content_type MIME type of the upload
+#' @return JSON response from the GCS API
+#' @export
+gcs_upload_raw <- function(raw, bucket, name, token,
+                           content_type = "application/vnd.apache.parquet") {
+  token$refresh()
+
+  resp <- httr2::request(
+    glue::glue("https://storage.googleapis.com/upload/storage/v1/b/{bucket}/o")
+  ) |>
+    httr2::req_url_query(
+      uploadType = "media",
+      name = name
+    ) |>
+    httr2::req_headers(
+      Authorization = paste("Bearer", token$credentials$access_token),
+      `Content-Type` = content_type
+    ) |>
+    httr2::req_body_raw(raw) |>
+    httr2::req_perform()
+
+  httr2::resp_body_json(resp)
+}
+
+#' Read a Parquet file from GCS into a data frame
+#'
+#' @param object Object name in the GCS bucket
+#' @param bucket GCS bucket name (defaults to the global bucket)
+#' @param clean_names If TRUE, run [janitor::clean_names()] on the result
+#' @return A data frame
+#' @export
+gcs_read_parquet <- function(
+  object,
+  bucket = googleCloudStorageR::gcs_get_global_bucket(),
+  clean_names = TRUE
+) {
+  data <- googleCloudStorageR::gcs_get_object(
+    object_name = object,
+    bucket = bucket
+  ) |>
+    arrow::read_parquet()
+
+  if (clean_names) data <- janitor::clean_names(data)
+
+  data
+}
+
+
 # Report Rendering ============================================================
 
 ## Report Paths ---------------------------------------------------------------

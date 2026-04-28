@@ -266,6 +266,69 @@ ingest_doc_data <- function(
   )
 }
 
+#' Ingest GKFF prison data from Google Cloud Storage
+#'
+#' Downloads Excel files from a GCS landing folder, converts them to Parquet,
+#' uploads the Parquet files to a formatted folder, and reads them back as
+#' tibbles with cleaned names.
+#'
+#' @param snapshot_date Date string identifying the data extract. Used to
+#'   construct GCS paths and to add a `snapshot_date` column to each table.
+#'   Default is "2026-03-13".
+#' @param bucket GCS bucket name (default: "odoc-adhoc-data-requests")
+#' @param scope OAuth scope for GCS authentication
+#'
+#' @return A named list of tibbles: sentences, receptions, releases, profile,
+#'   offense, and alias data.
+#' @export
+ingest_gkff_prison_data <- function(
+  snapshot_date = "2026-03-13",
+  bucket = "odoc-adhoc-data-requests",
+  scope = "https://www.googleapis.com/auth/cloud-platform"
+) {
+  date_slug <- lubridate::as_date(snapshot_date) |> format("%Y-%m-%d")
+
+  prefix <- paste0(date_slug, "-gkff/landing/EXTID-136 ODOC")
+  object_dir <- paste0(date_slug, "-gkff/formatted/")
+
+  token <- gargle::token_fetch(scopes = scope)
+  googleCloudStorageR::gcs_global_bucket(bucket = bucket)
+  googleCloudStorageR::gcs_auth(token = token)
+
+  objects <- googleCloudStorageR::gcs_list_objects(prefix = prefix) |>
+    dplyr::filter(stringr::str_detect(name, ".xlsx")) |>
+    dplyr::pull(name)
+
+  purrr::walk(
+    .x = objects,
+    .f = function(object) {
+      new_object <- object |>
+        stringr::str_replace(".xlsx", ".parquet") |>
+        stringr::str_replace("landing/EXTID-136 ODOC", "formatted")
+
+      googleCloudStorageR::gcs_get_object(object) |>
+        fastexcel::read_excel() |>
+        janitor::clean_names() |>
+        dplyr::mutate(snapshot_date = date_slug) |>
+        parquet_raw() |>
+        gcs_upload_raw(
+          name = new_object,
+          bucket = bucket,
+          token = token
+        )
+    }
+  )
+
+  list(
+    sentences_data = gcs_read_parquet(paste0(object_dir, "Sentences.parquet")),
+    receptions_data = gcs_read_parquet(paste0(object_dir, "OffenderReception.parquet")),
+    releases_data = gcs_read_parquet(paste0(object_dir, "OffenderExit.parquet")),
+    profile_data = gcs_read_parquet(paste0(object_dir, "Profile.parquet")),
+    offense_data = gcs_read_parquet(paste0(object_dir, "Offense.parquet")),
+    alias_data = gcs_read_parquet(paste0(object_dir, "Alias.parquet"))
+  )
+}
+
 #' Wrapper to ingest all prison data sources
 #'
 #' Currently delegates to [ingest_doc_data()] to pull DOC vendor extracts.

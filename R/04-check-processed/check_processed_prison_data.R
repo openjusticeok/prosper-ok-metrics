@@ -26,7 +26,7 @@ check_prison_processed <- function(prison_processed_data) {
   # TODO: Add this as a check
   # # Identify multiple people with same sentence_id on the same extract date in
   #   # different counties
-  # sentence_data |>
+  # sentences_data |>
   #     dplyr::left_join(consecutive_data, by = c("sentence_id", "snapshot_date")) |>
   #     dplyr::filter(
   #       n() > 1,

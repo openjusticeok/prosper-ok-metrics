@@ -28,7 +28,15 @@ tar_option_set(
     "fs",
     "qs2",
     "glue",
-    "rlang"
+    "rlang",
+    "arrow",
+    "gargle",
+    "googleCloudStorageR",
+    "httr2",
+    "janitor",
+    "fastexcel",
+    "purrr",
+    "benchCalculatePopulation"
   ),
   format = "qs"
 )
@@ -138,6 +146,27 @@ list(
     name = prison_report,
     command = render_prison_report(prison_analysis_results, prison_figures, report_source = prison_report_source),
     format = "file"
+  ),
+  # GKFF prison data pipeline (from GCS)
+  tar_target(
+    name = gkff_snapshot_date,
+    command = "2026-03-13"
+  ),
+  tar_target(
+    name = gkff_prison_ingested_data,
+    command = ingest_gkff_prison_data(snapshot_date = gkff_snapshot_date)
+  ),
+  tar_target(
+    name = gkff_prison_ingested_checks,
+    command = check_gkff_prison_ingested(gkff_prison_ingested_data, snapshot_date = gkff_snapshot_date)
+  ),
+  tar_target(
+    name = gkff_prison_processed_data,
+    command = process_gkff_prison_data(gkff_prison_ingested_data, snapshot_date = gkff_snapshot_date)
+  ),
+  tar_target(
+    name = gkff_prison_analysis_results,
+    command = analyze_gkff_prison_data(gkff_prison_processed_data)
   )
   # Wrap-up
   # TODO: chore: Update the README with description of this pipeline
