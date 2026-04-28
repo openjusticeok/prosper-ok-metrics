@@ -392,6 +392,36 @@ ingest_jail_data_initiative_scraped_data <- function() {
   )
 }
 
+ingest_tulsa_county_jail_data <- function() {
+  bucket <- "tulsa-county-jail-data"
+
+  ojoutils::gcs_auth_bucket(bucket)
+
+  gcs_files <- ojoutils::gcs_list_objects(bucket, prefix = "formatted/")
+
+  objs <- purrr::map(
+    gcs_files,
+    \(file_name) {
+      data <- ojoutils::gcs_read_csv(bucket, file_name)
+
+      obj_name <- fs::path_file(file_name) |>
+        fs::path_ext_remove() |>
+        stringr::str_to_snake()
+
+      tibble::lst(
+        !!obj_name := data
+      )
+    }
+  ) |>
+  purrr::list_flatten()
+
+  if (!all(c("bookings", "charges", "arresting_agencies", "court_dates") %in% names(objs))) {
+    rlang::abort("All of `bookings`, `charges`, `arresting_agencies`, and `court_dates` must be present in data")
+  }
+
+  return(objs)
+}
+
 #' Ingest all raw jail data sources
 #'
 #' Orchestrates ingestion for all jail inputs: Jail Data Initiative, OK Policy
@@ -401,7 +431,7 @@ ingest_jail_data_initiative_scraped_data <- function() {
 #'
 #' @return A named list of ingested jail data sources.
 ingest_jail_data <- function(vera_data) {
-  total_sources <- 4
+  total_sources <- 5
 
   jail_data_initiative <- ingest_jail_data_initiative_scraped_data()
   message(sprintf("(1/%d) jail_data_initiative ingestion complete", total_sources))
@@ -415,11 +445,15 @@ ingest_jail_data <- function(vera_data) {
   brek <- ingest_brek_jail_report_data()
   message(sprintf("(4/%d) brek ingestion complete", total_sources))
 
+  tulsa_county_jail <- ingest_tulsa_county_jail_data()
+  message(sprintf("(5/%d) tulsa county jail ingestion complete", total_sources))
+
   list(
     jail_data_initiative = jail_data_initiative,
     okpolicy = okpolicy,
     asemio = asemio,
     brek = brek,
+    tulsa_county_jail = tulsa_county_jail,
     vera = vera_data
   )
 }

@@ -382,18 +382,18 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks, v
     # Combining data from sources which are already aggregated
     dplyr::bind_rows(
       vera_processed_data |>
-        dplyr::filter(!is.na(total_jail_adm)) |>
+        dplyr::filter(!is.na(total_jail_admits)) |>
         # TODO: Should this be higher up in the pipeline to apply to all vera data in jail pipeline?
         dplyr::filter(county_code == "US_OK_TULSA") |>
         dplyr::filter(year >= 1999) |>
         dplyr::mutate(
           source,
-          booking_month = quarter_date,
-          # total_jail_adm is an estimate of total admissions in the past year
+          booking_month = year_date,
+          # total_jail_admits is an estimate of total admissions in the past year
           # for a county.
           # Source: pg.10 of Vera Incarceration Trends codebook
-          bookings_past_year = total_jail_adm,
-          bookings = total_jail_adm / 12,
+          bookings_past_year = total_jail_admits,
+          bookings = total_jail_admits / 12,
           .keep = "none"
         ),
       brek |>

@@ -1,0 +1,117 @@
+{
+  "nodes": {
+    "flake-parts": {
+      "inputs": {
+        "nixpkgs-lib": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1775087534,
+        "narHash": "sha256-91qqW8lhL7TLwgQWijoGBbiD4t7/q75KTi8NxjVmSmA=",
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "rev": "3107b77cd68437b9a76194f0f7f9c55f2329ca5b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1776877367,
+        "narHash": "sha256-EHq1/OX139R1RvBzOJ0aMRT3xnWyqtHBRUBuO1gFzjI=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "0726a0ecb6d4e08f6adced58726b95db924cef57",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "ojodb": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1768244676,
+        "narHash": "sha256-sS1xWMUAQiX7TnfbOU6OVfVVbAs2EWiriotLfYJjDXk=",
+        "owner": "openjusticeok",
+        "repo": "ojodb",
+        "rev": "b566afa286a507f494b1098a063fae2a3a6edbe6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "openjusticeok",
+        "ref": "ojodb-v3",
+        "repo": "ojodb",
+        "type": "github"
+      }
+    },
+    "ojothemes": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1754591139,
+        "narHash": "sha256-5n+1NseWRpAKx8dJeWXyKZTxGk7oSJsSLpaED2K+NCM=",
+        "owner": "openjusticeok",
+        "repo": "ojothemes",
+        "rev": "cb048b19527adc0082619b0eb55be8de640916c4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "openjusticeok",
+        "repo": "ojothemes",
+        "type": "github"
+      }
+    },
+    "ojoutils": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1777063514,
+        "narHash": "sha256-z/1HTu4QT8Z0jLWp/HAWqMBBEYTIzJWIGc4PNRMKgsI=",
+        "owner": "openjusticeok",
+        "repo": "ojoutils",
+        "rev": "540656fd884edac1f0392a3feabd0a6c95451e17",
+        "type": "github"
+      },
+      "original": {
+        "owner": "openjusticeok",
+        "repo": "ojoutils",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "flake-parts": "flake-parts",
+        "nixpkgs": "nixpkgs",
+        "ojodb": "ojodb",
+        "ojothemes": "ojothemes",
+        "ojoutils": "ojoutils",
+        "tulsa-county-jail-scraper": "tulsa-county-jail-scraper"
+      }
+    },
+    "tulsa-county-jail-scraper": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1770072457,
+        "narHash": "sha256-R98udIwqC4Mhg00LRawuwl92o15lqiWPrBvRJuv2Tbk=",
+        "ref": "refs/heads/main",
+        "rev": "cc323a6b495517d1c7b8ff69d4f6819f38146ed8",
+        "revCount": 18,
+        "type": "git",
+        "url": "ssh://git@github.com/openjusticeok/tulsa-county-jail-scraper.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/openjusticeok/tulsa-county-jail-scraper.git"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

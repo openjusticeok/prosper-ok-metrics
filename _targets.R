@@ -21,12 +21,12 @@ tar_option_set(
     "scales",
     "ojodb",
     "ojothemes",
+    "ojoutils",
     "tulsaCountyJailScraper",
     "quarto",
     "here",
     "withr",
     "fs",
-    "qs",
     "qs2",
     "glue",
     "rlang"

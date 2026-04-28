@@ -127,6 +127,8 @@ process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
       n_sentences = dplyr::n(),
       n_sentencing_dates = dplyr::n_distinct(.data$sentencing_date, na.rm = TRUE),
       repeat_offender = .data$n_sentencing_dates > 1,
+      most_recent_sentencing_date = max(.data$sentencing_date, na.rm = TRUE),
+      most_recent_sentencing_county = .data$sentencing_county[.data$sentencing_date == max(.data$sentencing_date, na.rm = TRUE)][1],
       .by = c("doc_num")
     )
 

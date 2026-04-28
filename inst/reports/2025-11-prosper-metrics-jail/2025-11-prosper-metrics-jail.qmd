@@ -87,7 +87,6 @@ library(ojothemes)
 library(janitor)
 library(gt)
 library(gtExtras)
-library(tidyverse)
 library(nanoparquet)
 library(ggrepel)
 
