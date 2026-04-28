@@ -11,7 +11,7 @@ library(lubridate)
 # this uses the most recent relese from 10/22/2025.
 profile_data <- read_csv(here("data/input/doc/profile_data.csv"))
 offense_data <- read_csv(here("data/input/doc/offense_data.csv"))
-sentence_data <- read_csv(here("data/input/doc/sentence_data.csv"))
+sentences_data <- read_csv(here("data/input/doc/sentences_data.csv"))
 consecutive_data <- read_csv(here("data/input/doc/consecutive_data.csv"))
 
 #___________Facility categories based on DOC Weekly Count Reports_______________
@@ -90,7 +90,7 @@ clean_profile_data <- profile_data |>
 ##__________________________ BIG DATA JOIN HERE________________________________
 
 # Creating flag to track people who have been in DOC custody more than once
-doc_repeat <- sentence_data |>
+doc_repeat <- sentences_data |>
   mutate(js_date = lubridate::as_date(js_date)) |>
   group_by(doc_num) |>
   summarise(
@@ -100,7 +100,7 @@ doc_repeat <- sentence_data |>
 # Joining all the datasets but paying special attention to the sentence data
 # which contains the sentencing_county and `js_date` and profile data which
 # contains the person's `sex` which we are using in place of gender.
-people_with_sentence_info <- sentence_data |>
+people_with_sentence_info <- sentences_data |>
   left_join(consecutive_data,
             by = "sentence_id") |>
   inner_join(doc_repeat,
