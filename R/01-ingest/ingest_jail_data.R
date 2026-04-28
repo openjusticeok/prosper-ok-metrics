@@ -433,27 +433,27 @@ ingest_tulsa_county_jail_data <- function() {
 ingest_jail_data <- function(vera_data) {
   total_sources <- 5
 
+  tulsa_county_jail <- ingest_tulsa_county_jail_data()
+  message(sprintf("(1/%d) tulsa county jail ingestion complete", total_sources))
+
   jail_data_initiative <- ingest_jail_data_initiative_scraped_data()
-  message(sprintf("(1/%d) jail_data_initiative ingestion complete", total_sources))
+  message(sprintf("(2/%d) jail_data_initiative ingestion complete", total_sources))
 
   okpolicy <- ingest_okpolicy_scraped_data()
-  message(sprintf("(2/%d) okpolicy ingestion complete", total_sources))
+  message(sprintf("(3/%d) okpolicy ingestion complete", total_sources))
 
   asemio <- ingest_asemio_scraped_data()
-  message(sprintf("(3/%d) asemio ingestion complete", total_sources))
+  message(sprintf("(4/%d) asemio ingestion complete", total_sources))
 
   brek <- ingest_brek_jail_report_data()
-  message(sprintf("(4/%d) brek ingestion complete", total_sources))
-
-  tulsa_county_jail <- ingest_tulsa_county_jail_data()
-  message(sprintf("(5/%d) tulsa county jail ingestion complete", total_sources))
+  message(sprintf("(5/%d) brek ingestion complete", total_sources))
 
   list(
+    tulsa_county_jail = tulsa_county_jail,
     jail_data_initiative = jail_data_initiative,
     okpolicy = okpolicy,
     asemio = asemio,
     brek = brek,
-    tulsa_county_jail = tulsa_county_jail,
     vera = vera_data
   )
 }

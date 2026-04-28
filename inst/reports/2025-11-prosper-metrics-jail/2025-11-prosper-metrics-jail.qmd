@@ -154,6 +154,9 @@ cross-validate estimates.
 
 **The data sources used are:**
 
+- **Tulsa County Jail Data:** Direct data extracts from the Tulsa County Jail's 365Labs system.
+  This data provides comprehensive booking and charge information directly from the jail's internal records
+  through a data sharing agreement with Tulsa County.
 - **OK Policy's Scraper:** Data in OK Policy's database from a scraper developed by OK Policy.
   This scraper collected daily population data from the Tulsa County Jail's newest public data portal
   after the new portal was launched.
@@ -183,6 +186,13 @@ able to use that data to validate and refine the estimates presented in this rep
 #| eval: !expr audience_show(c("internal", "external"))
 
 jail_figures$plot_bookings_multiproducer_mixmethod_month_total
+```
+
+```{r jail-bookings-mixmethod-total-2023}
+#| include: !expr audience_show(c("internal", "external"))
+#| eval: !expr audience_show(c("internal", "external"))
+
+jail_figures$plot_bookings_multiproducer_mixmethod_month_total_2023
 ```
 
 ```{r jail-bookings-est-total}

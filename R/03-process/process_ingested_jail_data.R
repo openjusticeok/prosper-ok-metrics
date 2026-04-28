@@ -271,6 +271,67 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks, v
     )
 
 
+  ## Process Tulsa County Jail Data
+  # Tulsa County Jail Bookings with Inmate Info
+  tulsa_county_bookings_with_inmate_info <- ingested_data$tulsa_county_jail$bookings |>
+    dplyr::mutate(
+      source = "Tulsa County Jail Data",
+      # Direct PII
+      full_name = stringr::str_trim(
+        paste(inmate_given_name, inmate_middle_name, inmate_surname)
+      ),
+      # Indirect PII
+      birth_date = as.Date(birth_date),
+      age = as.integer(lubridate::year(booking_date) - lubridate::year(birth_date)),
+      # Standardize demographics - already in readable format, just need NA handling
+      sex_gender_standardized = dplyr::case_when(
+        inmate_gender == "Female" ~ "Female",
+        inmate_gender == "Male" ~ "Male",
+        TRUE ~ "Other/Unknown Gender"
+      ),
+      # Combine race and ethnicity since Hispanic appears in both fields
+      race_ethnicity_combined = dplyr::case_when(
+        inmate_ethnicity == "Hispanic" ~ "Hispanic",
+        inmate_race == "Hispanic" ~ "Hispanic",
+        TRUE ~ inmate_race
+      ),
+      race_ethnicity_standardized = dplyr::case_when(
+        race_ethnicity_combined %in% c("American Indian/Alaskan Native", "Native American") ~ "American Indian or Alaska Native",
+        race_ethnicity_combined %in% c("Asian", "Pacific Islander") ~ "Asian American and Pacific Islander",
+        race_ethnicity_combined == "Black" ~ "Black",
+        race_ethnicity_combined == "Hispanic" ~ "Hispanic/Latino",
+        race_ethnicity_combined == "White" ~ "White",
+        race_ethnicity_combined == "Other" ~ "Other Race/Ethnicity",
+        TRUE ~ "Unknown Race/Ethnicity"
+      ),
+      # Dates - already POSIXct, extract components
+      booking_datetime = booking_date,
+      booking_date = as.Date(booking_datetime),
+      booking_time = hms::as_hms(booking_datetime),
+      arrest_datetime = lubridate::ymd_hms(arrest_date, tz = "America/Chicago"),
+      arrest_date = as.Date(arrest_datetime),
+      release_datetime = actual_release_date,
+      release_date = as.Date(release_datetime),
+      release_time = hms::as_hms(release_datetime),
+      # Other fields
+      jacket_number = as.character(jacket_number),
+      arresting_agency = default_arresting_agency
+    )
+
+  # Tulsa County Jail Charges
+  tulsa_county_charges <- ingested_data$tulsa_county_jail$charges |>
+    dplyr::mutate(
+      source = "Tulsa County Jail Data",
+      charge = statute_title,
+      charge_description = statute_description,
+      arresting_agency = charging_agency_abbreviation
+    ) |>
+    dplyr::mutate(
+      hold_category = categorize_hold_charge(charge_description),
+      charge_description_clean = clean_hold_charge_description(charge_description, hold_category)
+    )
+
+
   ## TODO: Remaining data cleaning and processing tasks
   # Move above where it belongs when done.
 
@@ -310,12 +371,20 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks, v
       by = c("id" = "booking_id"),
       suffix = c("", "_charge")
     )
+  # Join charges to bookings for Tulsa County Jail data
+  tulsa_county_charges_with_bookings_info <- tulsa_county_bookings_with_inmate_info |>
+    dplyr::left_join(
+      tulsa_county_charges,
+      by = "booking_id",
+      suffix = c("", "_charge")
+    )
 
 
   ### Combine individual processed bookings records from each data source
   # Each should include inmate info already where available
   # NOTE: Right now they are all scraped data but could include other sources later
   booking_sources <- list(
+    tulsa_county_bookings_with_inmate_info,
     jail_data_initiative_bookings_with_inmate_info,
     okpolicy_scraped_charges_with_bookings_info,
     asemio_scraped_bookings_with_inmate_info
@@ -484,6 +553,10 @@ process_ingested_jail_data <- function(ingested_checks = jail_ingested_checks, v
     jail_data_initiative = list(
       people = jail_data_initiative_bookings_with_inmate_info,
       charges = jail_data_initiative_charges
+    ),
+    tulsa_county_jail = list(
+      bookings = tulsa_county_bookings_with_inmate_info,
+      charges = tulsa_county_charges
     ),
     # Jail Releases Data
     release_counts = ingested_data$brek |>

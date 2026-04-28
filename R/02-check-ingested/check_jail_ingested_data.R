@@ -60,6 +60,15 @@ check_jail_ingested <- function(ingested_data = jail_ingested_data) {
     pointblank::col_vals_between(pointblank::vars(year), 2000, 2030) |>
     pointblank::interrogate()
 
+  tulsa_county_bookings_agent <- pointblank::create_agent(
+    tbl = ingested_data$tulsa_county_jail$bookings,
+    label = "Tulsa County Jail bookings",
+    actions = pb_levels
+  ) |>
+    pointblank::col_exists(pointblank::vars(booking_date, inmate_gender, inmate_race)) |>
+    pointblank::col_vals_not_null(pointblank::vars(booking_id, inmate_id)) |>
+    pointblank::interrogate()
+
   summarize_agent <- function(agent, name) {
     status <- if (pointblank::all_passed(agent)) "pass" else "warning"
     tibble::tibble(
@@ -74,7 +83,8 @@ check_jail_ingested <- function(ingested_data = jail_ingested_data) {
     checks = dplyr::bind_rows(
       summarize_agent(okpolicy_bookings_agent, "okpolicy_bookings"),
       summarize_agent(asemio_bookings_agent, "asemio_bookings"),
-      summarize_agent(brek_agent, "brek_reference")
+      summarize_agent(brek_agent, "brek_reference"),
+      summarize_agent(tulsa_county_bookings_agent, "tulsa_county_bookings")
     )
   )
 }

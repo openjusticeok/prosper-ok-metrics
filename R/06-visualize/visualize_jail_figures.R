@@ -51,6 +51,24 @@ visualize_jail_figures <- function(analysis_results = jail_analysis_results) {
     ojothemes::theme_okpi() +
     ggplot2::guides(color = ggplot2::guide_legend(ncol = 3))
 
+  plot_bookings_multiproducer_mixmethod_month_total_2023 <-
+    bookings_multiproducer_mixmethod_month_total |>
+    dplyr::filter(booking_month >= "2023-01-01") |>
+    ggplot2::ggplot(
+      ggplot2::aes(x = booking_month, y = bookings, color = source)
+    ) +
+    ggplot2::geom_line(linewidth = 1) +
+    ggplot2::geom_point(size = 1) +
+    ggplot2::labs(
+      title = "Tulsa monthly jail bookings by data source (2023-present)",
+      x = "Month",
+      y = "Bookings",
+      color = "Source"
+    ) +
+    ggplot2::scale_color_brewer(palette = "Dark2") +
+    ojothemes::theme_okpi() +
+    ggplot2::guides(color = ggplot2::guide_legend(ncol = 3))
+
 
   ### Jail Releases Figures
   ## Public Jail Releases Figures
@@ -81,6 +99,7 @@ visualize_jail_figures <- function(analysis_results = jail_analysis_results) {
     ## Jail Bookings
     # External
     plot_bookings_multiproducer_mixmethod_month_total,
+    plot_bookings_multiproducer_mixmethod_month_total_2023,
     plot_bookings_multiproducer_estimate_month_total,
     # Public
     plot_bookings_multiproducer_estimate_year_total,
