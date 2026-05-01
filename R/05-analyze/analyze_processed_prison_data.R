@@ -170,7 +170,7 @@ summarise_population_count <- function(filtered_data,
 #'
 #' @return A named list of analysis tibbles.
 #' @export
-analyze_gkff_prison_data <- function(processed_data) {
+analyze_gkff_prison_data <- function(processed_data = gkff_prison_processed_data) {
   population_data <- processed_data$population_data
   profile_data <- processed_data$profile_data
   sentences_data <- processed_data$sentences_data

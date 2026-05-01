@@ -198,26 +198,34 @@ process_ingested_prison_data <- function(ingested_data = prison_ingested_data) {
 #' Process GKFF prison data from GCS
 #'
 #' Transforms the ingested GKFF prison data by constructing derived columns
-#' (name, age buckets, physical custody flag), computing stay intervals, and
-#' calculating daily population counts.
+#' (name, age buckets, physical custody flag), deduplicating profiles to one
+#' row per doc_num using heuristics, computing stay intervals, and calculating
+#' daily population counts. When multiple rows exist for a doc_num, flags are
+#' added: `flag_multiple_race`, `flag_multiple_dob`, `flag_multiple_facility`,
+#' `flag_multiple_suffix`. Sentences are left-joined to DOC processed data to
+#' bring in `sentencing_county`.
 #'
 #' @param ingested_data List of ingested GKFF data tables as returned by
 #'   [ingest_gkff_prison_data()].
 #' @param snapshot_date Date string identifying the data extract, used for
 #'   age calculations and stay intervals. Default is "2026-03-13".
+#' @param prison_processed_data List of processed DOC prison data as returned by
+#'   [process_ingested_prison_data()], used to join sentencing_county onto
+#'   GKFF sentences.
 #'
 #' @return A named list containing:
-#'   * `profile_data`: Processed profile tibble with derived columns
+#'   * `profile_data`: Deduplicated profile tibble (one row per doc_num) with
+#'     derived columns and duplicate flags
 #'   * `population_data`: Daily population counts by sex and race
-#'   * `sentences_data`: The raw sentences data
+#'   * `sentences_data`: Sentences data with sentencing_county from DOC data
 #'   * `receptions_data`: The raw receptions data
 #'   * `releases_data`: The raw releases data
 #'   * `offense_data`: The raw offense data
 #'   * `alias_data`: The raw alias data
 #' @export
-process_gkff_prison_data <- function(ingested_data, snapshot_date = "2026-03-13") {
-  profile_data <- ingested_data$profile_data
-
+process_gkff_prison_data <- function(ingested_data = gkff_prison_ingested_data,
+                                     snapshot_date = "2026-03-13",
+                                     prison_processed_data = prison_processed_data) {
   assessment_and_reception <- c(
     "LEXINGTON ASSESSMENT AND RECEPTION CENTER",
     "MABEL BASSETT ASSESSMENT & RECEPTION CENTER"
@@ -260,15 +268,66 @@ process_gkff_prison_data <- function(ingested_data, snapshot_date = "2026-03-13"
 
   interstate <- c("INTERSTATE COMPACT (OUT TO OTHER STATE) UNIT")
 
+  resolve_best_race <- function(race_vals, facility_vals) {
+    if (length(race_vals) == 1) return(race_vals)
+
+    non_na_idx <- which(!is.na(race_vals))
+    if (length(non_na_idx) == 0) return(race_vals[length(race_vals)])
+    if (length(non_na_idx) == 1) return(race_vals[non_na_idx[1]])
+
+    candidate_idx <- non_na_idx[!stringr::str_detect(
+      toupper(facility_vals[non_na_idx]),
+      "LEXINGTON.*RECEPTION|ASSESSMENT.*RECEPTION|MABEL BASSETT"
+    )]
+    if (length(candidate_idx) == 0) return(race_vals[non_na_idx[1]])
+    if (length(candidate_idx) > 1) candidate_idx <- candidate_idx[length(candidate_idx)]
+
+    race_vals[candidate_idx]
+  }
+
+  resolve_best_dob <- function(dob_vals) {
+    if (length(dob_vals) == 1) return(dob_vals)
+
+    non_na_idx <- which(!is.na(dob_vals))
+    if (length(non_na_idx) == 0) return(dob_vals[length(dob_vals)])
+    if (length(non_na_idx) == 1) return(dob_vals[non_na_idx[1]])
+
+    dob_vals[non_na_idx[length(non_na_idx)]]
+  }
+
+  resolve_best_facility <- function(fac_vals) {
+    if (length(fac_vals) == 1) return(fac_vals)
+
+    non_na_idx <- which(!is.na(fac_vals))
+    if (length(non_na_idx) == 0) return(fac_vals[length(fac_vals)])
+    if (length(non_na_idx) == 1) return(fac_vals[non_na_idx[1]])
+
+    fac_vals[non_na_idx[length(non_na_idx)]]
+  }
+
+  resolve_best_suffix <- function(suf_vals) {
+    if (length(suf_vals) == 1) return(suf_vals)
+
+    non_na_idx <- which(!is.na(suf_vals))
+    if (length(non_na_idx) == 0) return(suf_vals[length(suf_vals)])
+    if (length(non_na_idx) == 1) return(suf_vals[non_na_idx[1]])
+
+    suf_vals[non_na_idx[length(non_na_idx)]]
+  }
+
+  profile_data <- ingested_data$profile_data
+
   snapshot_date_as_date <- lubridate::as_date(snapshot_date)
 
   profile_processed <- profile_data |>
+    # Dates
     dplyr::mutate(
       snapshot_date = snapshot_date_as_date,
       birth_date = lubridate::ymd(birth_date),
       admit_date = lubridate::ymd(admit_date),
       release_date = lubridate::ymd(release_date)
     ) |>
+    # Derived
     dplyr::mutate(
       physical_stay = lubridate::interval(
         start = admit_date,
@@ -321,7 +380,50 @@ process_gkff_prison_data <- function(ingested_data, snapshot_date = "2026-03-13"
     ) |>
     dplyr::select(-all_of("facility_upper"))
 
-  population_data <- profile_processed |>
+  # Deduplicate profile data to one row per doc_num
+  # Apply heuristics: prefer non-NA values, avoid Lexington Reception for race,
+  # fall back to last row. Flag fields with multiple values.
+  profile_unique <- profile_processed |>
+    dplyr::arrange(doc_num) |>
+    dplyr::mutate(
+      # Flags for fields with multiple values per doc_num
+      flag_multiple_race = dplyr::if_else(
+        dplyr::n_distinct(race, na.rm = TRUE) > 1,
+        TRUE,
+        FALSE,
+        FALSE
+      ),
+      flag_multiple_dob = dplyr::if_else(
+        dplyr::n_distinct(birth_date, na.rm = TRUE) > 1,
+        TRUE,
+        FALSE,
+        FALSE
+      ),
+      flag_multiple_facility = dplyr::if_else(
+        dplyr::n_distinct(facility, na.rm = TRUE) > 1,
+        TRUE,
+        FALSE,
+        FALSE
+      ),
+      flag_multiple_suffix = dplyr::if_else(
+        dplyr::n_distinct(suffix, na.rm = TRUE) > 1,
+        TRUE,
+        FALSE,
+        FALSE
+      ),
+      .by = "doc_num"
+    ) |>
+    dplyr::mutate(
+      race = resolve_best_race(.data$race, .data$facility),
+      birth_date = resolve_best_dob(.data$birth_date),
+      facility = resolve_best_facility(.data$facility),
+      suffix = resolve_best_suffix(.data$suffix),
+      .by = "doc_num"
+    ) |>
+    dplyr::slice_head(n = 1, by = "doc_num") |>
+    dplyr::ungroup()
+
+  population_data <- profile_unique |>
     dplyr::distinct(doc_num, admit_date, release_date, .keep_all = TRUE) |>
     benchCalculatePopulation::calculate_population(
       start = "admit_date",
@@ -346,12 +448,30 @@ process_gkff_prison_data <- function(ingested_data, snapshot_date = "2026-03-13"
     dplyr::mutate(
       js_date = lubridate::ymd(js_date),
       sentence_start_date = lubridate::ymd(sentence_start_date),
-      sentence_end_date = lubridate::ymd(sentence_end_date)
+      sentence_end_date = lubridate::ymd(sentence_end_date),
+      doc_sentence_id = stringr::str_remove(
+        stringr::str_c(.data$doc_num, .data$sentence_id),
+        "/"
+      )
+    ) |>
+    dplyr::left_join(
+      prison_processed_data$sentence_with_profile_offense_data |>
+        dplyr::distinct(sentence_id, .keep_all = TRUE) |>
+        select(doc_sentence_id = sentence_id, sentencing_county),
+      by = c("doc_sentence_id")
+    ) |>
+    dplyr::left_join(
+      profile_unique |> dplyr::select(doc_num, sex, race),
+      by = c("doc_num")
     )
 
   releases_data <- ingested_data$releases_data |>
     dplyr::mutate(
       movement_date = lubridate::ymd(movement_date)
+    ) |>
+    dplyr::left_join(
+      profile_unique |> dplyr::select(doc_num, sex, race),
+      by = c("doc_num")
     )
 
   receptions_data <- ingested_data$receptions_data |>
@@ -360,7 +480,7 @@ process_gkff_prison_data <- function(ingested_data, snapshot_date = "2026-03-13"
     )
 
   list(
-    profile_data = profile_processed,
+    profile_data = profile_unique,
     population_data = population_data,
     sentences_data = sentences_data,
     receptions_data = receptions_data,

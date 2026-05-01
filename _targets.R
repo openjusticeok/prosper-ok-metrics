@@ -162,7 +162,11 @@ list(
   ),
   tar_target(
     name = gkff_prison_processed_data,
-    command = process_gkff_prison_data(gkff_prison_ingested_data, snapshot_date = gkff_snapshot_date)
+    command = process_gkff_prison_data(
+      gkff_prison_ingested_data,
+      snapshot_date = gkff_snapshot_date,
+      prison_processed_data = prison_processed_data
+    )
   ),
   tar_target(
     name = gkff_prison_analysis_results,
