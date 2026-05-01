@@ -313,3 +313,249 @@ placeholder_number <- function() {
 placeholder_string <- function() {
   "[PLACEHOLDER]"
 }
+
+
+# Google Drive Upload Utilities ================================================
+
+#' Upload a data frame as CSV to Google Drive entirely in memory
+#'
+#' Formats the data frame as CSV, converts to raw bytes, and uploads via the
+#' Drive API without touching disk. Supports both multipart and resumable
+#' upload methods.
+#'
+#' @param data A data frame to upload
+#' @param folder_id Google Drive folder ID (string)
+#' @param name Filename for the uploaded CSV (`.csv` extension added automatically)
+#' @param overwrite If `TRUE`, finds and overwrites an existing file with the
+#'   same name in the folder
+#' @param upload_type One of `"auto"`, `"multipart"`, or `"resumable"`.
+#'   `"auto"` chooses based on `resumable_threshold`.
+#' @param resumable_threshold Byte threshold for switching to resumable upload
+#'   when `upload_type = "auto"` (default: 5 MB)
+#' @param scopes OAuth scope for authentication
+#' @return JSON response from the Drive API
+#' @export
+drive_upload_csv_raw <- function(data,
+                                 folder_id,
+                                 name,
+                                 overwrite = TRUE,
+                                 upload_type = c("auto", "multipart", "resumable"),
+                                 resumable_threshold = 5 * 1024^2,
+                                 bearer = NULL,
+                                 scopes = "https://www.googleapis.com/auth/drive") {
+  upload_type <- rlang::arg_match(upload_type)
+
+  if (!is.data.frame(data)) {
+    rlang::abort("`data` must be a data frame.")
+  }
+
+  if (!rlang::is_string(folder_id) || !nzchar(folder_id)) {
+    rlang::abort("`folder_id` must be a non-empty string.")
+  }
+
+  if (!rlang::is_string(name) || !nzchar(name)) {
+    rlang::abort("`name` must be a non-empty string.")
+  }
+
+  if (!is.logical(overwrite) || length(overwrite) != 1 || is.na(overwrite)) {
+    rlang::abort("`overwrite` must be `TRUE` or `FALSE`.")
+  }
+
+  if (!is.numeric(resumable_threshold) || length(resumable_threshold) != 1 || resumable_threshold < 0) {
+    rlang::abort("`resumable_threshold` must be a non-negative number of bytes.")
+  }
+
+  file_name <- ensure_csv_extension(name)
+
+  csv_raw <- data |>
+    readr::format_csv() |>
+    charToRaw()
+
+  if (upload_type == "auto") {
+    upload_type <- if (length(csv_raw) >= resumable_threshold) {
+      "resumable"
+    } else {
+      "multipart"
+    }
+  }
+
+  if (is.null(bearer)) {
+    bearer <- drive_bearer_token(scopes)
+  }
+
+  existing_id <- NULL
+
+  if (overwrite) {
+    existing_id <- drive_find_existing_file_id(
+      bearer = bearer,
+      folder_id = folder_id,
+      file_name = file_name
+    )
+  }
+
+  metadata <- list(
+    name = file_name,
+    mimeType = "text/csv"
+  )
+
+  if (is.null(existing_id)) {
+    metadata$parents <- list(folder_id)
+  }
+
+  switch(
+    upload_type,
+    multipart = drive_upload_multipart(
+      bearer = bearer,
+      csv_raw = csv_raw,
+      metadata = metadata,
+      existing_id = existing_id
+    ),
+    resumable = drive_upload_resumable(
+      bearer = bearer,
+      csv_raw = csv_raw,
+      metadata = metadata,
+      existing_id = existing_id
+    )
+  )
+}
+
+ensure_csv_extension <- function(name) {
+  if (grepl("\\.csv$", name, ignore.case = TRUE)) {
+    name
+  } else {
+    paste0(name, ".csv")
+  }
+}
+
+drive_bearer_token <- function(scopes) {
+  token <- gargle::token_fetch(scopes = scopes)
+
+  access_token <- token$credentials$access_token
+
+  if (is.null(access_token) || !nzchar(access_token)) {
+    rlang::abort("Could not fetch a Google Drive access token.")
+  }
+
+  access_token
+}
+
+drive_escape_query_string <- function(x) {
+  x |>
+    gsub("\\\\", "\\\\\\\\", x = _) |>
+    gsub("'", "\\\\'", x = _)
+}
+
+drive_find_existing_file_id <- function(bearer, folder_id, file_name) {
+  q <- sprintf(
+    "name = '%s' and '%s' in parents and trashed = false",
+    drive_escape_query_string(file_name),
+    drive_escape_query_string(folder_id)
+  )
+
+  resp <- httr2::request("https://www.googleapis.com/drive/v3/files") |>
+    httr2::req_url_query(
+      q = q,
+      fields = "files(id,name,modifiedTime)",
+      spaces = "drive",
+      supportsAllDrives = "true",
+      includeItemsFromAllDrives = "true",
+      orderBy = "modifiedTime desc"
+    ) |>
+    httr2::req_auth_bearer_token(bearer) |>
+    httr2::req_retry(max_tries = 3) |>
+    httr2::req_perform() |>
+    httr2::resp_body_json()
+
+  if (length(resp$files) == 0) {
+    return(NULL)
+  }
+
+  resp$files[[1]]$id
+}
+
+drive_upload_endpoint <- function(existing_id = NULL) {
+  if (is.null(existing_id)) {
+    "https://www.googleapis.com/upload/drive/v3/files"
+  } else {
+    paste0("https://www.googleapis.com/upload/drive/v3/files/", existing_id)
+  }
+}
+
+drive_upload_method <- function(existing_id = NULL) {
+  if (is.null(existing_id)) "POST" else "PATCH"
+}
+
+drive_response_fields <- function() {
+  "id,name,mimeType,webViewLink"
+}
+
+drive_upload_multipart <- function(bearer, csv_raw, metadata, existing_id = NULL) {
+  boundary <- paste0(
+    "-------",
+    paste(sample(c(letters, LETTERS, 0:9), 32, replace = TRUE), collapse = "")
+  )
+
+  body <- c(
+    charToRaw(paste0(
+      "--", boundary, "\r\n",
+      "Content-Type: application/json; charset=UTF-8\r\n\r\n",
+      jsonlite::toJSON(metadata, auto_unbox = TRUE), "\r\n",
+      "--", boundary, "\r\n",
+      "Content-Type: text/csv; charset=UTF-8\r\n\r\n"
+    )),
+    csv_raw,
+    charToRaw(paste0("\r\n--", boundary, "--\r\n"))
+  )
+
+  httr2::request(drive_upload_endpoint(existing_id)) |>
+    httr2::req_method(drive_upload_method(existing_id)) |>
+    httr2::req_url_query(
+      uploadType = "multipart",
+      supportsAllDrives = "true",
+      fields = drive_response_fields()
+    ) |>
+    httr2::req_auth_bearer_token(bearer) |>
+    httr2::req_headers(
+      `Content-Type` = paste0("multipart/related; boundary=", boundary)
+    ) |>
+    httr2::req_body_raw(body) |>
+    httr2::req_retry(max_tries = 3) |>
+    httr2::req_perform() |>
+    httr2::resp_body_json()
+}
+
+drive_upload_resumable <- function(bearer, csv_raw, metadata, existing_id = NULL) {
+  init_resp <- httr2::request(drive_upload_endpoint(existing_id)) |>
+    httr2::req_method(drive_upload_method(existing_id)) |>
+    httr2::req_url_query(
+      uploadType = "resumable",
+      supportsAllDrives = "true",
+      fields = drive_response_fields()
+    ) |>
+    httr2::req_auth_bearer_token(bearer) |>
+    httr2::req_headers(
+      `Content-Type` = "application/json; charset=UTF-8",
+      `X-Upload-Content-Type` = "text/csv; charset=UTF-8",
+      `X-Upload-Content-Length` = as.character(length(csv_raw))
+    ) |>
+    httr2::req_body_json(metadata, auto_unbox = TRUE) |>
+    httr2::req_retry(max_tries = 3) |>
+    httr2::req_perform()
+
+  upload_url <- httr2::resp_header(init_resp, "location")
+
+  if (is.null(upload_url) || !nzchar(upload_url)) {
+    rlang::abort("Drive did not return a resumable upload URL.")
+  }
+
+  httr2::request(upload_url) |>
+    httr2::req_method("PUT") |>
+    httr2::req_headers(
+      `Content-Type` = "text/csv; charset=UTF-8",
+      `Content-Length` = as.character(length(csv_raw))
+    ) |>
+    httr2::req_body_raw(csv_raw) |>
+    httr2::req_retry(max_tries = 3) |>
+    httr2::req_perform() |>
+    httr2::resp_body_json()
+}
