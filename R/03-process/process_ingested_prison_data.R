@@ -332,6 +332,13 @@ process_gkff_prison_data <- function(ingested_data = gkff_prison_ingested_data,
       physical_stay = lubridate::interval(
         start = admit_date,
         end = dplyr::if_else(is.na(release_date), snapshot_date, release_date)
+      ),
+      suffix = stringr::str_trim(suffix),
+      suffix = case_when(
+        suffix == "" ~ NA_character_,
+        suffix == "Ii" ~ "II",
+        suffix == "Iii" ~ "III",
+        .default = suffix
       )
     ) |>
     dplyr::mutate(
