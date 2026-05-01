@@ -32,10 +32,12 @@ tar_option_set(
     "arrow",
     "gargle",
     "googleCloudStorageR",
+    "googledrive",
     "httr2",
     "janitor",
     "fastexcel",
     "purrr",
+    "jsonlite",
     "benchCalculatePopulation"
   ),
   format = "qs"
@@ -59,6 +61,7 @@ tar_source("R/06-visualize/visualize_jail_figures.R")
 tar_source("R/06-visualize/visualize_prison_figures.R")
 tar_source("R/render_report_jail.R")
 tar_source("R/render_report_prison.R")
+tar_source("R/07-load/load_analyzed_prison_data.R")
 
 # Targets pipeline definition:
 list(
@@ -171,6 +174,13 @@ list(
   tar_target(
     name = gkff_prison_analysis_results,
     command = analyze_gkff_prison_data(gkff_prison_processed_data)
+  ),
+  tar_target(
+    name = gkff_prison_analysis_loaded,
+    command = load_gkff_prison_analysis_results(
+      results = gkff_prison_analysis_results,
+      snapshot_date = gkff_snapshot_date
+    )
   )
   # Wrap-up
   # TODO: chore: Update the README with description of this pipeline
