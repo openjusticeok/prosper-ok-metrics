@@ -176,63 +176,133 @@ analyze_gkff_prison_data <- function(processed_data = gkff_prison_processed_data
   sentences_data <- processed_data$sentences_data
   releases_data <- processed_data$releases_data
 
-  # Average Daily Prison Population by Year
-  population_year_avg <- population_data |>
+  # TODO: Determine what the minimum necessary processing and checks are
+  # TODO: Add comparison data sources for each metric in documentation and comments
+  # TODO: Write documentation writeup
+
+  # Average Daily Prison Population
+  population_year_avg_by_year <- population_data |>
     dplyr::summarize(
-      population_year_avg = mean(n),
+      n = mean(n),
       .by = c("year")
     )
 
-  population_year_avg_demographics <- population_data |>
+  population_year_avg_by_year_sex <- population_data |>
     dplyr::summarize(
-      population_year_avg = mean(n),
+      n = mean(n),
+      .by = c("year", "sex")
+    )
+
+  population_year_avg_by_year_race <- population_data |>
+    dplyr::summarize(
+      n = mean(n),
+      .by = c("year", "race")
+    )
+
+  population_year_avg_by_year_sex_race <- population_data |>
+    dplyr::summarize(
+      n = mean(n),
       .by = c("year", "sex", "race")
     )
 
-  # Prison admissions by year
-  admissions_by_year <- profile_data |>
+  # Prison admissions
+  admissions_dt <- profile_data |>
     dplyr::filter(!is.na(admit_date)) |>
-    dplyr::distinct(doc_num, admit_date) |>
-    dplyr::mutate(
-      admit_year = lubridate::year(admit_date)
-    ) |>
-    dplyr::summarise(
-      n_admissions = dplyr::n(),
-      .by = admit_year
-    )
+    dplyr::distinct(doc_num, admit_date, .keep_all = TRUE) |>
+    dplyr::mutate(year = lubridate::year(admit_date))
 
-  # Prison releases by year
-  releases_by_year <- releases_data |>
-    dplyr::mutate(
-      release_year = lubridate::year(movement_date)
-    ) |>
-    dplyr::filter(!is.na(release_year)) |>
-    dplyr::summarise(
-      n_releases = dplyr::n(),
-      .by = release_year
-    )
+  admissions_by_year <- admissions_dt |>
+    dplyr::count(year, name = "n")
 
-  # Prison sentences by year (by JS date)
-  sentences_by_js_year <- sentences_data |>
-    dplyr::distinct(doc_num, js_date) |>
-    dplyr::count(
-      year = lubridate::year(js_date)
-    )
+  admissions_by_year_sex <- admissions_dt |>
+    dplyr::count(year, sex, name = "n")
 
-  # Prison sentences by year (by sentence start date)
-  sentences_by_start_year <- sentences_data |>
-    dplyr::distinct(doc_num, sentence_start_date) |>
-    dplyr::count(
-      year = lubridate::year(sentence_start_date)
-    )
+  admissions_by_year_race <- admissions_dt |>
+    dplyr::count(year, race, name = "n")
+
+  admissions_by_year_sex_race <- admissions_dt |>
+    dplyr::count(year, sex, race, name = "n")
+
+  # Prison releases
+  releases_dt <- releases_data |>
+    dplyr::mutate(year = lubridate::year(movement_date)) |>
+    dplyr::filter(!is.na(year))
+
+  releases_by_year <- releases_dt |>
+    dplyr::count(year, name = "n")
+
+  releases_by_year_sex <- releases_dt |>
+    dplyr::count(year, sex, name = "n")
+
+  releases_by_year_race <- releases_dt |>
+    dplyr::count(year, race, name = "n")
+
+  releases_by_year_sex_race <- releases_dt |>
+    dplyr::count(year, sex, race, name = "n")
+
+  # Prison sentences by JS date
+  sentences_js_dt <- sentences_data |>
+    dplyr::distinct(doc_num, js_date, .keep_all = TRUE) |>
+    dplyr::mutate(year = lubridate::year(js_date))
+
+  sentences_js_by_year <- sentences_js_dt |>
+    dplyr::count(year, name = "n")
+
+  sentences_js_by_year_sex <- sentences_js_dt |>
+    dplyr::count(year, sex, name = "n")
+
+  sentences_js_by_year_race <- sentences_js_dt |>
+    dplyr::count(year, race, name = "n")
+
+  sentences_js_by_year_sex_race <- sentences_js_dt |>
+    dplyr::count(year, sex, race, name = "n")
+
+  sentences_js_by_year_county <- sentences_js_dt |>
+    dplyr::count(year, sentencing_county, name = "n")
+
+  # Prison sentences by sentence start date
+  sentences_start_dt <- sentences_data |>
+    dplyr::distinct(doc_num, sentence_start_date, .keep_all = TRUE) |>
+    dplyr::mutate(year = lubridate::year(sentence_start_date))
+
+  sentences_start_by_year <- sentences_start_dt |>
+    dplyr::count(year, name = "n")
+
+  sentences_start_by_year_sex <- sentences_start_dt |>
+    dplyr::count(year, sex, name = "n")
+
+  sentences_start_by_year_race <- sentences_start_dt |>
+    dplyr::count(year, race, name = "n")
+
+  sentences_start_by_year_sex_race <- sentences_start_dt |>
+    dplyr::count(year, sex, race, name = "n")
+
+  sentences_start_by_year_county <- sentences_start_dt |>
+    dplyr::count(year, sentencing_county, name = "n")
 
   named_list(
-    population_year_avg,
-    population_year_avg_demographics,
+    population_year_avg_by_year,
+    population_year_avg_by_year_sex,
+    population_year_avg_by_year_race,
+    population_year_avg_by_year_sex_race,
     admissions_by_year,
+    admissions_by_year_sex,
+    admissions_by_year_race,
+    admissions_by_year_sex_race,
     releases_by_year,
-    sentences_by_js_year,
-    sentences_by_start_year
+    releases_by_year_sex,
+    releases_by_year_race,
+    releases_by_year_sex_race,
+    sentences_js_by_year,
+    sentences_js_by_year_sex,
+    sentences_js_by_year_race,
+    sentences_js_by_year_sex_race,
+    sentences_js_by_year_county,
+    sentences_start_by_year,
+    sentences_start_by_year_sex,
+    sentences_start_by_year_race,
+    sentences_start_by_year_sex_race,
+    sentences_start_by_year_county
   )
 }
 
